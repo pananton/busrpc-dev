@@ -19,7 +19,8 @@ FetchContent_MakeAvailable(googletest)
 #----------------------------------------------------------------------------------------------------------------------
 
 set(sources
-    command_line_parser_tests.cpp)
+    command_args_tests.cpp
+    utils/utils.h)
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${sources})
 
 #----------------------------------------------------------------------------------------------------------------------

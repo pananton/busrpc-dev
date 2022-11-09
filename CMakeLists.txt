@@ -26,8 +26,9 @@ find_package(Protobuf REQUIRED)
 #----------------------------------------------------------------------------------------------------------------------
 
 set(sources
-    src/command_line_parser.h
-    src/command_line_parser.cpp)
+    src/exception.h
+    src/commands/command_args.h
+    src/commands/command_args.cpp)
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/src" FILES ${sources} src/main.cpp)
 
 #----------------------------------------------------------------------------------------------------------------------
@@ -37,15 +38,12 @@ source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/src" FILES ${sources} src/main.cp
 add_library(busrpc-obj OBJECT ${sources})
 add_executable(busrpc src/main.cpp)
 
-target_include_directories(busrpc-obj
-    PUBLIC
-        "${CMAKE_CURRENT_SOURCE_DIR}/src")
-target_link_libraries(busrpc-obj
-    PUBLIC
-        protobuf::libprotobuf)
+target_include_directories(busrpc-obj PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src")
+target_link_libraries(busrpc-obj PUBLIC protobuf::libprotobuf)
+target_compile_features(busrpc-obj PUBLIC cxx_std_17)
 
 if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU" AND ${CMAKE_CXX_COMPILER_VERSION} VERSION_LESS "9.1")
-    target_link_libraries(objlib PRIVATE stdc++fs)
+    target_link_libraries(busrpc-obj PRIVATE stdc++fs)
 endif()
 
 target_link_libraries(busrpc PRIVATE busrpc-obj)
