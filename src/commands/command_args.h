@@ -19,8 +19,8 @@ using PosArgs = std::vector<std::string>;
 /// Command arguments.
 class CommandArgs {
 public:
-    /// Create arguments for \c help command.
-    CommandArgs();
+    /// Create arguments for command \a cmd.
+    CommandArgs(std::string cmd, NamedArgs namedArgs = {}, PosArgs posArgs = {});
 
     /// Create arguments from the command line.
     /// \throws args_error if command line has incorrect format (see notes)
@@ -49,6 +49,9 @@ public:
     const PosArgs& posArgs() const noexcept;
 
 private:
+
+    void handleRootArg(const std::optional<std::string>& value);
+
     std::string cmd_;
     std::filesystem::path root_;
     NamedArgs namedArgs_;

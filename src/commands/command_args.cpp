@@ -1,6 +1,18 @@
 #include "commands/command_args.h"
 
-CommandArgs::CommandArgs(): cmd_("help"), root_(std::filesystem::current_path()) { }
+CommandArgs::CommandArgs(std::string cmd, NamedArgs namedArgs, PosArgs posArgs):
+    cmd_(std::move(cmd)),
+    root_(std::filesystem::current_path()),
+    namedArgs_(std::move(namedArgs)),
+    posArgs_(std::move(posArgs))
+{
+    auto rootArgIter = namedArgs_.find("r");
+
+    if (rootArgIter != namedArgs_.end()) {
+        handleRootArg(rootArgIter->second);
+        namedArgs_.erase(rootArgIter);
+    }
+}
 
 CommandArgs::CommandArgs(const int argc, const char* argv[])
 {
@@ -32,15 +44,7 @@ CommandArgs::CommandArgs(const int argc, const char* argv[])
         if (key != "r") {
             namedArgs_[std::move(key)] = std::move(value);
         } else {
-            if (value) {
-                try {
-                    root_ = std::filesystem::path(*value);
-                } catch (const std::filesystem::filesystem_error&) {
-                    throw args_error("invalid busrpc root directory");
-                }
-            } else {
-                throw args_error("busrpc root directory is not specified");
-            }
+            handleRootArg(value);
         }
     }
 
@@ -69,4 +73,17 @@ const NamedArgs& CommandArgs::namedArgs() const noexcept
 const PosArgs& CommandArgs::posArgs() const noexcept
 {
     return posArgs_;
+}
+
+void CommandArgs::handleRootArg(const std::optional<std::string>& value)
+{
+    if (value) {
+        try {
+            root_ = std::filesystem::path(*value);
+        } catch (const std::filesystem::filesystem_error&) {
+            throw args_error("invalid busrpc root directory");
+        }
+    } else {
+        throw args_error("value for option '-r' is not specified");
+    }
 }

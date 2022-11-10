@@ -27,6 +27,7 @@ find_package(Protobuf REQUIRED)
 
 set(sources
     src/exception.h
+    src/commands/command.h
     src/commands/command_args.h
     src/commands/command_args.cpp)
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/src" FILES ${sources} src/main.cpp)
