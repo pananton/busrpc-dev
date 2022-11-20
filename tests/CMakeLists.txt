@@ -19,8 +19,13 @@ FetchContent_MakeAvailable(googletest)
 #----------------------------------------------------------------------------------------------------------------------
 
 set(sources
-    command_args_tests.cpp
-    utils/utils.h)
+    command_tests.cpp
+    check_command_tests.cpp
+    configure_command_tests.cpp
+    gendoc_command_tests.cpp
+    help_command_tests.cpp
+    imports_command_tests.cpp
+    version_command_tests.cpp)
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${sources})
 
 #----------------------------------------------------------------------------------------------------------------------
@@ -29,6 +34,10 @@ source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${sources})
 
 add_executable(busrpc-tests)
 target_sources(busrpc-tests PRIVATE ${sources})
+
+target_include_directories(busrpc-tests
+    PRIVATE
+        "${CMAKE_CURRENT_SOURCE_DIR}")
 
 target_link_libraries(busrpc-tests
     PRIVATE

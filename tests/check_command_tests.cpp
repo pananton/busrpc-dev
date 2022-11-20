@@ -1,0 +1,38 @@
+#include "commands/check/check_command.h"
+
+#include <gtest/gtest.h>
+
+namespace busrpc { namespace test {
+
+TEST(CheckCommandTest, Command_Name_And_Id_Are_Mapped_To_Each_Other)
+{
+    EXPECT_EQ(CommandId::Check, GetCommandId(GetCommandName(CommandId::Check)));
+    EXPECT_EQ(CheckCommand::Id, CommandId::Check);
+    EXPECT_STREQ(CheckCommand::Name, GetCommandName(CommandId::Check));
+}
+
+TEST(CheckCommandTest, Command_Error_Category_Name_Matches_Command_Name)
+{
+    EXPECT_STREQ(check_error_category().name(), GetCommandName(CommandId::Check));
+}
+
+TEST(CheckCommandTest,
+     Description_For_Unknown_Command_Error_Code_Exists_And_Differs_From_Known_Error_Codes_Descriptions)
+{
+    EXPECT_FALSE(check_error_category().message(0).empty());
+    EXPECT_NE(check_error_category().message(static_cast<int>(CheckErrc::Root_Not_Exists)),
+              check_error_category().message(0));
+    EXPECT_NE(check_error_category().message(static_cast<int>(CheckErrc::Invalid_Root)),
+              check_error_category().message(0));
+    EXPECT_NE(check_error_category().message(static_cast<int>(CheckErrc::File_Read_Error)),
+              check_error_category().message(0));
+    EXPECT_NE(check_error_category().message(static_cast<int>(CheckErrc::Protobuf_Syntax_Error)),
+              check_error_category().message(0));
+    EXPECT_NE(check_error_category().message(static_cast<int>(CheckErrc::Specification_Error)),
+              check_error_category().message(0));
+    EXPECT_NE(check_error_category().message(static_cast<int>(CheckErrc::Docs_Error)),
+              check_error_category().message(0));
+    EXPECT_NE(check_error_category().message(static_cast<int>(CheckErrc::Style_Error)),
+              check_error_category().message(0));
+}
+}} // namespace busrpc::test

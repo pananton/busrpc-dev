@@ -12,7 +12,8 @@
       "binaryDir": "${sourceDir}/build",
       "hidden": true,
       "cacheVariables": {
-        "BUSRPC_BUILD_TESTS": "ON"
+        "BUSRPC_BUILD_TESTS": "ON",
+        "BUSRPC_CLI11_VERSION": "2.3.1"
       }
     },
     {

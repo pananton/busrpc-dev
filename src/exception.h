@@ -1,16 +1,26 @@
 #pragma once
 
-#include <optional>
-#include <stdexcept>
+#include "commands/command_id.h"
 
-/// Base class for all application exceptions.
-class busrpc_error: public std::runtime_error {
-public:
-    using runtime_error::runtime_error;
-};
+#include <system_error>
 
-/// Command arguments parsing error.
-class args_error: public busrpc_error {
+/// \file exception.h Busrpc development tool exceptions.
+
+namespace busrpc {
+
+/// Command error.
+class command_error: public std::system_error {
 public:
-    using busrpc_error::busrpc_error;
+    /// Create command error.
+    command_error(CommandId command_id, std::error_code ec):
+        std::system_error(ec, GetCommandName(command_id)),
+        command_id_(command_id)
+    { }
+
+    /// Return failed command identifier.
+    CommandId command_id() const noexcept { return command_id_; }
+
+private:
+    CommandId command_id_;
 };
+} // namespace busrpc
