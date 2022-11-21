@@ -12,15 +12,15 @@ namespace busrpc {
 class command_error: public std::system_error {
 public:
     /// Create command error.
-    command_error(CommandId command_id, std::error_code ec):
-        std::system_error(ec, GetCommandName(command_id)),
-        command_id_(command_id)
+    command_error(CommandId commandId, std::error_code ec):
+        std::system_error(ec, GetCommandName(commandId)),
+        commandId_(commandId)
     { }
 
     /// Return failed command identifier.
-    CommandId command_id() const noexcept { return command_id_; }
+    CommandId commandId() const noexcept { return commandId_; }
 
 private:
-    CommandId command_id_;
+    CommandId commandId_;
 };
 } // namespace busrpc

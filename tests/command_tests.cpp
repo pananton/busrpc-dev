@@ -1,4 +1,5 @@
-#include "commands/command.h"
+#include "commands/imports/imports_command.h"
+#include "utils.h"
 
 #include <gtest/gtest.h>
 
@@ -8,17 +9,17 @@
 
 namespace busrpc { namespace test {
 
-constexpr CommandId TestCommandId = CommandId::Version;
+constexpr CommandId TestCommandId = CommandId::Imports;
 
 struct TestCommandArgs {
     std::string output = "";
     std::string error = "";
-    bool throws = false;
+    std::error_code result = {0, imports_error_category()};
 };
 
 bool operator==(const TestCommandArgs& lhs, const TestCommandArgs& rhs)
 {
-    return lhs.output == rhs.output && lhs.error == rhs.error && lhs.throws == rhs.throws;
+    return lhs.output == rhs.output && lhs.error == rhs.error && lhs.result == rhs.result;
 }
 
 bool operator!=(const TestCommandArgs& lhs, const TestCommandArgs& rhs)
@@ -31,10 +32,13 @@ public:
     using Base = Command<TestCommandId, TestCommandArgs>;
 
     TestCommand(TestCommandArgs args): Base(std::move(args)) { }
+    bool isExecuted() const { return isExecuted_; }
 
 protected:
-    std::error_code executeImpl(std::ostream& out, std::ostream& err) const override
+    std::error_code tryExecuteImpl(std::ostream& out, std::ostream& err) const override
     {
+        isExecuted_ = true;
+
         if (!args().output.empty()) {
             out << args().output;
         }
@@ -43,12 +47,11 @@ protected:
             err << args().error;
         }
 
-        if (args().throws) {
-            throw std::runtime_error("expected");
-        }
-
-        return {0, std::generic_category()};
+        return args().result;
     }
+
+private:
+    mutable bool isExecuted_ = false;
 };
 
 TEST(CommandTest, Get_Command_Name_Returns_Nullptr_For_Unknown_Command)
@@ -63,21 +66,43 @@ TEST(CommandTest, Get_Command_Id_Returns_Zero_For_Unknown_Command_Name)
 
 TEST(CommandTest, Command_Error_Category_Is_command)
 {
-    EXPECT_EQ(command_error_category().name(), "command");
+    EXPECT_STREQ(command_error_category().name(), "command");
 }
 
-TEST(CommandTest, Description_For_Unknown_Command_Error_Code_Exists_And_Differs_From_Known_Error_Codes_Descriptions)
+TEST(CommandTest, Command_Error_Ctor_Sets_Command_Id)
+{
+    EXPECT_EQ(command_error(TestCommand::Id, ImportsErrc::Non_Existent_Root_Error).commandId(), TestCommand::Id);
+}
+
+TEST(CommandTest, Command_Error_Ctor_Sets_Error_Code)
+{
+    EXPECT_EQ(command_error(TestCommand::Id, ImportsErrc::Non_Existent_Root_Error).code(),
+              ImportsErrc::Non_Existent_Root_Error);
+}
+
+TEST(CommandTest, Command_Error_Ctor_Adds_Command_Name_To_Error_Description)
+{
+    command_error err(TestCommand::Id, ImportsErrc::Non_Existent_Root_Error);
+
+    EXPECT_NE(std::string_view(err.what()).find(GetCommandName(TestCommand::Id)), std::string_view::npos);
+}
+
+TEST(CommandTest, Description_For_Unknown_Command_Error_Condition_Is_Not_Empty)
 {
     EXPECT_FALSE(command_error_category().message(0).empty());
-    EXPECT_NE(command_error_category().message(static_cast<int>(CommandError::Internal)),
+}
+
+TEST(CommandTest, Description_For_Unknown_Command_Error_Condition_Differs_From_Known_Error_Conditions_Descriptions)
+{
+    EXPECT_NE(command_error_category().message(static_cast<int>(CommandError::Argument_Error)),
               command_error_category().message(0));
-    EXPECT_NE(command_error_category().message(static_cast<int>(CommandError::Logic)),
+    EXPECT_NE(command_error_category().message(static_cast<int>(CommandError::Logic_Error)),
               command_error_category().message(0));
-    EXPECT_NE(command_error_category().message(static_cast<int>(CommandError::Invalid_Argument)),
+    EXPECT_NE(command_error_category().message(static_cast<int>(CommandError::Protobuf_Error)),
               command_error_category().message(0));
-    EXPECT_NE(command_error_category().message(static_cast<int>(CommandError::File_Operation_Failed)),
+    EXPECT_NE(command_error_category().message(static_cast<int>(CommandError::File_Access_Error)),
               command_error_category().message(0));
-    EXPECT_NE(command_error_category().message(static_cast<int>(CommandError::Protobuf_Syntax_Error)),
+    EXPECT_NE(command_error_category().message(static_cast<int>(CommandError::Internal_Error)),
               command_error_category().message(0));
 }
 
@@ -91,62 +116,103 @@ TEST(CommandTest, Command_Ctor_Sets_Command_Id_And_Name)
 
 TEST(CommandTest, Command_Ctor_Sets_Args)
 {
-    TestCommandArgs args{"hello", "error occurred", false};
+    TestCommandArgs args{"hello", "error occurred"};
 
     EXPECT_EQ(TestCommand(args).args(), args);
 }
 
-TEST(CommandTest, Output_And_Error_Streams_Are_Passed_To_Execute_Implementation)
+TEST(CommandTest, Specified_Output_And_Error_Streams_Are_Passed_To_Implementation)
 {
     std::string output = "hello";
     std::string error = "error";
-    TestCommand cmd({output, error, false});
+    TestCommand cmd({output, error});
     std::ostringstream out, err;
 
-    ASSERT_NO_THROW(cmd.execute(out, err));
+    EXPECT_NO_THROW(cmd.execute(out, err));
+    EXPECT_EQ(out.str(), output);
+    EXPECT_EQ(err.str(), error);
+
+    out.str("");
+    err.str("");
+
+    EXPECT_FALSE(cmd.tryExecute(out, err));
     EXPECT_EQ(out.str(), output);
     EXPECT_EQ(err.str(), error);
 }
 
-TEST(CommandTest, Same_Stream_Can_Be_Used_For_Output_And_Error_In_Execute)
+TEST(CommandTest, Same_Stream_Can_Be_Used_For_Output_And_Error)
 {
     std::string output = "hello";
     std::string error = "error";
-    TestCommand cmd({output, error, false});
+    TestCommand cmd({output, error});
     std::ostringstream out;
 
-    ASSERT_NO_THROW(cmd.execute(out, out));
+    EXPECT_NO_THROW(cmd.execute(out, out));
+    EXPECT_EQ(out.str(), output + error);
+
+    out.str("");
+
+    EXPECT_FALSE(cmd.tryExecute(out, out));
     EXPECT_EQ(out.str(), output + error);
 }
 
-TEST(CommandTest, Execute_Implementation_Is_Invoked_When_Output_Stream_Is_Not_Set)
+TEST(CommandTest, Command_Is_Executed_Even_If_Output_Stream_Is_Not_Set)
 {
     std::string output = "hello";
     std::string error = "error";
-    TestCommand cmd({output, error, false});
+    TestCommand cmd({output, error});
     std::ostringstream err;
 
-    ASSERT_NO_THROW(cmd.execute(std::nullopt, err));
+    EXPECT_NO_THROW(cmd.execute(std::nullopt, err));
     EXPECT_EQ(err.str(), error);
+    EXPECT_TRUE(cmd.isExecuted());
+
+    cmd = TestCommand({output, error});
+    err.str("");
+
+    EXPECT_FALSE(cmd.tryExecute(std::nullopt, err));
+    EXPECT_EQ(err.str(), error);
+    EXPECT_TRUE(cmd.isExecuted());
 }
 
-TEST(CommandTest, Execute_Implementation_Is_Invoked_When_Error_Stream_Is_Not_Set)
+TEST(CommandTest, Command_Is_Executed_Even_If_Error_Stream_Is_Not_Set)
 {
     std::string output = "hello";
     std::string error = "error";
-    TestCommand cmd({output, error, false});
+    TestCommand cmd({output, error});
     std::ostringstream out;
 
-    ASSERT_NO_THROW(cmd.execute(out, std::nullopt));
+    EXPECT_NO_THROW(cmd.execute(out, std::nullopt));
     EXPECT_EQ(out.str(), output);
+    EXPECT_TRUE(cmd.isExecuted());
+
+    cmd = TestCommand({output, error});
+    out.str("");
+
+    EXPECT_FALSE(cmd.tryExecute(out, std::nullopt));
+    EXPECT_EQ(out.str(), output);
+    EXPECT_TRUE(cmd.isExecuted());
 }
 
-TEST(CommandTest, Execute_Implementation_Is_Invoked_When_Both_Streams_Are_Not_Set)
+TEST(CommandTest, Command_Is_Executed_Even_If_Output_And_Error_Streams_Are_Not_Set)
 {
     std::string output = "hello";
     std::string error = "error";
-    TestCommand cmd({output, error, true});
+    TestCommand cmd({output, error});
 
-    ASSERT_THROW(cmd.execute(std::nullopt, std::nullopt), std::runtime_error);
+    EXPECT_NO_THROW(cmd.execute(std::nullopt, std::nullopt));
+    EXPECT_TRUE(cmd.isExecuted());
+
+    cmd = TestCommand({output, error});
+
+    EXPECT_FALSE(cmd.tryExecute(std::nullopt, std::nullopt));
+    EXPECT_TRUE(cmd.isExecuted());
+}
+
+TEST(CommandTest, Execute_Throws_Command_Error_If_Command_Fails)
+{
+    TestCommand cmd({"", "", ImportsErrc::File_Read_Error});
+
+    EXPECT_COMMAND_EXCEPTION(cmd.execute(std::nullopt, std::nullopt), ImportsErrc::File_Read_Error);
 }
 }} // namespace busrpc::test

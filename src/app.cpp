@@ -1,4 +1,5 @@
 #include "app.h"
+#include "configure.h"
 #include "commands/check/check_command.h"
 #include "commands/configure/configure_command.h"
 #include "commands/gendoc/gendoc_command.h"
@@ -9,6 +10,10 @@
 #include <CLI/CLI.hpp>
 
 #include <cassert>
+#include <set>
+#include <sstream>
+#include <string>
+#include <vector>
 
 namespace {
 
@@ -29,25 +34,31 @@ struct HelpOptions {
     std::string commandName = "";
 };
 
+template<typename TCommand>
+auto CreateInvoker(std::ostream& out, std::ostream& err)
+{
+    return [&out, &err](typename TCommand::ArgsType args) { TCommand(std::move(args)).execute(out, err); };
+}
+
 // Functions to add common options to CLI:App
 
 void AddRootOption(CLI::App& app, std::string& root)
 {
-    app.add_option("-r,--root", root, "busrpc root directory (parent of 'api/' and 'services/' directories)")
+    app.add_option("-r,--root", root, "Busrpc root directory (parent of the 'api/' and 'services/' directories)")
         ->envname("BUSRPC_ROOT_DIR")
         ->check(CLI::ExistingDirectory);
-}
-
-void AddInputFilesPositionalOption(CLI::App& app, std::vector<std::string>& files)
-{
-    app.add_option("files", files, "Input files (should be specified relatively to the root directory)")
-        ->check(CLI::ExistingFile);
 }
 
 void AddOutputDirOption(CLI::App& app, std::string& outputDir)
 {
     app.add_option("-d,--output-dir", outputDir, "Output directory");
 }
+
+void AddProtobufFilesPositionalOption(CLI::App& app, std::vector<std::string>& files)
+{
+    app.add_option("files", files, "Protobuf files")->check(CLI::ExistingFile);
+}
+
 } // namespace
 
 namespace busrpc {
@@ -60,13 +71,11 @@ void DefineCommand(CLI::App& app, const std::function<void(CheckArgs)>& callback
     app.description("Check API for conformance to the busrpc specification");
     app.final_callback([callback, argsPtr]() { callback({std::move(*argsPtr)}); });
 
-    app.add_flag("--skip-docs", argsPtr->skip_docs_checks, "Do not check API for documentation availability");
-    app.add_flag("--skip-style",
-                 argsPtr->skip_style_checks,
-                 "Do not check API for conformance to recommended protobuf style guide");
-    app.add_flag("-w,--warning-as-error", argsPtr->warning_as_error, "Treat warnings as errors");
-
     AddRootOption(app, argsPtr->rootDir);
+
+    app.add_flag("--skip-docs", argsPtr->skip_docs_checks, "Skip API documentation checks");
+    app.add_flag("--skip-style", argsPtr->skip_style_checks, "Skip API protobuf style checks");
+    app.add_flag("-w,--warning-as-error", argsPtr->warning_as_error, "Treat warnings as errors");
 }
 
 void DefineCommand(CLI::App& app, const std::function<void(ConfigureArgs)>& callback)
@@ -74,7 +83,8 @@ void DefineCommand(CLI::App& app, const std::function<void(ConfigureArgs)>& call
     assert(callback);
 
     auto optsPtr = std::make_shared<ConfigureOptions>();
-    app.description("Configure protocol files for target language");
+    app.description("Configure protobuf files for target language");
+    app.positionals_at_end(true);
     app.final_callback([callback, optsPtr]() {
         ConfigureLang lang = static_cast<ConfigureLang>(0);
 
@@ -90,12 +100,10 @@ void DefineCommand(CLI::App& app, const std::function<void(ConfigureArgs)>& call
     app.add_option("--lang", optsPtr->lang, "Target language")
         ->required(true)
         ->check(CLI::IsMember(std::set<std::string>{GetConfigureLangStr(ConfigureLang::Golang)}));
-    app.add_option("files", optsPtr->files, "Files to configure (should be specified relatively to the root directory)")
-        ->check(CLI::ExistingFile);
 
     AddRootOption(app, optsPtr->rootDir);
     AddOutputDirOption(app, optsPtr->outputDir);
-    AddInputFilesPositionalOption(app, optsPtr->files);
+    AddProtobufFilesPositionalOption(app, optsPtr->files);
 }
 
 void DefineCommand(CLI::App& app, const std::function<void(GenDocArgs)>& callback)
@@ -156,12 +164,10 @@ void DefineCommand(CLI::App& app, const std::function<void(ImportsArgs)>& callba
     auto argsPtr = std::make_shared<ImportsArgs>();
     app.description("Output files directly or indirectly imported by the specified file(s)");
     app.final_callback([callback, argsPtr]() { callback({std::move(*argsPtr)}); });
+    app.positionals_at_end(true);
 
-    app.add_option("files",
-                   argsPtr->files,
-                   "Files which dependencies to output (should be specified relatively to the root directory)")
-        ->check(CLI::ExistingFile);
     AddRootOption(app, argsPtr->rootDir);
+    AddProtobufFilesPositionalOption(app, argsPtr->files);
 }
 
 void DefineCommand(CLI::App& app, const std::function<void(VersionArgs)>& callback)
@@ -170,5 +176,23 @@ void DefineCommand(CLI::App& app, const std::function<void(VersionArgs)>& callba
 
     app.description("Show version information");
     app.final_callback([callback]() { callback({}); });
+}
+
+void InitApp(CLI::App& app, std::ostream& out, std::ostream& err)
+{
+    app.set_version_flag("-v,--version", []() {
+        std::ostringstream out;
+        VersionCommand({}).execute(out, std::nullopt);
+        return out.str();
+    });
+
+    DefineCommand(*app.add_subcommand(GetCommandName(CommandId::Check)), CreateInvoker<CheckCommand>(out, err));
+    DefineCommand(*app.add_subcommand(GetCommandName(CommandId::Configure)), CreateInvoker<ConfigureCommand>(out, err));
+    DefineCommand(*app.add_subcommand(GetCommandName(CommandId::GenDoc)), CreateInvoker<GenDocCommand>(out, err));
+    DefineCommand(*app.add_subcommand(GetCommandName(CommandId::Help)), CreateInvoker<HelpCommand>(out, err));
+    DefineCommand(*app.add_subcommand(GetCommandName(CommandId::Imports)), CreateInvoker<ImportsCommand>(out, err));
+    DefineCommand(*app.add_subcommand(GetCommandName(CommandId::Version)), CreateInvoker<VersionCommand>(out, err));
+
+    app.require_subcommand(0, 1);
 }
 } // namespace busrpc

@@ -16,8 +16,7 @@ TEST(HelpCommandTest, Command_Error_Category_Name_Matches_Command_Name)
     EXPECT_STREQ(help_error_category().name(), GetCommandName(CommandId::Help));
 }
 
-TEST(HelpCommandTest,
-     Description_For_Unknown_Command_Error_Code_Exists_And_Differs_From_Known_Error_Codes_Descriptions)
+TEST(HelpCommandTest, Description_For_Unknown_Command_Error_Code_Is_Not_Empty)
 {
     EXPECT_FALSE(help_error_category().message(0).empty());
 }

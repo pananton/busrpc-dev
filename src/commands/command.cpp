@@ -27,7 +27,7 @@ void CommandBase::execute(std::optional<std::reference_wrapper<std::ostream>> ou
 {
     auto ec = tryExecute(std::move(out), std::move(err));
 
-    if (!ec) {
+    if (ec) {
         throw command_error(id_, ec);
     }
 }

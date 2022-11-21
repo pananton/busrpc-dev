@@ -16,17 +16,34 @@ TEST(GenDocCommandTest, Command_Error_Category_Name_Matches_Command_Name)
     EXPECT_STREQ(gendoc_error_category().name(), GetCommandName(CommandId::GenDoc));
 }
 
-TEST(GenDocCommandTest,
-     Description_For_Unknown_Command_Error_Code_Exists_And_Differs_From_Known_Error_Codes_Descriptions)
+TEST(GenDocCommandTest, Description_For_Unknown_Command_Error_Code_Is_Not_Empty)
 {
     EXPECT_FALSE(gendoc_error_category().message(0).empty());
+}
+
+TEST(GenDocCommandTest, Description_For_Unknown_Command_Error_Code_Differs_From_Known_Error_Codes_Descriptions)
+{
+    EXPECT_NE(gendoc_error_category().message(static_cast<int>(GenDocErrc::Non_Existent_Root_Error)),
+              gendoc_error_category().message(0));
+    EXPECT_NE(gendoc_error_category().message(static_cast<int>(GenDocErrc::Specification_Error)),
+              gendoc_error_category().message(0));
+    EXPECT_NE(gendoc_error_category().message(static_cast<int>(GenDocErrc::Protobuf_Error)),
+              gendoc_error_category().message(0));
     EXPECT_NE(gendoc_error_category().message(static_cast<int>(GenDocErrc::Create_Output_Dir_Error)),
               gendoc_error_category().message(0));
-    EXPECT_NE(gendoc_error_category().message(static_cast<int>(GenDocErrc::Read_Error)),
+    EXPECT_NE(gendoc_error_category().message(static_cast<int>(GenDocErrc::File_Read_Error)),
               gendoc_error_category().message(0));
-    EXPECT_NE(gendoc_error_category().message(static_cast<int>(GenDocErrc::Protobuf_Syntax_Error)),
+    EXPECT_NE(gendoc_error_category().message(static_cast<int>(GenDocErrc::File_Write_Error)),
               gendoc_error_category().message(0));
-    EXPECT_NE(gendoc_error_category().message(static_cast<int>(GenDocErrc::Write_Error)),
-              gendoc_error_category().message(0));
+}
+
+TEST(GenDocCommandTest, Error_Codes_Are_Mapped_To_Appropriate_Error_Conditions)
+{
+    EXPECT_EQ(std::error_code(GenDocErrc::Non_Existent_Root_Error), CommandError::Argument_Error);
+    EXPECT_EQ(std::error_code(GenDocErrc::Specification_Error), CommandError::Logic_Error);
+    EXPECT_EQ(std::error_code(GenDocErrc::Protobuf_Error), CommandError::Protobuf_Error);
+    EXPECT_EQ(std::error_code(GenDocErrc::Create_Output_Dir_Error), CommandError::File_Access_Error);
+    EXPECT_EQ(std::error_code(GenDocErrc::File_Read_Error), CommandError::File_Access_Error);
+    EXPECT_EQ(std::error_code(GenDocErrc::File_Write_Error), CommandError::File_Access_Error);
 }
 }} // namespace busrpc::test
