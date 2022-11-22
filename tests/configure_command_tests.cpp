@@ -1,6 +1,12 @@
 #include "commands/configure/configure_command.h"
+#include "commands/help/help_command.h"
+#include "app.h"
+#include "utils.h"
 
+#include <CLI/CLI.hpp>
 #include <gtest/gtest.h>
+
+#include <sstream>
 
 namespace busrpc { namespace test {
 
@@ -45,5 +51,15 @@ TEST(ConfigureCommandTest, Error_Codes_Are_Mapped_To_Appropriate_Error_Condition
     EXPECT_EQ(std::error_code(ConfigureErrc::Create_Output_Dir_Error), CommandError::File_Access_Error);
     EXPECT_EQ(std::error_code(ConfigureErrc::File_Read_Error), CommandError::File_Access_Error);
     EXPECT_EQ(std::error_code(ConfigureErrc::File_Write_Error), CommandError::File_Access_Error);
+}
+
+TEST(ConfigureCommandTest, Help_Is_Defined_For_The_Command)
+{
+    HelpCommand helpCmd({CommandId::Configure});
+    std::ostringstream out, err;
+
+    EXPECT_NO_THROW(helpCmd.execute(out, err));
+    EXPECT_TRUE(IsHelpMessage(out.str(), CommandId::Configure));
+    EXPECT_TRUE(err.str().empty());
 }
 }} // namespace busrpc::test

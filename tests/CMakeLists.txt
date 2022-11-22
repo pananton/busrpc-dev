@@ -26,6 +26,7 @@ set(sources
     help_command_tests.cpp
     imports_command_tests.cpp
     utils.h
+    utils.cpp
     version_command_tests.cpp)
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${sources})
 

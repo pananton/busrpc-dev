@@ -1,4 +1,7 @@
 #include "commands/help/help_command.h"
+#include "app.h"
+
+#include <CLI/CLI.hpp>
 
 #include <string>
 
@@ -13,9 +16,15 @@ public:
 };
 } // namespace
 
-std::error_code HelpCommand::tryExecuteImpl(std::ostream&, std::ostream&) const
+std::error_code HelpCommand::tryExecuteImpl(std::ostream& out, std::ostream&) const
 {
-    return {0, help_error_category()};
+    CLI::App app;
+    InitApp(app);
+    const char* commandName = args().commandId ? GetCommandName(*(args().commandId)) : nullptr;
+    CLI::App* appCommand = commandName ? app.get_subcommand(commandName) : &app;
+
+    out << appCommand->help() << std::endl;
+    return std::error_code(0, help_error_category());
 }
 
 const std::error_category& help_error_category()

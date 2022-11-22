@@ -1,6 +1,12 @@
 #include "commands/imports/imports_command.h"
+#include "commands/help/help_command.h"
+#include "app.h"
+#include "utils.h"
 
+#include <CLI/CLI.hpp>
 #include <gtest/gtest.h>
+
+#include <sstream>
 
 namespace busrpc { namespace test {
 
@@ -39,5 +45,15 @@ TEST(ImportsCommandTest, Error_Codes_Are_Mapped_To_Appropriate_Error_Conditions)
     EXPECT_EQ(std::error_code(ImportsErrc::File_Not_Found), CommandError::Argument_Error);
     EXPECT_EQ(std::error_code(ImportsErrc::Protobuf_Error), CommandError::Protobuf_Error);
     EXPECT_EQ(std::error_code(ImportsErrc::File_Read_Error), CommandError::File_Access_Error);
+}
+
+TEST(ImportsCommandTest, Help_Is_Defined_For_The_Command)
+{
+    HelpCommand helpCmd({CommandId::Imports});
+    std::ostringstream out, err;
+
+    EXPECT_NO_THROW(helpCmd.execute(out, err));
+    EXPECT_TRUE(IsHelpMessage(out.str(), CommandId::Imports));
+    EXPECT_TRUE(err.str().empty());
 }
 }} // namespace busrpc::test

@@ -1,6 +1,12 @@
 #include "commands/check/check_command.h"
+#include "commands/help/help_command.h"
+#include "app.h"
+#include "utils.h"
 
+#include <CLI/CLI.hpp>
 #include <gtest/gtest.h>
+
+#include <sstream>
 
 namespace busrpc { namespace test {
 
@@ -45,5 +51,15 @@ TEST(CheckCommandTest, Error_Codes_Are_Mapped_To_Appropriate_Error_Conditions)
     EXPECT_EQ(std::error_code(CheckErrc::Style_Error), CommandError::Logic_Error);
     EXPECT_EQ(std::error_code(CheckErrc::Protobuf_Error), CommandError::Protobuf_Error);
     EXPECT_EQ(std::error_code(CheckErrc::File_Read_Error), CommandError::File_Access_Error);
+}
+
+TEST(CheckCommandTest, Help_Is_Defined_For_The_Command)
+{
+    HelpCommand helpCmd({CommandId::Check});
+    std::ostringstream out, err;
+
+    EXPECT_NO_THROW(helpCmd.execute(out, err));
+    EXPECT_TRUE(IsHelpMessage(out.str(), CommandId::Check));
+    EXPECT_TRUE(err.str().empty());
 }
 }} // namespace busrpc::test
