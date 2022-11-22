@@ -24,7 +24,7 @@ std::error_code HelpCommand::tryExecuteImpl(std::ostream& out, std::ostream&) co
     CLI::App* appCommand = commandName ? app.get_subcommand(commandName) : &app;
 
     out << appCommand->help() << std::endl;
-    return std::error_code(0, help_error_category());
+    return {0, help_error_category()};
 }
 
 const std::error_category& help_error_category()

@@ -13,7 +13,11 @@
       "hidden": true,
       "cacheVariables": {
         "BUSRPC_BUILD_TESTS": "ON",
-        "BUSRPC_CLI11_VERSION": "2.3.1"
+        "BUSRPC_USE_EXTERNAL_CLI11": "OFF",
+        "BUSRPC_USE_EXTERNAL_PROTOBUF": "OFF",
+        "BUSRPC_CLI11_TAG": "c2ea58c7f9bb2a1da2d3d7f5b462121ac6a07f16",    // v2.3.1
+        "BUSRPC_PROTOBUF_TAG": "90b73ac3f0b10320315c2ca0d03a5a9b095d2f66", // v21.9
+        "BUSRPC_GTEST_TAG": "58d77fa8070e8cec2dc1ed015d66b454c8d78850"     // v1.12.1
       }
     },
     {
@@ -22,7 +26,7 @@
       "hidden": false,
       "inherits": ["dev"],
       "cacheVariables": {
-        "CMAKE_CXX_FLAGS": "/W4 /EHsc /w14242 /w14254 /w14263 /w14265 /w14287 /w14289 /w14296 /w14311 /w14545 /w14546 /w14547 /w14549 /w14555 /w14640 /w14826 /w14928 /WX"
+        "BUSRPC_WARNINGS": "/W4 /EHsc /w14242 /w14254 /w14263 /w14265 /w14287 /w14289 /w14296 /w14311 /w14545 /w14546 /w14547 /w14549 /w14555 /w14640 /w14826 /w14928 /WX"
       }
     },
     {
@@ -31,7 +35,7 @@
       "hidden": false,
       "inherits": ["dev"],
       "cacheVariables": {
-        "CMAKE_CXX_FLAGS": "-Wall -Wextra -Wpedantic -Wshadow -Wconversion -Wsign-conversion -Wcast-align -Wcast-qual -Wnull-dereference -Woverloaded-virtual -Wformat=2 -Werror"
+        "BUSRPC_WARNINGS": "-Wall -Wextra -Wpedantic -Wshadow -Wconversion -Wsign-conversion -Wcast-align -Wcast-qual -Wnull-dereference -Woverloaded-virtual -Wformat=2 -Werror"
       }
     }
   ]

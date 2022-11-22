@@ -2,17 +2,13 @@
 # testing framework
 #----------------------------------------------------------------------------------------------------------------------
 
-include(FetchContent)
-FetchContent_Declare(googletest URL https://github.com/google/googletest/archive/refs/tags/release-1.12.1.tar.gz)
+if(NOT DEFINED BUSRPC_GTEST_TAG)
+    set(BUSRPC_GTEST_TAG 58d77fa8070e8cec2dc1ed015d66b454c8d78850 # v1.12.1
+        CACHE STRING "Tag or commit hash of GTest testing framework to be fetched" FORCE)
+endif()
 
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE) # do not override parent project's runtime settings on Windows
-set(INSTALL_GTEST OFF)
-
-# For simplicity, always build googletest as static library. This prevents mylib-tests executable from
-# complaining about missing googletest DLLs on Windows.
-set(BUILD_SHARED_LIBS OFF)
-
-FetchContent_MakeAvailable(googletest)
+include("${PROJECT_SOURCE_DIR}/cmake/FetchGtest.cmake")
+fetch_gtest(${BUSRPC_GTEST_TAG})
 
 #----------------------------------------------------------------------------------------------------------------------
 # tests sources

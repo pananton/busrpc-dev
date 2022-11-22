@@ -1,11 +1,11 @@
 #include "app.h"
-#include "configure.h"
 #include "commands/check/check_command.h"
 #include "commands/configure/configure_command.h"
 #include "commands/gendoc/gendoc_command.h"
 #include "commands/help/help_command.h"
 #include "commands/imports/imports_command.h"
 #include "commands/version/version_command.h"
+#include "configure.h"
 
 #include <CLI/CLI.hpp>
 

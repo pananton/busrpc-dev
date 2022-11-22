@@ -9,9 +9,17 @@ project(busrpc-dev
 #----------------------------------------------------------------------------------------------------------------------
 
 option(BUSRPC_BUILD_TESTS "Build busrpc development tool tests" OFF)
+option(BUSRPC_USE_EXTERNAL_CLI11 "Use external CLI11 library" OFF)
+option(BUSRPC_USE_EXTERNAL_PROTOBUF "User external protobuf library" OFF)
 
-if(NOT DEFINED BUSRPC_CLI11_VERSION)
-    set(BUSRPC_CLI11_VERSION 2.3.1 CACHE STRING "Version of CLI11 library to be used by busrpc development tool" FORCE)
+if(NOT BUSRPC_USE_EXTERNAL_CLI11 AND NOT DEFINED BUSRPC_CLI11_TAG)
+    set(BUSRPC_CLI11_TAG c2ea58c7f9bb2a1da2d3d7f5b462121ac6a07f16 # v2.3.1
+        CACHE STRING "Tag or commit hash of CLI11 library to be fetched" FORCE)
+endif()
+
+if(NOT BUSRPC_USE_EXTERNAL_PROTOBUF AND NOT DEFINED BUSRPC_PROTOBUF_TAG)
+    set(BUSRPC_PROTOBUF_TAG 90b73ac3f0b10320315c2ca0d03a5a9b095d2f66 # v21.9
+        CACHE STRING "Tag or commit hash of Protobuf library to be fetched" FORCE)
 endif()
 
 if(NOT DEFINED CMAKE_BUILD_TYPE AND NOT DEFINED CMAKE_CONFIGURATION_TYPES)
@@ -23,14 +31,19 @@ endif()
 # dependencies
 #----------------------------------------------------------------------------------------------------------------------
 
-include(FetchContent)
+if(NOT BUSRPC_USE_EXTERNAL_CLI11)
+    include("cmake/FetchCLI11.cmake")
+    fetch_cli11(${BUSRPC_CLI11_TAG})
+else()
+    find_package(CLI11 CONFIG REQUIRED)
+endif()
 
-FetchContent_Declare(
-    cli11
-    GIT_REPOSITORY https://github.com/CLIUtils/CLI11
-    GIT_TAG        v${BUSRPC_CLI11_VERSION})
-
-FetchContent_MakeAvailable(cli11)
+if(NOT BUSRPC_USE_EXTERNAL_PROTOBUF)
+    include("cmake/FetchProtobuf.cmake")
+    fetch_protobuf(${BUSRPC_PROTOBUF_TAG})
+else()
+    find_package(Protobuf REQUIRED)
+endif()
 
 #----------------------------------------------------------------------------------------------------------------------
 # sources
@@ -68,6 +81,9 @@ add_executable(busrpc src/main.cpp)
 
 target_compile_features(busrpc-obj PUBLIC cxx_std_20)
 
+separate_arguments(warnings NATIVE_COMMAND "${BUSRPC_WARNINGS}")
+target_compile_options(busrpc-obj PUBLIC ${warnings})
+
 target_include_directories(busrpc-obj
     PUBLIC
         "${CMAKE_CURRENT_SOURCE_DIR}/src"
@@ -75,7 +91,8 @@ target_include_directories(busrpc-obj
 
 target_link_libraries(busrpc-obj
     PUBLIC
-        CLI11::CLI11)
+        CLI11::CLI11
+        protobuf::libprotobuf)
 
 if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU" AND ${CMAKE_CXX_COMPILER_VERSION} VERSION_LESS "9.1")
     target_link_libraries(busrpc-obj PRIVATE stdc++fs)
