@@ -27,7 +27,7 @@ TEST(ErrorCollectorTest, Final_Error_Code_Indicates_Success_If_No_Errors_Were_Ad
 {
     ErrorCollector col(check_error_category());
 
-    EXPECT_FALSE(col.finalError());
+    EXPECT_FALSE(col.result());
 }
 
 TEST(ErrorCollectorTest, Default_Description_Is_Outputted_To_Error_Stream_When_Error_Is_Added)
@@ -56,13 +56,13 @@ TEST(ErrorCollectorTest, Error_Code_With_Smallest_Value_Is_Used_As_Final)
     ErrorCollector col(check_error_category(), err);
 
     EXPECT_NO_THROW(col.add(CheckErrc::File_Read_Error));
-    EXPECT_EQ(col.finalError(), CheckErrc::File_Read_Error);
+    EXPECT_EQ(col.result(), CheckErrc::File_Read_Error);
     EXPECT_NO_THROW(col.add(CheckErrc::Docs_Error));
-    EXPECT_EQ(col.finalError(), CheckErrc::Docs_Error);
+    EXPECT_EQ(col.result(), CheckErrc::Docs_Error);
     EXPECT_NO_THROW(col.add(CheckErrc::Style_Error));
-    EXPECT_EQ(col.finalError(), CheckErrc::Docs_Error);
+    EXPECT_EQ(col.result(), CheckErrc::Docs_Error);
     EXPECT_NO_THROW(col.add(CheckErrc::Non_Existent_Root_Error));
-    EXPECT_EQ(col.finalError(), CheckErrc::Non_Existent_Root_Error);
+    EXPECT_EQ(col.result(), CheckErrc::Non_Existent_Root_Error);
 }
 
 TEST(ErrorCollectorTest, Success_Code_Is_Ignored)
@@ -71,12 +71,12 @@ TEST(ErrorCollectorTest, Success_Code_Is_Ignored)
     ErrorCollector col(check_error_category(), err);
 
     EXPECT_NO_THROW(col.add(CheckErrc::Docs_Error));
-    EXPECT_EQ(col.finalError(), CheckErrc::Docs_Error);
+    EXPECT_EQ(col.result(), CheckErrc::Docs_Error);
 
     err.str("");
 
     EXPECT_NO_THROW(col.add({0, check_error_category()}));
-    EXPECT_EQ(col.finalError(), CheckErrc::Docs_Error);
+    EXPECT_EQ(col.result(), CheckErrc::Docs_Error);
     EXPECT_TRUE(err.str().empty());
 }
 
@@ -86,12 +86,12 @@ TEST(ErrorCollectorTest, Error_Code_With_Distinct_Category_Is_Ignored)
     ErrorCollector col(check_error_category(), err);
 
     EXPECT_NO_THROW(col.add(CheckErrc::Docs_Error));
-    EXPECT_EQ(col.finalError(), CheckErrc::Docs_Error);
+    EXPECT_EQ(col.result(), CheckErrc::Docs_Error);
 
     err.str("");
 
     EXPECT_NO_THROW(col.add(ConfigureErrc::Non_Existent_Root_Error));
-    EXPECT_EQ(col.finalError(), CheckErrc::Docs_Error);
+    EXPECT_EQ(col.result(), CheckErrc::Docs_Error);
     EXPECT_TRUE(err.str().empty());
 }
 
@@ -102,12 +102,12 @@ TEST(ErrorCollectorTest, Description_For_Error_Code_With_Higher_Value_Than_Curre
     ErrorCollector col(check_error_category(), err);
 
     EXPECT_NO_THROW(col.add(CheckErrc::Docs_Error));
-    EXPECT_EQ(col.finalError(), CheckErrc::Docs_Error);
+    EXPECT_EQ(col.result(), CheckErrc::Docs_Error);
 
     err.str("");
 
     EXPECT_NO_THROW(col.add(CheckErrc::Protobuf_Error, msg));
-    EXPECT_EQ(col.finalError(), CheckErrc::Docs_Error);
+    EXPECT_EQ(col.result(), CheckErrc::Docs_Error);
     EXPECT_EQ(err.str().find(check_error_category().message(static_cast<int>(CheckErrc::Protobuf_Error))), 0);
     EXPECT_NE(err.str().find(msg), std::string::npos);
 }

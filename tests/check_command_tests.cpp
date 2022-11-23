@@ -1,6 +1,6 @@
+#include "app.h"
 #include "commands/check/check_command.h"
 #include "commands/help/help_command.h"
-#include "app.h"
 #include "utils.h"
 
 #include <CLI/CLI.hpp>
@@ -29,28 +29,28 @@ TEST(CheckCommandTest, Description_For_Unknown_Command_Error_Code_Is_Not_Empty)
 
 TEST(CheckCommandTest, Description_For_Unknown_Command_Error_Code_Differs_From_Known_Error_Codes_Descriptions)
 {
-    EXPECT_NE(check_error_category().message(static_cast<int>(CheckErrc::Non_Existent_Root_Error)),
-              check_error_category().message(0));
-    EXPECT_NE(check_error_category().message(static_cast<int>(CheckErrc::Specification_Error)),
-              check_error_category().message(0));
-    EXPECT_NE(check_error_category().message(static_cast<int>(CheckErrc::Docs_Error)),
-              check_error_category().message(0));
-    EXPECT_NE(check_error_category().message(static_cast<int>(CheckErrc::Style_Error)),
+    EXPECT_NE(check_error_category().message(static_cast<int>(CheckErrc::File_Read_Error)),
               check_error_category().message(0));
     EXPECT_NE(check_error_category().message(static_cast<int>(CheckErrc::Protobuf_Error)),
               check_error_category().message(0));
-    EXPECT_NE(check_error_category().message(static_cast<int>(CheckErrc::File_Read_Error)),
+    EXPECT_NE(check_error_category().message(static_cast<int>(CheckErrc::Style_Error)),
+              check_error_category().message(0));
+    EXPECT_NE(check_error_category().message(static_cast<int>(CheckErrc::Docs_Error)),
+              check_error_category().message(0));
+    EXPECT_NE(check_error_category().message(static_cast<int>(CheckErrc::Specification_Error)),
+              check_error_category().message(0));
+    EXPECT_NE(check_error_category().message(static_cast<int>(CheckErrc::Non_Existent_Root_Error)),
               check_error_category().message(0));
 }
 
 TEST(CheckCommandTest, Error_Codes_Are_Mapped_To_Appropriate_Error_Conditions)
 {
-    EXPECT_EQ(std::error_code(CheckErrc::Non_Existent_Root_Error), CommandError::Argument_Error);
-    EXPECT_EQ(std::error_code(CheckErrc::Specification_Error), CommandError::Logic_Error);
-    EXPECT_EQ(std::error_code(CheckErrc::Docs_Error), CommandError::Logic_Error);
-    EXPECT_EQ(std::error_code(CheckErrc::Style_Error), CommandError::Logic_Error);
-    EXPECT_EQ(std::error_code(CheckErrc::Protobuf_Error), CommandError::Protobuf_Error);
     EXPECT_EQ(std::error_code(CheckErrc::File_Read_Error), CommandError::File_Access_Error);
+    EXPECT_EQ(std::error_code(CheckErrc::Protobuf_Error), CommandError::Protobuf_Error);
+    EXPECT_EQ(std::error_code(CheckErrc::Style_Error), CommandError::Logic_Error);
+    EXPECT_EQ(std::error_code(CheckErrc::Docs_Error), CommandError::Logic_Error);
+    EXPECT_EQ(std::error_code(CheckErrc::Specification_Error), CommandError::Logic_Error);
+    EXPECT_EQ(std::error_code(CheckErrc::Non_Existent_Root_Error), CommandError::Argument_Error);
 }
 
 TEST(CheckCommandTest, Help_Is_Defined_For_The_Command)

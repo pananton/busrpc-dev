@@ -22,9 +22,9 @@ set(sources
     gendoc_command_tests.cpp
     help_command_tests.cpp
     imports_command_tests.cpp
-    utils.h
-    utils.cpp
-    version_command_tests.cpp)
+    version_command_tests.cpp
+    utils/utils.h
+    utils/utils.cpp)
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${sources})
 
 #----------------------------------------------------------------------------------------------------------------------

@@ -1,4 +1,5 @@
 #include "app.h"
+#include "exception.h"
 
 #include <CLI/CLI.hpp>
 
@@ -20,6 +21,9 @@ int main(int argc, char* argv[])
         return EXIT_SUCCESS;
     } catch (const CLI::ParseError& e) {
         return app.exit(e);
+    } catch (const busrpc::command_error&) {
+        // error message is already outputted by error collector
+        return EXIT_FAILURE;
     } catch (const std::runtime_error& e) {
         std::cerr << e.what() << std::endl;
         return EXIT_FAILURE;

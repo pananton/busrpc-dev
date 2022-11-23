@@ -12,12 +12,12 @@ public:
     std::string message(int code) const override
     {
         switch (static_cast<GenDocErrc>(code)) {
-        case GenDocErrc::Non_Existent_Root_Error: return "root directory does not exist";
-        case GenDocErrc::Specification_Error: return "busrpc specification is violated";
-        case GenDocErrc::Protobuf_Error: return "protobuf parsing error";
-        case GenDocErrc::Create_Output_Dir_Error: return "failed to create output directory";
-        case GenDocErrc::File_Read_Error: return "failed to read file";
         case GenDocErrc::File_Write_Error: return "failed to write file";
+        case GenDocErrc::File_Read_Error: return "failed to read file";
+        case GenDocErrc::Create_Output_Dir_Error: return "failed to create output directory";
+        case GenDocErrc::Protobuf_Error: return "protobuf parsing error";
+        case GenDocErrc::Specification_Error: return "busrpc specification is violated";
+        case GenDocErrc::Non_Existent_Root_Error: return "root directory does not exist";
         default: return "unknown error";
         }
     }
@@ -25,12 +25,12 @@ public:
     bool equivalent(int code, const std::error_condition& condition) const noexcept override
     {
         switch (static_cast<GenDocErrc>(code)) {
-        case GenDocErrc::Non_Existent_Root_Error: return condition == CommandError::Argument_Error;
-        case GenDocErrc::Specification_Error: return condition == CommandError::Logic_Error;
-        case GenDocErrc::Protobuf_Error: return condition == CommandError::Protobuf_Error;
-        case GenDocErrc::Create_Output_Dir_Error: return condition == CommandError::File_Access_Error;
-        case GenDocErrc::File_Read_Error: return condition == CommandError::File_Access_Error;
         case GenDocErrc::File_Write_Error: return condition == CommandError::File_Access_Error;
+        case GenDocErrc::File_Read_Error: return condition == CommandError::File_Access_Error;
+        case GenDocErrc::Create_Output_Dir_Error: return condition == CommandError::File_Access_Error;
+        case GenDocErrc::Protobuf_Error: return condition == CommandError::Protobuf_Error;
+        case GenDocErrc::Specification_Error: return condition == CommandError::Logic_Error;
+        case GenDocErrc::Non_Existent_Root_Error: return condition == CommandError::Argument_Error;
         default: return false;
         }
     }

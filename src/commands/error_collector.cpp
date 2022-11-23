@@ -2,12 +2,12 @@
 
 #include <google/protobuf/compiler/importer.h>
 
-namespace protoc = google::protobuf::compiler;
+namespace compiler = google::protobuf::compiler;
 
 namespace busrpc {
 namespace {
 
-class ProtobufErrorCollector: public protoc::MultiFileErrorCollector {
+class ProtobufErrorCollector: public compiler::MultiFileErrorCollector {
 public:
     ProtobufErrorCollector(ErrorCollector& collector, std::error_code protobufErrorCode):
         collector_(collector),
@@ -65,17 +65,17 @@ void ErrorCollector::add(std::error_code ec, std::optional<std::string> msg) noe
 
     err_ << std::endl;
 
-    if (!finalError_ || ec.value() < finalError_.value()) {
-        finalError_ = ec;
+    if (ec.value() > result_.value()) {
+        result_ = ec;
     }
 }
 
-std::error_code ErrorCollector::finalError() const noexcept
+std::error_code ErrorCollector::result() const noexcept
 {
-    return finalError_;
+    return result_;
 }
 
-protoc::MultiFileErrorCollector* ErrorCollector::getProtobufCollector() const noexcept
+compiler::MultiFileErrorCollector* ErrorCollector::getProtobufCollector() const noexcept
 {
     return protobufCollector_.get();
 }
@@ -85,7 +85,7 @@ ErrorCollector::ErrorCollector(const std::error_category& category,
                                std::ostream& err):
     category_(category),
     err_(err),
-    finalError_(0, category_),
+    result_(0, category_),
     protobufCollector_(protobufErrorCode ? std::make_shared<ProtobufErrorCollector>(*this, *protobufErrorCode)
                                          : nullptr)
 { }

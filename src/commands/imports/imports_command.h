@@ -18,17 +18,17 @@ namespace busrpc {
 
 /// Command-specific error code.
 enum class ImportsErrc {
-    /// Root directory does not exist.
-    Non_Existent_Root_Error = 1,
-
-    /// File which is part of the dependency tree is not found.
-    File_Not_Found = 2,
+    /// Failed to read file which is part of the dependency tree.
+    File_Read_Error = 1,
 
     /// Failed to parse protobuf file.
-    Protobuf_Error = 3,
+    Protobuf_Error = 2,
 
-    /// Failed to read file which is part of the dependency tree.
-    File_Read_Error = 4
+    /// File which is part of the dependency tree is not found.
+    File_Not_Found = 3,
+
+    /// Root directory does not exist.
+    Non_Existent_Root_Error = 4
 };
 
 /// Return error category for the \c imports command.

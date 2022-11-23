@@ -71,7 +71,19 @@ set(sources
     src/commands/imports/imports_command.h
     src/commands/imports/imports_command.cpp
     src/commands/version/version_command.h
-    src/commands/version/version_command.cpp)
+    src/commands/version/version_command.cpp
+    src/entities/api.h
+    src/entities/class.h
+    src/entities/constant.h
+    src/entities/entity.h
+    src/entities/enum.h
+    src/entities/field.h
+    src/entities/method.h
+    src/entities/namespace.h
+    src/entities/service.h
+    src/entities/struct.h
+    src/parser/parser.h
+    src/parser/parser.cpp)
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/src" FILES ${sources} src/main.cpp)
 
 #----------------------------------------------------------------------------------------------------------------------

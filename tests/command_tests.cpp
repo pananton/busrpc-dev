@@ -1,5 +1,5 @@
 #include "commands/imports/imports_command.h"
-#include "utils.h"
+#include "utils/utils.h"
 
 #include <gtest/gtest.h>
 
@@ -94,15 +94,15 @@ TEST(CommandTest, Description_For_Unknown_Command_Error_Condition_Is_Not_Empty)
 
 TEST(CommandTest, Description_For_Unknown_Command_Error_Condition_Differs_From_Known_Error_Conditions_Descriptions)
 {
-    EXPECT_NE(command_error_category().message(static_cast<int>(CommandError::Argument_Error)),
-              command_error_category().message(0));
-    EXPECT_NE(command_error_category().message(static_cast<int>(CommandError::Logic_Error)),
-              command_error_category().message(0));
-    EXPECT_NE(command_error_category().message(static_cast<int>(CommandError::Protobuf_Error)),
+    EXPECT_NE(command_error_category().message(static_cast<int>(CommandError::Internal_Error)),
               command_error_category().message(0));
     EXPECT_NE(command_error_category().message(static_cast<int>(CommandError::File_Access_Error)),
               command_error_category().message(0));
-    EXPECT_NE(command_error_category().message(static_cast<int>(CommandError::Internal_Error)),
+    EXPECT_NE(command_error_category().message(static_cast<int>(CommandError::Protobuf_Error)),
+              command_error_category().message(0));
+    EXPECT_NE(command_error_category().message(static_cast<int>(CommandError::Logic_Error)),
+              command_error_category().message(0));
+    EXPECT_NE(command_error_category().message(static_cast<int>(CommandError::Argument_Error)),
               command_error_category().message(0));
 }
 

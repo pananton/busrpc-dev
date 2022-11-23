@@ -20,27 +20,26 @@ namespace busrpc {
 /// \note Many commands do not fail fast. When error is encountered, they output diagnostic information to the error
 ///       stream and continue processing. That means several errors may be encountered during a single invocation of
 ///       the command and all of them may have distinct error codes, so implementation needs to decide which code to
-///       use as the command result. The main idea used by the busrpc development tool is to order command-specific
-///       error codes and logical conditions from the \ref CommandError in a way, that errors caused by user (for
-///       example, specifying invalid arguments for the command) come before various system errors, and then require
-///       command implementations to return code with the minimal value if several errors occurred. Thus, errors that
-///       should probably be fixed by user are signalled first.
+///       use as the command result. The main idea used by the busrpc development tool is that errors caused by user
+///       (for example, specifying invalid arguments for the command) should be signalled before various system
+///       errors. This is achieved by assigning higher values for user-caused error codes and then returning error
+///       code with the highest value as the command result.
 enum class CommandError {
-    /// Invalid command argument.
-    Argument_Error = 1,
+    /// Internal error.
+    Internal_Error = 1,
 
-    /// Logic error.
-    Logic_Error = 2,
+    /// Failed to access file or directory (for example, for creating, reading or writing it).
+    File_Access_Error = 2,
 
     /// Failed to parse protobuf file.
     /// \note This error is returned if protobuf file has invalid syntax.
     Protobuf_Error = 3,
 
-    /// Failed to access file or directory (for example, for creating, reading or writing it).
-    File_Access_Error = 4,
+    /// Logic error.
+    Logic_Error = 4,
 
-    /// Internal error.
-    Internal_Error = 5
+    /// Invalid command argument.
+    Argument_Error = 5
 };
 
 /// Return busrpc command error category.

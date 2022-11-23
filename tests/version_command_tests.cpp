@@ -2,7 +2,7 @@
 #include "commands/help/help_command.h"
 #include "commands/version/version_command.h"
 #include "configure.h"
-#include "utils.h"
+#include "utils/utils.h"
 
 #include <CLI/CLI.hpp>
 #include <gtest/gtest.h>

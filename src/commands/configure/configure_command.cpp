@@ -12,12 +12,12 @@ public:
     std::string message(int code) const override
     {
         switch (static_cast<ConfigureErrc>(code)) {
-        case ConfigureErrc::Non_Existent_Root_Error: return "root directory does not exist";
-        case ConfigureErrc::File_Not_Found: return "file not found";
-        case ConfigureErrc::Protobuf_Error: return "protobuf parsing error";
-        case ConfigureErrc::Create_Output_Dir_Error: return "failed to create output directory";
-        case ConfigureErrc::File_Read_Error: return "failed to read file";
         case ConfigureErrc::File_Write_Error: return "failed to write file";
+        case ConfigureErrc::File_Read_Error: return "failed to read file";
+        case ConfigureErrc::Create_Output_Dir_Error: return "failed to create output directory";
+        case ConfigureErrc::Protobuf_Error: return "protobuf parsing error";
+        case ConfigureErrc::File_Not_Found: return "file not found";
+        case ConfigureErrc::Non_Existent_Root_Error: return "root directory does not exist";
         default: return "unknown error";
         }
     }
@@ -25,12 +25,12 @@ public:
     bool equivalent(int code, const std::error_condition& condition) const noexcept override
     {
         switch (static_cast<ConfigureErrc>(code)) {
-        case ConfigureErrc::Non_Existent_Root_Error: return condition == CommandError::Argument_Error;
-        case ConfigureErrc::File_Not_Found: return condition == CommandError::Argument_Error;
-        case ConfigureErrc::Protobuf_Error: return condition == CommandError::Protobuf_Error;
-        case ConfigureErrc::Create_Output_Dir_Error: return condition == CommandError::File_Access_Error;
-        case ConfigureErrc::File_Read_Error: return condition == CommandError::File_Access_Error;
         case ConfigureErrc::File_Write_Error: return condition == CommandError::File_Access_Error;
+        case ConfigureErrc::File_Read_Error: return condition == CommandError::File_Access_Error;
+        case ConfigureErrc::Create_Output_Dir_Error: return condition == CommandError::File_Access_Error;
+        case ConfigureErrc::Protobuf_Error: return condition == CommandError::Protobuf_Error;
+        case ConfigureErrc::File_Not_Found: return condition == CommandError::Argument_Error;
+        case ConfigureErrc::Non_Existent_Root_Error: return condition == CommandError::Argument_Error;
         default: return false;
         }
     }

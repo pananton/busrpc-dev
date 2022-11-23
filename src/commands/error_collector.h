@@ -39,10 +39,10 @@ public:
     ///       error category.
     void add(std::error_code ec, std::optional<std::string> msg = std::nullopt) noexcept;
 
-    /// Return final error code.
-    /// \note Final error code is considered as the most significant error among collected. Commands follow the rule,
-    ///       that more significant errors should have lower numerical code (see \ref CommandError notes).
-    std::error_code finalError() const noexcept;
+    /// Return final result.
+    /// \note Result is the most severe error among collected. Note, that commands follow the rule, that more
+    ///       severe errors should have higher numerical code (see \ref CommandError notes).
+    std::error_code result() const noexcept;
 
     /// Return collector for protobuf parsing errors.
     google::protobuf::compiler::MultiFileErrorCollector* getProtobufCollector() const noexcept;
@@ -54,7 +54,7 @@ private:
 
     const std::error_category& category_;
     std::ostream& err_;
-    std::error_code finalError_;
+    std::error_code result_;
     std::shared_ptr<google::protobuf::compiler::MultiFileErrorCollector> protobufCollector_;
 };
 } // namespace busrpc

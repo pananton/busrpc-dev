@@ -18,23 +18,23 @@ namespace busrpc {
 
 /// Command-specific error code.
 enum class ConfigureErrc {
-    /// Root directory does not exist.
-    Non_Existent_Root_Error = 1,
-
-    /// File to be configured is not found.
-    File_Not_Found = 2,
-
-    /// Failed to parse protobuf file.
-    Protobuf_Error = 3,
-
-    /// Failed to create output directory.
-    Create_Output_Dir_Error = 4,
+    /// Failed to write configured file to the output directory.
+    File_Write_Error = 1,
 
     /// Failed to read file to be configured.
-    File_Read_Error = 5,
+    File_Read_Error = 2,
 
-    /// Failed to write configured file to the output directory.
-    File_Write_Error = 6
+    /// Failed to create output directory.
+    Create_Output_Dir_Error = 3,
+
+    /// Failed to parse protobuf file.
+    Protobuf_Error = 4,
+
+    /// File to be configured is not found.
+    File_Not_Found = 5,
+
+    /// Root directory does not exist.
+    Non_Existent_Root_Error = 6
 };
 
 /// Return error category for the \c configure command.

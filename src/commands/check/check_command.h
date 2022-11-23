@@ -17,27 +17,27 @@ namespace busrpc {
 
 /// Command-specific error code.
 enum class CheckErrc {
-    /// Root directory does not exist.
-    Non_Existent_Root_Error = 1,
+    /// Failed to read file to be checked.
+    File_Read_Error = 1,
 
-    /// Violation(s) of busrpc specification detected.
-    Specification_Error = 2,
-
-    /// Violation(s) of documentation rules detected.
-    /// \note This code only returned if command is executed with flag, indicating that warnings should be treated
-    ///       as errors.
-    Docs_Error = 3,
+    /// Failed to parse protobuf file.
+    Protobuf_Error = 2,
 
     /// Violation(s) of style rules detected.
     /// \note This code only returned if command is executed with flag, indicating that warnings should be treated
     ///       as errors.
-    Style_Error = 4,
+    Style_Error = 3,
 
-    /// Failed to parse protobuf file.
-    Protobuf_Error = 5,
+    /// Violation(s) of documentation rules detected.
+    /// \note This code only returned if command is executed with flag, indicating that warnings should be treated
+    ///       as errors.
+    Docs_Error = 4,
 
-    /// Failed to read file to be checked.
-    File_Read_Error = 6
+    /// Violation(s) of busrpc specification detected.
+    Specification_Error = 5,
+
+    /// Root directory does not exist.
+    Non_Existent_Root_Error = 6
 };
 
 /// Return error category for the \c check command.
