@@ -58,6 +58,8 @@ set(sources
     src/commands/command.h
     src/commands/command.cpp
     src/commands/command_id.h
+    src/commands/error_collector.h
+    src/commands/error_collector.cpp
     src/commands/check/check_command.h
     src/commands/check/check_command.cpp
     src/commands/configure/configure_command.h

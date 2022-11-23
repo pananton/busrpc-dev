@@ -1,5 +1,7 @@
 #include "commands/imports/imports_command.h"
 
+#include <google/protobuf/compiler/importer.h>
+
 #include <string>
 
 namespace busrpc {

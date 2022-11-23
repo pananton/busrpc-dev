@@ -16,6 +16,7 @@ fetch_gtest(${BUSRPC_GTEST_TAG})
 
 set(sources
     command_tests.cpp
+    error_collector_tests.cpp
     check_command_tests.cpp
     configure_command_tests.cpp
     gendoc_command_tests.cpp

@@ -3,7 +3,7 @@
 include(FetchContent)
 
 function(fetch_cli11 tag)
-  message(STATUS "Fetching CLI11 library")
+  message(STATUS "Fetching CLI11 library...")
   FetchContent_Declare(
       cli11
       GIT_REPOSITORY https://github.com/CLIUtils/CLI11
