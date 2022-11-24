@@ -44,7 +44,8 @@ auto CreateInvoker(std::ostream& out, std::ostream& err)
 
 void AddRootOption(CLI::App& app, std::string& root)
 {
-    app.add_option("-r,--root", root, "Busrpc root directory (parent of the 'api/' and 'services/' directories)")
+    app.add_option("-r,--root", root)
+        ->description("Busrpc root directory (the one containing 'api/' and 'services/' subdirectories)")
         ->envname("BUSRPC_ROOT_DIR")
         ->check(CLI::ExistingDirectory);
 }
@@ -56,7 +57,7 @@ void AddOutputDirOption(CLI::App& app, std::string& outputDir)
 
 void AddProtobufFilesPositionalOption(CLI::App& app, std::vector<std::string>& files)
 {
-    app.add_option("files", files, "Protobuf files")->check(CLI::ExistingFile);
+    app.add_option("files", files, "Protobuf files");
 }
 
 } // namespace
@@ -83,7 +84,7 @@ void DefineCommand(CLI::App& app, const std::function<void(ConfigureArgs)>& call
     assert(callback);
 
     auto optsPtr = std::make_shared<ConfigureOptions>();
-    app.description("Configure protobuf files for target language");
+    app.description("Configure protobuf files for the target language");
     app.positionals_at_end(true);
     app.final_callback([callback, optsPtr]() {
         ConfigureLang lang = static_cast<ConfigureLang>(0);
@@ -162,12 +163,16 @@ void DefineCommand(CLI::App& app, const std::function<void(ImportsArgs)>& callba
     assert(callback);
 
     auto argsPtr = std::make_shared<ImportsArgs>();
-    app.description("Output files directly or indirectly imported by the specified file(s)");
+    app.description("Output relative paths to the files directly or indirectly imported by the specified file(s)");
     app.final_callback([callback, argsPtr]() { callback({std::move(*argsPtr)}); });
     app.positionals_at_end(true);
 
     AddRootOption(app, argsPtr->rootDir);
     AddProtobufFilesPositionalOption(app, argsPtr->files);
+
+    app.add_flag("--only-deps",
+                 argsPtr->only_deps,
+                 "Only output paths to the dependencies, do not output paths to the files themselves");
 }
 
 void DefineCommand(CLI::App& app, const std::function<void(VersionArgs)>& callback)

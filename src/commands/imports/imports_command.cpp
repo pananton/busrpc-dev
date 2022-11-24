@@ -1,5 +1,6 @@
 #include "commands/imports/imports_command.h"
 #include "commands/error_collector.h"
+#include "utils.h"
 
 #include <google/protobuf/compiler/importer.h>
 
@@ -19,10 +20,10 @@ public:
     std::string message(int code) const override
     {
         switch (static_cast<ImportsErrc>(code)) {
-        case ImportsErrc::File_Read_Error: return "failed to read file";
-        case ImportsErrc::Protobuf_Error: return "protobuf parsing error";
+        case ImportsErrc::File_Read_Failed: return "failed to read file";
+        case ImportsErrc::Protobuf_Parsing_Failed: return "protobuf parsing error";
         case ImportsErrc::File_Not_Found: return "file not found";
-        case ImportsErrc::Non_Existent_Root_Error: return "root directory does not exist";
+        case ImportsErrc::Root_Does_Not_Exist: return "busrpc root directory does not exist";
         default: return "unknown error";
         }
     }
@@ -30,10 +31,10 @@ public:
     bool equivalent(int code, const std::error_condition& condition) const noexcept override
     {
         switch (static_cast<ImportsErrc>(code)) {
-        case ImportsErrc::File_Read_Error: return condition == CommandError::File_Access_Error;
-        case ImportsErrc::Protobuf_Error: return condition == CommandError::Protobuf_Error;
-        case ImportsErrc::File_Not_Found: return condition == CommandError::Argument_Error;
-        case ImportsErrc::Non_Existent_Root_Error: return condition == CommandError::Argument_Error;
+        case ImportsErrc::File_Read_Failed: return condition == CommandError::File_Operation_Failed;
+        case ImportsErrc::Protobuf_Parsing_Failed: return condition == CommandError::Protobuf_Parsing_Failed;
+        case ImportsErrc::File_Not_Found: return condition == CommandError::Invalid_Argument;
+        case ImportsErrc::Root_Does_Not_Exist: return condition == CommandError::Invalid_Argument;
         default: return false;
         }
     }
@@ -41,6 +42,10 @@ public:
 
 void FillImportsRecursively(const protobuf::FileDescriptor* desc, std::set<std::string>& imports)
 {
+    if (!desc) {
+        return;
+    }
+
     if (imports.count(desc->name())) {
         // already processed
         return;
@@ -56,21 +61,48 @@ void FillImportsRecursively(const protobuf::FileDescriptor* desc, std::set<std::
 
 std::error_code ImportsCommand::tryExecuteImpl(std::ostream& out, std::ostream& err) const
 {
-    ErrorCollector ecol(imports_error_category(), ImportsErrc::Protobuf_Error, err);
+    ErrorCollector ecol(imports_error_category(), ImportsErrc::Protobuf_Parsing_Failed, err);
     std::set<std::string> imports;
+    std::set<std::string> ignored;
+    std::filesystem::path rootPath;
+
+    try {
+        InitCanonicalPathToExistingDirectory(rootPath, args().rootDir);
+    } catch (const std::filesystem::filesystem_error&) { }
+
+    if (rootPath.empty()) {
+        ecol.add(ImportsErrc::Root_Does_Not_Exist, "root directory '" + args().rootDir + "' does not exist");
+        return ecol.result();
+    }
 
     protobuf::compiler::DiskSourceTree sourceTree;
-    sourceTree.MapPath(
-        "", args().rootDir.empty() ? std::filesystem::current_path().string().c_str() : args().rootDir.c_str());
-
+    sourceTree.MapPath("", rootPath.generic_string());
     protobuf::compiler::Importer importer(&sourceTree, ecol.getProtobufCollector());
 
     for (const auto& file: args().files) {
-        FillImportsRecursively(importer.Import(file.c_str()), imports);
+        std::filesystem::path filePath;
+
+        try {
+            if (!InitRelativePathToExistingFile(filePath, file, rootPath)) {
+                ecol.add(ImportsErrc::File_Not_Found, "file '" + file + "' is not found");
+            }
+        } catch (const std::filesystem::filesystem_error&) {
+            ecol.add(ImportsErrc::File_Read_Failed, "failed to access file '" + file + "'");
+        }
+
+        if (!filePath.empty()) {
+            if (args().only_deps) {
+                ignored.insert(filePath.generic_string());
+            }
+
+            FillImportsRecursively(importer.Import(filePath.generic_string().c_str()), imports);
+        }
     }
 
     for (const auto& file: imports) {
-        out << file << std::endl;
+        if (ignored.count(file) == 0) {
+            out << file << std::endl;
+        }
     }
 
     return ecol.result();

@@ -15,6 +15,7 @@ fetch_gtest(${BUSRPC_GTEST_TAG})
 #----------------------------------------------------------------------------------------------------------------------
 
 set(sources
+    utils_tests.cpp
     command_tests.cpp
     error_collector_tests.cpp
     check_command_tests.cpp
@@ -23,8 +24,10 @@ set(sources
     help_command_tests.cpp
     imports_command_tests.cpp
     version_command_tests.cpp
-    utils/utils.h
-    utils/utils.cpp)
+    utils/common.h
+    utils/common.cpp
+    utils/file_utils.h
+    utils/file_utils.cpp)
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${sources})
 
 #----------------------------------------------------------------------------------------------------------------------

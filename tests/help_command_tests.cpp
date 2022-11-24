@@ -1,6 +1,6 @@
 #include "commands/help/help_command.h"
 #include "app.h"
-#include "utils/utils.h"
+#include "utils/common.h"
 
 #include <CLI/CLI.hpp>
 #include <gtest/gtest.h>

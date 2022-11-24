@@ -32,7 +32,7 @@ public:
                    std::error_code protobufErrorCode,
                    std::ostream& err = std::cerr);
 
-    /// Output information about \a ec to the error stream and update final error code if necessary.
+    /// Output information about \a ec to the error stream and update final result if necessary.
     /// \warning If \a ec does not indicate an error, or it's category does not match the one specified in the
     ///          constructor, then added error code is completely ignored.
     /// \note If optional \a msg is set, then it is appended to the error code's description obtained from it's
@@ -48,9 +48,7 @@ public:
     google::protobuf::compiler::MultiFileErrorCollector* getProtobufCollector() const noexcept;
 
 private:
-    ErrorCollector(const std::error_category& category,
-                   std::error_code* protobufErrorCode,
-                   std::ostream& err);
+    ErrorCollector(const std::error_category& category, std::error_code* protobufErrorCode, std::ostream& err);
 
     const std::error_category& category_;
     std::ostream& err_;

@@ -1,7 +1,7 @@
 #include "app.h"
 #include "commands/check/check_command.h"
 #include "commands/help/help_command.h"
-#include "utils.h"
+#include "utils/common.h"
 
 #include <CLI/CLI.hpp>
 #include <gtest/gtest.h>
@@ -29,28 +29,28 @@ TEST(CheckCommandTest, Description_For_Unknown_Command_Error_Code_Is_Not_Empty)
 
 TEST(CheckCommandTest, Description_For_Unknown_Command_Error_Code_Differs_From_Known_Error_Codes_Descriptions)
 {
-    EXPECT_NE(check_error_category().message(static_cast<int>(CheckErrc::File_Read_Error)),
+    EXPECT_NE(check_error_category().message(static_cast<int>(CheckErrc::File_Read_Failed)),
               check_error_category().message(0));
-    EXPECT_NE(check_error_category().message(static_cast<int>(CheckErrc::Protobuf_Error)),
+    EXPECT_NE(check_error_category().message(static_cast<int>(CheckErrc::Protobuf_Parsing_Failed)),
               check_error_category().message(0));
-    EXPECT_NE(check_error_category().message(static_cast<int>(CheckErrc::Style_Error)),
+    EXPECT_NE(check_error_category().message(static_cast<int>(CheckErrc::Protobuf_Style_Violated)),
               check_error_category().message(0));
-    EXPECT_NE(check_error_category().message(static_cast<int>(CheckErrc::Docs_Error)),
+    EXPECT_NE(check_error_category().message(static_cast<int>(CheckErrc::Undocumeted_Entity)),
               check_error_category().message(0));
-    EXPECT_NE(check_error_category().message(static_cast<int>(CheckErrc::Specification_Error)),
+    EXPECT_NE(check_error_category().message(static_cast<int>(CheckErrc::Spec_Violated)),
               check_error_category().message(0));
-    EXPECT_NE(check_error_category().message(static_cast<int>(CheckErrc::Non_Existent_Root_Error)),
+    EXPECT_NE(check_error_category().message(static_cast<int>(CheckErrc::Root_Does_Not_Exist)),
               check_error_category().message(0));
 }
 
 TEST(CheckCommandTest, Error_Codes_Are_Mapped_To_Appropriate_Error_Conditions)
 {
-    EXPECT_EQ(std::error_code(CheckErrc::File_Read_Error), CommandError::File_Access_Error);
-    EXPECT_EQ(std::error_code(CheckErrc::Protobuf_Error), CommandError::Protobuf_Error);
-    EXPECT_EQ(std::error_code(CheckErrc::Style_Error), CommandError::Logic_Error);
-    EXPECT_EQ(std::error_code(CheckErrc::Docs_Error), CommandError::Logic_Error);
-    EXPECT_EQ(std::error_code(CheckErrc::Specification_Error), CommandError::Logic_Error);
-    EXPECT_EQ(std::error_code(CheckErrc::Non_Existent_Root_Error), CommandError::Argument_Error);
+    EXPECT_EQ(std::error_code(CheckErrc::File_Read_Failed), CommandError::File_Operation_Failed);
+    EXPECT_EQ(std::error_code(CheckErrc::Protobuf_Parsing_Failed), CommandError::Protobuf_Parsing_Failed);
+    EXPECT_EQ(std::error_code(CheckErrc::Protobuf_Style_Violated), CommandError::Spec_Violated);
+    EXPECT_EQ(std::error_code(CheckErrc::Undocumeted_Entity), CommandError::Spec_Violated);
+    EXPECT_EQ(std::error_code(CheckErrc::Spec_Violated), CommandError::Spec_Violated);
+    EXPECT_EQ(std::error_code(CheckErrc::Root_Does_Not_Exist), CommandError::Invalid_Argument);
 }
 
 TEST(CheckCommandTest, Help_Is_Defined_For_The_Command)

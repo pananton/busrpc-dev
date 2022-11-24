@@ -18,17 +18,17 @@ namespace busrpc {
 
 /// Command-specific error code.
 enum class ImportsErrc {
-    /// Failed to read file which is part of the dependency tree.
-    File_Read_Error = 1,
+    /// Failed to read file for which import tree is built.
+    File_Read_Failed = 1,
 
     /// Failed to parse protobuf file.
-    Protobuf_Error = 2,
+    Protobuf_Parsing_Failed = 2,
 
-    /// File which is part of the dependency tree is not found.
+    /// File for which import tree should be built is not found.
     File_Not_Found = 3,
 
-    /// Root directory does not exist.
-    Non_Existent_Root_Error = 4
+    /// Busrpc root directory does not exist.
+    Root_Does_Not_Exist = 4
 };
 
 /// Return error category for the \c imports command.
@@ -39,17 +39,18 @@ std::error_code make_error_code(ImportsErrc errc);
 
 /// Arguments of the \c imports command.
 struct ImportsArgs {
-    /// Files which dependencies to output (should be specified relatively to the busrpc root directory).
+    /// Files which imports to output (should be nested in the busrpc root directory).
     std::vector<std::string> files = {};
 
-    /// Busrpc root directory.
+    /// Busrpc root directory (the one containing 'api/' and 'services/' subdirectories).
     /// \note If empty, working directory is assumed.
     std::string rootDir = "";
+
+    /// Only output paths to the dependencies, do not output paths to \ref files themselves.
+    bool only_deps = false;
 };
 
-/// Output files directly or indirectly imported by the specified file(s).
-/// \note Files are outputted by their nesting level in the directory hierarchy (from most nested files to files
-///       from the root directory).
+/// Output relative paths to the files directly or indirectly imported by the specified file(s).
 class ImportsCommand: public Command<CommandId::Imports, ImportsArgs> {
 public:
     /// Base type.
@@ -62,7 +63,7 @@ protected:
     std::error_code tryExecuteImpl(std::ostream& out, std::ostream& err) const override;
 };
 
-/// Define \c check command line options and set a \a callback to be invoked when \a app encounters the command.
+/// Define \c imports command line options and set a \a callback to be invoked when \a app encounters the command.
 void DefineCommand(CLI::App& app, const std::function<void(ImportsArgs)>& callback);
 } // namespace busrpc
 

@@ -1,5 +1,5 @@
 #include "commands/imports/imports_command.h"
-#include "utils/utils.h"
+#include "utils/common.h"
 
 #include <gtest/gtest.h>
 
@@ -71,18 +71,18 @@ TEST(CommandTest, Command_Error_Category_Is_command)
 
 TEST(CommandTest, Command_Error_Ctor_Sets_Command_Id)
 {
-    EXPECT_EQ(command_error(TestCommand::Id, ImportsErrc::Non_Existent_Root_Error).commandId(), TestCommand::Id);
+    EXPECT_EQ(command_error(TestCommand::Id, ImportsErrc::Root_Does_Not_Exist).commandId(), TestCommand::Id);
 }
 
 TEST(CommandTest, Command_Error_Ctor_Sets_Error_Code)
 {
-    EXPECT_EQ(command_error(TestCommand::Id, ImportsErrc::Non_Existent_Root_Error).code(),
-              ImportsErrc::Non_Existent_Root_Error);
+    EXPECT_EQ(command_error(TestCommand::Id, ImportsErrc::Root_Does_Not_Exist).code(),
+              ImportsErrc::Root_Does_Not_Exist);
 }
 
 TEST(CommandTest, Command_Error_Ctor_Adds_Command_Name_To_Error_Description)
 {
-    command_error err(TestCommand::Id, ImportsErrc::Non_Existent_Root_Error);
+    command_error err(TestCommand::Id, ImportsErrc::Root_Does_Not_Exist);
 
     EXPECT_NE(std::string_view(err.what()).find(GetCommandName(TestCommand::Id)), std::string_view::npos);
 }
@@ -94,15 +94,15 @@ TEST(CommandTest, Description_For_Unknown_Command_Error_Condition_Is_Not_Empty)
 
 TEST(CommandTest, Description_For_Unknown_Command_Error_Condition_Differs_From_Known_Error_Conditions_Descriptions)
 {
-    EXPECT_NE(command_error_category().message(static_cast<int>(CommandError::Internal_Error)),
+    EXPECT_NE(command_error_category().message(static_cast<int>(CommandError::Internal)),
               command_error_category().message(0));
-    EXPECT_NE(command_error_category().message(static_cast<int>(CommandError::File_Access_Error)),
+    EXPECT_NE(command_error_category().message(static_cast<int>(CommandError::File_Operation_Failed)),
               command_error_category().message(0));
-    EXPECT_NE(command_error_category().message(static_cast<int>(CommandError::Protobuf_Error)),
+    EXPECT_NE(command_error_category().message(static_cast<int>(CommandError::Protobuf_Parsing_Failed)),
               command_error_category().message(0));
-    EXPECT_NE(command_error_category().message(static_cast<int>(CommandError::Logic_Error)),
+    EXPECT_NE(command_error_category().message(static_cast<int>(CommandError::Spec_Violated)),
               command_error_category().message(0));
-    EXPECT_NE(command_error_category().message(static_cast<int>(CommandError::Argument_Error)),
+    EXPECT_NE(command_error_category().message(static_cast<int>(CommandError::Invalid_Argument)),
               command_error_category().message(0));
 }
 
@@ -211,8 +211,8 @@ TEST(CommandTest, Command_Is_Executed_Even_If_Output_And_Error_Streams_Are_Not_S
 
 TEST(CommandTest, Execute_Throws_Command_Error_If_Command_Fails)
 {
-    TestCommand cmd({"", "", ImportsErrc::File_Read_Error});
+    TestCommand cmd({"", "", ImportsErrc::File_Not_Found});
 
-    EXPECT_COMMAND_EXCEPTION(cmd.execute(std::nullopt, std::nullopt), ImportsErrc::File_Read_Error);
+    EXPECT_COMMAND_EXCEPTION(cmd.execute(std::nullopt, std::nullopt), ImportsErrc::File_Not_Found);
 }
 }} // namespace busrpc::test

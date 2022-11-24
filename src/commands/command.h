@@ -26,20 +26,21 @@ namespace busrpc {
 ///       code with the highest value as the command result.
 enum class CommandError {
     /// Internal error.
-    Internal_Error = 1,
+    Internal = 1,
 
-    /// Failed to access file or directory (for example, for creating, reading or writing it).
-    File_Access_Error = 2,
+    /// File or directory operation failed.
+    File_Operation_Failed = 2,
 
     /// Failed to parse protobuf file.
-    /// \note This error is returned if protobuf file has invalid syntax.
-    Protobuf_Error = 3,
+    /// \note This error is returned if protobuf file has invalid syntax or it's imports can't be located by
+    ///       libprotobuf. This error is NOT used to signal busrpc specification rules violations.
+    Protobuf_Parsing_Failed = 3,
 
-    /// Logic error.
-    Logic_Error = 4,
+    /// Busrpc specification is violated.
+    Spec_Violated = 4,
 
     /// Invalid command argument.
-    Argument_Error = 5
+    Invalid_Argument = 5
 };
 
 /// Return busrpc command error category.

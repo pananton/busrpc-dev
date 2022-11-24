@@ -22,13 +22,16 @@ public:
     void AddError(const std::string& filename, int line, int column, const std::string& message) override
     {
         std::string result(filename);
-        result.append(1, ':');
-        result.append(std::to_string(line));
-        result.append(1, ':');
-        result.append(std::to_string(column));
+
+        if (line != -1) {
+            result.append(1, ':');
+            result.append(std::to_string(line));
+            result.append(1, ':');
+            result.append(std::to_string(column));
+        }
 
         if (!message.empty()) {
-            result.append(1, ':');
+            result.append(": ");
             result.append(message);
         }
 
@@ -57,10 +60,10 @@ void ErrorCollector::add(std::error_code ec, std::optional<std::string> msg) noe
         return;
     }
 
-    err_ << ec.message();
-
     if (msg) {
-        err_ << ": " << *msg;
+        err_ << *msg;
+    } else {
+        err_ << ec.message();
     }
 
     err_ << std::endl;

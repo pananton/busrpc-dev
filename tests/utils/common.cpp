@@ -1,6 +1,10 @@
-#include "utils.h"
+#include "utils/common.h"
 
-namespace busrpc {
+#include <algorithm>
+#include <sstream>
+#include <string>
+
+namespace busrpc { namespace test {
 
 bool IsHelpMessage(const std::string& msg, std::optional<CommandId> commandId)
 {
@@ -18,4 +22,19 @@ bool IsHelpMessage(const std::string& msg, std::optional<CommandId> commandId)
         return msg.find("Subcommands:") != std::string::npos;
     }
 }
-} // namespace busrpc
+
+std::vector<std::string> SplitByNewline(const std::string& str)
+{
+    std::stringstream s(str);
+    std::string line;
+    std::vector<std::string> result;
+
+    while (std::getline(s, line, '\n')) {
+        if (!line.empty()) {
+            result.push_back(std::move(line));
+        }
+    }
+
+    return result;
+}
+}} // namespace busrpc::test

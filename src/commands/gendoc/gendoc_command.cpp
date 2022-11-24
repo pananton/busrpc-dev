@@ -12,12 +12,12 @@ public:
     std::string message(int code) const override
     {
         switch (static_cast<GenDocErrc>(code)) {
-        case GenDocErrc::File_Write_Error: return "failed to write file";
-        case GenDocErrc::File_Read_Error: return "failed to read file";
-        case GenDocErrc::Create_Output_Dir_Error: return "failed to create output directory";
-        case GenDocErrc::Protobuf_Error: return "protobuf parsing error";
-        case GenDocErrc::Specification_Error: return "busrpc specification is violated";
-        case GenDocErrc::Non_Existent_Root_Error: return "root directory does not exist";
+        case GenDocErrc::File_Write_Failed: return "failed to write file";
+        case GenDocErrc::File_Read_Failed: return "failed to read file";
+        case GenDocErrc::Create_Output_Dir_Failed: return "failed to create output directory";
+        case GenDocErrc::Protobuf_Parsing_Failed: return "failed to parse protobuf file";
+        case GenDocErrc::Spec_Violated: return "busrpc specification is violated";
+        case GenDocErrc::Root_Does_Not_Exist: return "busrpc root directory does not exist";
         default: return "unknown error";
         }
     }
@@ -25,12 +25,12 @@ public:
     bool equivalent(int code, const std::error_condition& condition) const noexcept override
     {
         switch (static_cast<GenDocErrc>(code)) {
-        case GenDocErrc::File_Write_Error: return condition == CommandError::File_Access_Error;
-        case GenDocErrc::File_Read_Error: return condition == CommandError::File_Access_Error;
-        case GenDocErrc::Create_Output_Dir_Error: return condition == CommandError::File_Access_Error;
-        case GenDocErrc::Protobuf_Error: return condition == CommandError::Protobuf_Error;
-        case GenDocErrc::Specification_Error: return condition == CommandError::Logic_Error;
-        case GenDocErrc::Non_Existent_Root_Error: return condition == CommandError::Argument_Error;
+        case GenDocErrc::File_Write_Failed: return condition == CommandError::File_Operation_Failed;
+        case GenDocErrc::File_Read_Failed: return condition == CommandError::File_Operation_Failed;
+        case GenDocErrc::Create_Output_Dir_Failed: return condition == CommandError::File_Operation_Failed;
+        case GenDocErrc::Protobuf_Parsing_Failed: return condition == CommandError::Protobuf_Parsing_Failed;
+        case GenDocErrc::Spec_Violated: return condition == CommandError::Spec_Violated;
+        case GenDocErrc::Root_Does_Not_Exist: return condition == CommandError::Invalid_Argument;
         default: return false;
         }
     }

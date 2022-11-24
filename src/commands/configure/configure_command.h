@@ -19,22 +19,22 @@ namespace busrpc {
 /// Command-specific error code.
 enum class ConfigureErrc {
     /// Failed to write configured file to the output directory.
-    File_Write_Error = 1,
+    File_Write_Failed = 1,
 
     /// Failed to read file to be configured.
-    File_Read_Error = 2,
+    File_Read_Failed = 2,
 
     /// Failed to create output directory.
-    Create_Output_Dir_Error = 3,
+    Create_Output_Dir_Failed = 3,
 
     /// Failed to parse protobuf file.
-    Protobuf_Error = 4,
+    Protobuf_Parsing_Failed = 4,
 
     /// File to be configured is not found.
     File_Not_Found = 5,
 
-    /// Root directory does not exist.
-    Non_Existent_Root_Error = 6
+    /// Busrpc root directory does not exist.
+    Root_Does_Not_Exist = 6
 };
 
 /// Return error category for the \c configure command.
@@ -72,7 +72,7 @@ struct ConfigureArgs {
     /// \note Can be empty. In that case, command will create output directory (if does not exist) and then return.
     std::vector<std::string> files = {};
 
-    /// Busrpc root directory.
+    /// Busrpc root directory (the one containing 'api/' and 'services' subdirectories).
     /// \note If empty, working directory is assumed.
     std::string rootDir = "";
 

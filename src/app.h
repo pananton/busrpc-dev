@@ -12,5 +12,5 @@ class App;
 namespace busrpc {
 
 /// Initializes busrpc development tool command line application.
-void InitApp(CLI::App& app, std::ostream& out = std::cout , std::ostream& err = std::cerr);
+void InitApp(CLI::App& app, std::ostream& out = std::cout, std::ostream& err = std::cerr);
 } // namespace busrpc

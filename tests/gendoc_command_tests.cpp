@@ -1,7 +1,7 @@
 #include "app.h"
 #include "commands/gendoc/gendoc_command.h"
 #include "commands/help/help_command.h"
-#include "utils/utils.h"
+#include "utils/common.h"
 
 #include <CLI/CLI.hpp>
 #include <gtest/gtest.h>
@@ -29,28 +29,28 @@ TEST(GenDocCommandTest, Description_For_Unknown_Command_Error_Code_Is_Not_Empty)
 
 TEST(GenDocCommandTest, Description_For_Unknown_Command_Error_Code_Differs_From_Known_Error_Codes_Descriptions)
 {
-    EXPECT_NE(gendoc_error_category().message(static_cast<int>(GenDocErrc::File_Write_Error)),
+    EXPECT_NE(gendoc_error_category().message(static_cast<int>(GenDocErrc::File_Write_Failed)),
               gendoc_error_category().message(0));
-    EXPECT_NE(gendoc_error_category().message(static_cast<int>(GenDocErrc::File_Read_Error)),
+    EXPECT_NE(gendoc_error_category().message(static_cast<int>(GenDocErrc::File_Read_Failed)),
               gendoc_error_category().message(0));
-    EXPECT_NE(gendoc_error_category().message(static_cast<int>(GenDocErrc::Create_Output_Dir_Error)),
+    EXPECT_NE(gendoc_error_category().message(static_cast<int>(GenDocErrc::Create_Output_Dir_Failed)),
               gendoc_error_category().message(0));
-    EXPECT_NE(gendoc_error_category().message(static_cast<int>(GenDocErrc::Protobuf_Error)),
+    EXPECT_NE(gendoc_error_category().message(static_cast<int>(GenDocErrc::Protobuf_Parsing_Failed)),
               gendoc_error_category().message(0));
-    EXPECT_NE(gendoc_error_category().message(static_cast<int>(GenDocErrc::Specification_Error)),
+    EXPECT_NE(gendoc_error_category().message(static_cast<int>(GenDocErrc::Spec_Violated)),
               gendoc_error_category().message(0));
-    EXPECT_NE(gendoc_error_category().message(static_cast<int>(GenDocErrc::Non_Existent_Root_Error)),
+    EXPECT_NE(gendoc_error_category().message(static_cast<int>(GenDocErrc::Root_Does_Not_Exist)),
               gendoc_error_category().message(0));
 }
 
 TEST(GenDocCommandTest, Error_Codes_Are_Mapped_To_Appropriate_Error_Conditions)
 {
-    EXPECT_EQ(std::error_code(GenDocErrc::File_Write_Error), CommandError::File_Access_Error);
-    EXPECT_EQ(std::error_code(GenDocErrc::File_Read_Error), CommandError::File_Access_Error);
-    EXPECT_EQ(std::error_code(GenDocErrc::Create_Output_Dir_Error), CommandError::File_Access_Error);
-    EXPECT_EQ(std::error_code(GenDocErrc::Protobuf_Error), CommandError::Protobuf_Error);
-    EXPECT_EQ(std::error_code(GenDocErrc::Specification_Error), CommandError::Logic_Error);
-    EXPECT_EQ(std::error_code(GenDocErrc::Non_Existent_Root_Error), CommandError::Argument_Error);
+    EXPECT_EQ(std::error_code(GenDocErrc::File_Write_Failed), CommandError::File_Operation_Failed);
+    EXPECT_EQ(std::error_code(GenDocErrc::File_Read_Failed), CommandError::File_Operation_Failed);
+    EXPECT_EQ(std::error_code(GenDocErrc::Create_Output_Dir_Failed), CommandError::File_Operation_Failed);
+    EXPECT_EQ(std::error_code(GenDocErrc::Protobuf_Parsing_Failed), CommandError::Protobuf_Parsing_Failed);
+    EXPECT_EQ(std::error_code(GenDocErrc::Spec_Violated), CommandError::Spec_Violated);
+    EXPECT_EQ(std::error_code(GenDocErrc::Root_Does_Not_Exist), CommandError::Invalid_Argument);
 }
 
 TEST(GenDocCommandTest, Help_Is_Defined_For_The_Command)

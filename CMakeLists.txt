@@ -55,6 +55,8 @@ set(sources
     src/app.h
     src/app.cpp
     src/exception.h
+    src/utils.h
+    src/utils.cpp
     src/commands/command.h
     src/commands/command.cpp
     src/commands/command_id.h

@@ -17,23 +17,23 @@ namespace busrpc {
 
 /// Command-specific error code.
 enum class GenDocErrc {
-    /// Failed to write generated files with documentation to the output directory.
-    File_Write_Error = 1,
+    /// Failed to write generated documentation to the output directory.
+    File_Write_Failed = 1,
 
-    /// Failed to read a protobuf file when building documentation.
-    File_Read_Error = 2,
+    /// Failed to read a source file for documentation.
+    File_Read_Failed = 2,
 
     /// Failed to create output directory.
-    Create_Output_Dir_Error = 3,
+    Create_Output_Dir_Failed = 3,
 
     /// Failed to parse protobuf file.
-    Protobuf_Error = 4,
+    Protobuf_Parsing_Failed = 4,
 
     /// Busrpc specification is violated.
-    Specification_Error = 5,
+    Spec_Violated = 5,
 
-    /// Root directory does not exist.
-    Non_Existent_Root_Error = 6
+    /// Busrpc root directory does not exist.
+    Root_Does_Not_Exist = 6
 };
 
 /// Return error category for the \c gendoc command.
@@ -64,7 +64,7 @@ struct GenDocArgs {
     /// Documentation format (required).
     GenDocFormat format;
 
-    /// Busrpc root directory.
+    /// Busrpc root directory (the one containing 'api/' and 'services/' subdirectories).
     /// \note If empty, working directory is assumed.
     std::string rootDir = "";
 
@@ -86,7 +86,7 @@ protected:
     std::error_code tryExecuteImpl(std::ostream& out, std::ostream& err) const override;
 };
 
-/// Define \c configure command line options and set a \a callback to be invoked when \a app encounters the command.
+/// Define \c gendoc command line options and set a \a callback to be invoked when \a app encounters the command.
 void DefineCommand(CLI::App& app, const std::function<void(GenDocArgs)>& callback);
 } // namespace busrpc
 

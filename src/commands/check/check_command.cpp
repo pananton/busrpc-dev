@@ -12,12 +12,12 @@ public:
     std::string message(int code) const override
     {
         switch (static_cast<CheckErrc>(code)) {
-        case CheckErrc::File_Read_Error: return "failed to read file";
-        case CheckErrc::Protobuf_Error: return "protobuf parsing error";
-        case CheckErrc::Style_Error: return "busrpc protobuf style guide is violated";
-        case CheckErrc::Docs_Error: return "undocumented entities found";
-        case CheckErrc::Specification_Error: return "busrpc specification is violated";
-        case CheckErrc::Non_Existent_Root_Error: return "root directory does not exist";
+        case CheckErrc::File_Read_Failed: return "failed to read file";
+        case CheckErrc::Protobuf_Parsing_Failed: return "failed to parse protobuf file";
+        case CheckErrc::Protobuf_Style_Violated: return "busrpc protobuf style violated";
+        case CheckErrc::Undocumeted_Entity: return "undocumented entities detected";
+        case CheckErrc::Spec_Violated: return "busrpc specification violated";
+        case CheckErrc::Root_Does_Not_Exist: return "busrpc root directory does not exist";
         default: return "unknown error";
         }
     }
@@ -25,12 +25,12 @@ public:
     bool equivalent(int code, const std::error_condition& condition) const noexcept override
     {
         switch (static_cast<CheckErrc>(code)) {
-        case CheckErrc::File_Read_Error: return condition == CommandError::File_Access_Error;
-        case CheckErrc::Protobuf_Error: return condition == CommandError::Protobuf_Error;
-        case CheckErrc::Style_Error: return condition == CommandError::Logic_Error;
-        case CheckErrc::Docs_Error: return condition == CommandError::Logic_Error;
-        case CheckErrc::Specification_Error: return condition == CommandError::Logic_Error;
-        case CheckErrc::Non_Existent_Root_Error: return condition == CommandError::Argument_Error;
+        case CheckErrc::File_Read_Failed: return condition == CommandError::File_Operation_Failed;
+        case CheckErrc::Protobuf_Parsing_Failed: return condition == CommandError::Protobuf_Parsing_Failed;
+        case CheckErrc::Protobuf_Style_Violated: return condition == CommandError::Spec_Violated;
+        case CheckErrc::Undocumeted_Entity: return condition == CommandError::Spec_Violated;
+        case CheckErrc::Spec_Violated: return condition == CommandError::Spec_Violated;
+        case CheckErrc::Root_Does_Not_Exist: return condition == CommandError::Invalid_Argument;
         default: return false;
         }
     }
