@@ -40,6 +40,14 @@ public:
     }
 };
 
+bool IsSystemFile(std::filesystem::path filePath)
+{
+    std::filesystem::path sysPath = "google/protobuf";
+    filePath.remove_filename();
+    return !filePath.empty() &&
+           std::search(filePath.begin(), filePath.end(), sysPath.begin(), sysPath.end()) == filePath.begin();
+}
+
 void FillImportsRecursively(const protobuf::FileDescriptor* desc, std::set<std::string>& imports)
 {
     if (!desc) {
@@ -54,7 +62,9 @@ void FillImportsRecursively(const protobuf::FileDescriptor* desc, std::set<std::
     imports.insert(desc->name());
 
     for (int i = 0; i < desc->dependency_count(); ++i) {
-        FillImportsRecursively(desc->dependency(i), imports);
+        if (!IsSystemFile(desc->dependency(i)->name())) {
+            FillImportsRecursively(desc->dependency(i), imports);
+        }
     }
 }
 } // namespace

@@ -214,6 +214,34 @@ TEST(ImportsCommandTest, Command_Succeeds_If_Same_File_Specified_Multiple_Times)
     EXPECT_EQ(output[1], "file2.proto");
 }
 
+TEST(ImportsCommandTest, Command_Ignores_Imported_System_Files)
+{
+    std::ostringstream out, err;
+    TmpDir tmp;
+
+    std::string file1 = "syntax = \"proto3\";"
+                        "package test;"
+                        "import \"google/protobuf/descriptor.proto\";";
+    std::string file2 = "syntax = \"proto3\";"
+                        "package test;"
+                        "import \"file1.proto\";";
+    std::string descriptorTestFile = "syntax = \"proto3\";"
+                                     "package test;";
+
+    tmp.writeFile("file1.proto", file1);
+    tmp.writeFile("file2.proto", file2);
+    tmp.writeFile("google/protobuf/descriptor.proto", descriptorTestFile);
+
+    EXPECT_NO_THROW(ImportsCommand({{"file2.proto"}, "tmp"}).execute(out, err));
+    EXPECT_TRUE(err.str().empty());
+
+    auto output = SplitByNewline(out.str());
+
+    ASSERT_EQ(output.size(), 2);
+    EXPECT_EQ(output[0], "file1.proto");
+    EXPECT_EQ(output[1], "file2.proto");
+}
+
 TEST(ImportsCommandTest, Command_Does_Not_Output_Original_Files_If_Only_Deps_Flag_Is_Set)
 {
     std::ostringstream out, err;
