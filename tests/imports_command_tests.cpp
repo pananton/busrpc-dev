@@ -274,6 +274,33 @@ TEST(ImportsCommandTest, Command_Does_Not_Output_Original_Files_If_Only_Deps_Fla
     EXPECT_EQ(output[0], "file1.proto");
 }
 
+TEST(ImportsCommandTest, Command_Tries_To_Proceed_After_Error)
+{
+    std::ostringstream out, err;
+    TmpDir tmp;
+
+    std::string file1 = "syntax = \"proto3\";"
+                        "package test;";
+    std::string file2 = "syntax = \"proto3\";"
+                        "package test;"
+                        "import \"file1.proto\";";
+    std::string invalidFile = "syntax = ";
+
+    tmp.writeFile("file1.proto", file1);
+    tmp.writeFile("file2.proto", file2);
+    tmp.writeFile("invalid_file.proto", invalidFile);
+
+    EXPECT_COMMAND_EXCEPTION(
+        ImportsCommand({{"missing_file.proto", "invalid_file.proto", "file2.proto"}, "tmp"}).execute(out, err),
+        ImportsErrc::File_Not_Found);
+    EXPECT_FALSE(err.str().empty());
+
+    auto output = SplitByNewline(out.str());
+
+    ASSERT_EQ(output.size(), 2);
+    EXPECT_EQ(output[0], "file1.proto");
+    EXPECT_EQ(output[1], "file2.proto");
+}
 TEST(ImportsCommandTest, App_Runs_Command_If_Command_Name_Is_Specified_As_Subcommand)
 {
     std::ostringstream out, err;
