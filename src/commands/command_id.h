@@ -17,14 +17,11 @@ enum class CommandId {
     /// Output files directly or indirectly imported by the specified file(s).
     Imports = 3,
 
-    /// Configure protocol files for target language.
-    Configure = 4,
-
     /// Check API for conformance to the busrpc specification.
-    Check = 5,
+    Check = 4,
 
     /// Generate API documentation.
-    GenDoc = 6
+    GenDoc = 5
 };
 
 /// Return command name by \a id.
@@ -35,7 +32,6 @@ constexpr const char* GetCommandName(CommandId id)
     case CommandId::Help: return "help";
     case CommandId::Version: return "version";
     case CommandId::Imports: return "imports";
-    case CommandId::Configure: return "configure";
     case CommandId::Check: return "check";
     case CommandId::GenDoc: return "gendoc";
     default: return nullptr;
@@ -49,18 +45,7 @@ constexpr CommandId GetCommandId(const char* name)
     constexpr CommandId unknownId = static_cast<CommandId>(0);
 
     switch (name[0]) {
-    case 'c':
-        {
-            std::string_view cmdName(name);
-
-            if (cmdName == "check") {
-                return CommandId::Check;
-            } else if (cmdName == "configure") {
-                return CommandId::Configure;
-            } else {
-                return unknownId;
-            }
-        }
+    case 'c': return std::string_view(name) == "check" ? CommandId::Check : unknownId;
     case 'g': return std::string_view(name) == "gendoc" ? CommandId::GenDoc : unknownId;
     case 'h': return std::string_view(name) == "help" ? CommandId::Help : unknownId;
     case 'i': return std::string_view(name) == "imports" ? CommandId::Imports : unknownId;

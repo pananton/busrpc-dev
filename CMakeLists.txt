@@ -64,9 +64,6 @@ set(sources
     src/commands/error_collector.cpp
     src/commands/check/check_command.h
     src/commands/check/check_command.cpp
-    src/commands/configure/configure_command.h
-    src/commands/configure/configure_command.cpp
-    src/commands/configure/lang_options.h
     src/commands/gendoc/gendoc_command.h
     src/commands/gendoc/gendoc_command.cpp
     src/commands/help/help_command.h

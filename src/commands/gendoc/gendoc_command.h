@@ -6,8 +6,8 @@
 #include <string>
 #include <system_error>
 
-/// \dir commands/gendoc Types and utilites for \c configure command implementation.
-/// \file command.h Command \c configure implementation.
+/// \dir commands/gendoc Types and utilites for \c gendoc command implementation.
+/// \file command.h Command \c gendoc implementation.
 
 namespace CLI {
 class App;
@@ -42,7 +42,7 @@ const std::error_category& gendoc_error_category();
 /// Create error code from the \ref GenDocErrc value.
 std::error_code make_error_code(GenDocErrc errc);
 
-/// Target language for which files are configured.
+/// Format of the generated documentation.
 enum class GenDocFormat {
     /// JSON.
     Json = 1

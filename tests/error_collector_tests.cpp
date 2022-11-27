@@ -1,5 +1,5 @@
 #include "commands/check/check_command.h"
-#include "commands/configure/configure_command.h"
+#include "commands/imports/imports_command.h"
 #include "commands/error_collector.h"
 
 #include <gtest/gtest.h>
@@ -91,7 +91,7 @@ TEST(ErrorCollectorTest, Error_Code_With_Different_Category_Is_Ignored)
 
     err.str("");
 
-    EXPECT_NO_THROW(col.add(ConfigureErrc::Root_Does_Not_Exist));
+    EXPECT_NO_THROW(col.add(ImportsErrc::Root_Does_Not_Exist));
     EXPECT_EQ(col.result(), CheckErrc::Undocumeted_Entity);
     EXPECT_TRUE(err.str().empty());
 }

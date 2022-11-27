@@ -1,6 +1,5 @@
 #include "app.h"
 #include "commands/check/check_command.h"
-#include "commands/configure/configure_command.h"
 #include "commands/gendoc/gendoc_command.h"
 #include "commands/help/help_command.h"
 #include "commands/imports/imports_command.h"
@@ -24,19 +23,6 @@ struct CheckOptions {
     bool skipDocsChecks = false;
     bool skipStyleChecks = false;
     bool warningAsError = false;
-};
-
-struct ConfigureOptions {
-    std::string lang = "";
-    std::vector<std::string> files = {};
-    std::string rootDir = "";
-    std::string outputDir = "";
-
-    // group of java options
-
-    std::string javaPackage = "";
-    std::string javaOuterClassName = "";
-    bool javaMultipleFiles = false;
 };
 
 struct GenDocOptions {
@@ -102,56 +88,6 @@ void DefineCommand(CLI::App& app, const std::function<void(CheckArgs)>& callback
     app.add_flag("-w,--warning-as-error", optsPtr->warningAsError, "Treat warnings as errors");
 }
 
-void DefineCommand(CLI::App& app, const std::function<void(ConfigureArgs)>& callback)
-{
-    assert(callback);
-
-    auto optsPtr = std::make_shared<ConfigureOptions>();
-    app.description("Configure protobuf files for the target language");
-    app.positionals_at_end(true);
-
-    app.final_callback([callback, optsPtr]() {
-        if (optsPtr->lang == GetConfigureLangStr(ConfigureLang::Java)) {
-            JavaOptions confOpts{
-                std::move(optsPtr->javaPackage), std::move(optsPtr->javaOuterClassName), optsPtr->javaMultipleFiles};
-
-            callback({std::move(confOpts),
-                      std::move(optsPtr->files),
-                      std::move(optsPtr->rootDir),
-                      std::move(optsPtr->outputDir)});
-        }
-    });
-
-    app.add_option("--lang", optsPtr->lang, "Target language")
-        ->required(true)
-        ->check(CLI::IsMember(std::set<std::string>{GetConfigureLangStr(ConfigureLang::Java)}));
-
-    AddRootOption(app, optsPtr->rootDir);
-    AddOutputDirOption(app, optsPtr->outputDir);
-    AddProtobufFilesPositionalOption(app, optsPtr->files);
-
-    // java configuration options
-
-    const char* javaGroup = "Java configuration options";
-    auto javaOptsValidator = [&app](const std::string&) -> std::string {
-        if (app.get_option("--lang")->as<std::string>() != GetConfigureLangStr(ConfigureLang::Java)) {
-            return "Supported only for java language";
-        }
-
-        return {};
-    };
-
-    app.add_option("--java-package-prefix", optsPtr->javaPackage, "Java package name")
-        ->group(javaGroup)
-        ->check(javaOptsValidator);
-    app.add_option("--java-outer-class", optsPtr->javaPackage, "Java outer class name")
-        ->group(javaGroup)
-        ->check(javaOptsValidator);
-    app.add_flag("--java-multiple-files", optsPtr->javaMultipleFiles, "Use a separate file for each generated class")
-        ->group(javaGroup)
-        ->check(javaOptsValidator);
-}
-
 void DefineCommand(CLI::App& app, const std::function<void(GenDocArgs)>& callback)
 {
     assert(callback);
@@ -198,7 +134,6 @@ void DefineCommand(CLI::App& app, const std::function<void(HelpArgs)>& callback)
 
     app.add_option("command", optsPtr->commandName, "Name of the command")
         ->check(CLI::IsMember(std::set<std::string>{GetCommandName(CommandId::Check),
-                                                    GetCommandName(CommandId::Configure),
                                                     GetCommandName(CommandId::GenDoc),
                                                     GetCommandName(CommandId::Help),
                                                     GetCommandName(CommandId::Imports),
@@ -242,7 +177,6 @@ void InitApp(CLI::App& app, std::ostream& out, std::ostream& err)
     });
 
     DefineCommand(*app.add_subcommand(GetCommandName(CommandId::Check)), CreateInvoker<CheckCommand>(out, err));
-    DefineCommand(*app.add_subcommand(GetCommandName(CommandId::Configure)), CreateInvoker<ConfigureCommand>(out, err));
     DefineCommand(*app.add_subcommand(GetCommandName(CommandId::GenDoc)), CreateInvoker<GenDocCommand>(out, err));
     DefineCommand(*app.add_subcommand(GetCommandName(CommandId::Help)), CreateInvoker<HelpCommand>(out, err));
     DefineCommand(*app.add_subcommand(GetCommandName(CommandId::Imports)), CreateInvoker<ImportsCommand>(out, err));

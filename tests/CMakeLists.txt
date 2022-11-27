@@ -19,7 +19,6 @@ set(sources
     command_tests.cpp
     error_collector_tests.cpp
     check_command_tests.cpp
-    configure_command_tests.cpp
     gendoc_command_tests.cpp
     help_command_tests.cpp
     imports_command_tests.cpp
