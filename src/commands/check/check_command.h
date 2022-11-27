@@ -47,19 +47,37 @@ const std::error_category& check_error_category();
 std::error_code make_error_code(CheckErrc errc);
 
 /// Arguments of the \c check command.
-struct CheckArgs {
-    /// Busrpc root directory (the one containing 'api/' and 'services/' subdirectories).
+class CheckArgs {
+public:
+    /// Create \c check command arguments.
+    CheckArgs(std::string rootDir = {},
+              bool skipDocsChecks = false,
+              bool skipStyleChecks = false,
+              bool warningAsError = false):
+        rootDir_(std::move(rootDir)),
+        skipDocsChecks_(skipDocsChecks),
+        skipStyleChecks_(skipStyleChecks),
+        warningAsError_(warningAsError)
+    { }
+
+    /// Return busrpc root directory (the one containing 'api/' and 'services/' subdirectories).
     /// \note If empty, working directory is assumed.
-    std::string rootDir = "";
+    const std::string& rootDir() const noexcept { return rootDir_; }
 
-    /// Skip checks that verify API entities are documented.
-    bool skip_docs_checks = false;
+    /// Return flag indicating whether documentation rules check should be skipped.
+    bool skipDocsChecks() const noexcept { return skipDocsChecks_; }
 
-    /// Skip protobuf code style checks.
-    bool skip_style_checks = false;
+    /// Return flag indicating whether documentation rules check should be skipped.
+    bool skipStyleChecks() const noexcept { return skipStyleChecks_; }
 
-    /// Treat warnings as errors.
-    bool warning_as_error = false;
+    /// Return flag indicating whether warnings should be treated as errors.
+    bool warningAsError() const noexcept { return warningAsError_; }
+
+private:
+    std::string rootDir_;
+    bool skipDocsChecks_;
+    bool skipStyleChecks_;
+    bool warningAsError_;
 };
 
 /// Check API for conformance to the busrpc specification.

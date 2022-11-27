@@ -24,7 +24,7 @@ const std::error_category& version_error_category();
 std::error_code make_error_code(VersionErrc errc);
 
 /// Arguments of the \c version command.
-struct VersionArgs { };
+class VersionArgs { };
 
 /// Output busrpc development tool version.
 class VersionCommand: public Command<CommandId::Version, VersionArgs> {

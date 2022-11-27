@@ -12,13 +12,13 @@ public:
     std::string message(int code) const override
     {
         switch (static_cast<CheckErrc>(code)) {
-        case CheckErrc::File_Read_Failed: return "failed to read file";
-        case CheckErrc::Protobuf_Parsing_Failed: return "failed to parse protobuf file";
-        case CheckErrc::Protobuf_Style_Violated: return "busrpc protobuf style violated";
-        case CheckErrc::Undocumeted_Entity: return "undocumented entities detected";
-        case CheckErrc::Spec_Violated: return "busrpc specification violated";
-        case CheckErrc::Root_Does_Not_Exist: return "busrpc root directory does not exist";
-        default: return "unknown error";
+        case CheckErrc::File_Read_Failed: return "Failed to read file";
+        case CheckErrc::Protobuf_Parsing_Failed: return "Failed to parse protobuf file";
+        case CheckErrc::Protobuf_Style_Violated: return "Busrpc protobuf style violated";
+        case CheckErrc::Undocumeted_Entity: return "Undocumented entities detected";
+        case CheckErrc::Spec_Violated: return "Busrpc specification violated";
+        case CheckErrc::Root_Does_Not_Exist: return "Busrpc root directory does not exist";
+        default: return "Unknown error";
         }
     }
 

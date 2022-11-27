@@ -38,16 +38,29 @@ const std::error_category& imports_error_category();
 std::error_code make_error_code(ImportsErrc errc);
 
 /// Arguments of the \c imports command.
-struct ImportsArgs {
+class ImportsArgs {
+public:
+    /// Create \c imports command arguments.
+    ImportsArgs(std::vector<std::string> files = {}, std::string rootDir = {}, bool onlyDeps = false):
+        files_(std::move(files)),
+        rootDir_(std::move(rootDir)),
+        onlyDeps_(onlyDeps)
+    { }
+
     /// Files which imports to output (should be nested in the busrpc root directory).
-    std::vector<std::string> files = {};
+    const std::vector<std::string>& files() const noexcept { return files_; }
 
-    /// Busrpc root directory (the one containing 'api/' and 'services/' subdirectories).
+    /// Return busrpc root directory (the one containing 'api/' and 'services/' subdirectories).
     /// \note If empty, working directory is assumed.
-    std::string rootDir = "";
+    const std::string& rootDir() const noexcept { return rootDir_; }
 
-    /// Only output paths to the dependencies, do not output paths to \ref files themselves.
-    bool only_deps = false;
+    /// Return flag indicating whether \ref files themselves should not be outputted.
+    bool onlyDeps() const noexcept { return onlyDeps_; }
+
+private:
+    std::vector<std::string> files_;
+    std::string rootDir_;
+    bool onlyDeps_;
 };
 
 /// Output relative paths to the files directly or indirectly imported by the specified file(s).

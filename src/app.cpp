@@ -15,13 +15,28 @@
 #include <string>
 #include <vector>
 
+namespace busrpc {
+
 namespace {
+
+struct CheckOptions {
+    std::string rootDir = "";
+    bool skipDocsChecks = false;
+    bool skipStyleChecks = false;
+    bool warningAsError = false;
+};
 
 struct ConfigureOptions {
     std::string lang = "";
     std::vector<std::string> files = {};
     std::string rootDir = "";
     std::string outputDir = "";
+
+    // group of java options
+
+    std::string javaPackage = "";
+    std::string javaOuterClassName = "";
+    bool javaMultipleFiles = false;
 };
 
 struct GenDocOptions {
@@ -32,6 +47,12 @@ struct GenDocOptions {
 
 struct HelpOptions {
     std::string commandName = "";
+};
+
+struct ImportsOptions {
+    std::vector<std::string> files = {};
+    std::string rootDir = "";
+    bool onlyDeps = false;
 };
 
 template<typename TCommand>
@@ -62,21 +83,23 @@ void AddProtobufFilesPositionalOption(CLI::App& app, std::vector<std::string>& f
 
 } // namespace
 
-namespace busrpc {
-
 void DefineCommand(CLI::App& app, const std::function<void(CheckArgs)>& callback)
 {
     assert(callback);
 
-    auto argsPtr = std::make_shared<CheckArgs>();
+    auto optsPtr = std::make_shared<CheckOptions>();
     app.description("Check API for conformance to the busrpc specification");
-    app.final_callback([callback, argsPtr]() { callback({std::move(*argsPtr)}); });
 
-    AddRootOption(app, argsPtr->rootDir);
+    app.final_callback([callback, optsPtr]() {
+        callback(
+            {std::move(optsPtr->rootDir), optsPtr->skipDocsChecks, optsPtr->skipStyleChecks, optsPtr->warningAsError});
+    });
 
-    app.add_flag("--skip-docs", argsPtr->skip_docs_checks, "Skip API documentation checks");
-    app.add_flag("--skip-style", argsPtr->skip_style_checks, "Skip API protobuf style checks");
-    app.add_flag("-w,--warning-as-error", argsPtr->warning_as_error, "Treat warnings as errors");
+    AddRootOption(app, optsPtr->rootDir);
+
+    app.add_flag("--skip-docs", optsPtr->skipDocsChecks, "Skip API documentation checks");
+    app.add_flag("--skip-style", optsPtr->skipStyleChecks, "Skip API protobuf style checks");
+    app.add_flag("-w,--warning-as-error", optsPtr->warningAsError, "Treat warnings as errors");
 }
 
 void DefineCommand(CLI::App& app, const std::function<void(ConfigureArgs)>& callback)
@@ -86,25 +109,47 @@ void DefineCommand(CLI::App& app, const std::function<void(ConfigureArgs)>& call
     auto optsPtr = std::make_shared<ConfigureOptions>();
     app.description("Configure protobuf files for the target language");
     app.positionals_at_end(true);
+
     app.final_callback([callback, optsPtr]() {
-        ConfigureLang lang = static_cast<ConfigureLang>(0);
+        if (optsPtr->lang == GetConfigureLangStr(ConfigureLang::Java)) {
+            JavaOptions confOpts{
+                std::move(optsPtr->javaPackage), std::move(optsPtr->javaOuterClassName), optsPtr->javaMultipleFiles};
 
-        if (optsPtr->lang == GetConfigureLangStr(ConfigureLang::Golang)) {
-            lang = ConfigureLang::Golang;
+            callback({std::move(confOpts),
+                      std::move(optsPtr->files),
+                      std::move(optsPtr->rootDir),
+                      std::move(optsPtr->outputDir)});
         }
-
-        assert(lang != static_cast<ConfigureLang>(0));
-
-        callback({lang, std::move(optsPtr->files), std::move(optsPtr->rootDir), std::move(optsPtr->outputDir)});
     });
 
     app.add_option("--lang", optsPtr->lang, "Target language")
         ->required(true)
-        ->check(CLI::IsMember(std::set<std::string>{GetConfigureLangStr(ConfigureLang::Golang)}));
+        ->check(CLI::IsMember(std::set<std::string>{GetConfigureLangStr(ConfigureLang::Java)}));
 
     AddRootOption(app, optsPtr->rootDir);
     AddOutputDirOption(app, optsPtr->outputDir);
     AddProtobufFilesPositionalOption(app, optsPtr->files);
+
+    // java configuration options
+
+    const char* javaGroup = "Java configuration options";
+    auto javaOptsValidator = [&app](const std::string&) -> std::string {
+        if (app.get_option("--lang")->as<std::string>() != GetConfigureLangStr(ConfigureLang::Java)) {
+            return "Supported only for java language";
+        }
+
+        return {};
+    };
+
+    app.add_option("--java-package-prefix", optsPtr->javaPackage, "Java package name")
+        ->group(javaGroup)
+        ->check(javaOptsValidator);
+    app.add_option("--java-outer-class", optsPtr->javaPackage, "Java outer class name")
+        ->group(javaGroup)
+        ->check(javaOptsValidator);
+    app.add_flag("--java-multiple-files", optsPtr->javaMultipleFiles, "Use a separate file for each generated class")
+        ->group(javaGroup)
+        ->check(javaOptsValidator);
 }
 
 void DefineCommand(CLI::App& app, const std::function<void(GenDocArgs)>& callback)
@@ -113,6 +158,7 @@ void DefineCommand(CLI::App& app, const std::function<void(GenDocArgs)>& callbac
 
     auto optsPtr = std::make_shared<GenDocOptions>();
     app.description("Generate API documentation");
+
     app.final_callback([callback, optsPtr]() {
         GenDocFormat format = static_cast<GenDocFormat>(0);
 
@@ -139,6 +185,7 @@ void DefineCommand(CLI::App& app, const std::function<void(HelpArgs)>& callback)
 
     auto optsPtr = std::make_shared<HelpOptions>();
     app.description("Show help about the command");
+
     app.final_callback([callback, optsPtr]() {
         std::optional<CommandId> id(GetCommandId(optsPtr->commandName.c_str()));
 
@@ -162,16 +209,19 @@ void DefineCommand(CLI::App& app, const std::function<void(ImportsArgs)>& callba
 {
     assert(callback);
 
-    auto argsPtr = std::make_shared<ImportsArgs>();
+    auto optsPtr = std::make_shared<ImportsOptions>();
     app.description("Output relative paths to the files directly or indirectly imported by the specified file(s)");
-    app.final_callback([callback, argsPtr]() { callback({std::move(*argsPtr)}); });
     app.positionals_at_end(true);
 
-    AddRootOption(app, argsPtr->rootDir);
-    AddProtobufFilesPositionalOption(app, argsPtr->files);
+    app.final_callback([callback, optsPtr]() {
+        callback({std::move(optsPtr->files), std::move(optsPtr->rootDir), optsPtr->onlyDeps});
+    });
+
+    AddRootOption(app, optsPtr->rootDir);
+    AddProtobufFilesPositionalOption(app, optsPtr->files);
 
     app.add_flag("--only-deps",
-                 argsPtr->only_deps,
+                 optsPtr->onlyDeps,
                  "Only output paths to the dependencies, do not output paths to the files themselves");
 }
 

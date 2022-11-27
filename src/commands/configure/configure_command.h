@@ -1,10 +1,12 @@
 #pragma once
 
 #include "commands/command.h"
+#include "commands/configure/lang_options.h"
 
 #include <functional>
 #include <string>
 #include <system_error>
+#include <variant>
 #include <vector>
 
 /// \dir commands/configure Types and utilites for \c configure command implementation.
@@ -45,40 +47,55 @@ std::error_code make_error_code(ConfigureErrc errc);
 
 /// Target language for which files are configured.
 enum class ConfigureLang {
-    /// Golang.
-    Golang = 1
+    /// Java.
+    Java = 1
 };
 
 constexpr const char* GetConfigureLangStr(ConfigureLang lang)
 {
     switch (lang) {
-    case ConfigureLang::Golang: return "go";
+    case ConfigureLang::Java: return "java";
     default: return nullptr;
     }
 }
 
 /// Arguments of the \c configure command.
-struct ConfigureArgs {
+class ConfigureArgs {
+public:
     /// Create \c configure command arguments.
-    ConfigureArgs(ConfigureLang lang,
+    ConfigureArgs(JavaOptions options,
                   std::vector<std::string> files = {},
                   std::string rootDir = {},
-                  std::string outputDir = {});
+                  std::string outputDir = {}):
+        options_(std::move(options)),
+        files_(std::move(files)),
+        rootDir_(std::move(rootDir)),
+        outputDir_(std::move(outputDir_))
+    { }
 
-    /// Target language (required).
-    ConfigureLang lang;
+    /// Return target language.
+    ConfigureLang lang() const noexcept;
 
-    /// Files to configure (should be specified relatively to the busrpc root directory).
-    /// \note Can be empty. In that case, command will create output directory (if does not exist) and then return.
-    std::vector<std::string> files = {};
+    /// Return configuration options for target language.
+    const std::variant<JavaOptions>& options() const noexcept { return options_; }
 
-    /// Busrpc root directory (the one containing 'api/' and 'services' subdirectories).
+    /// Return files to configure.
+    /// \note Output directory still created (if not already exists), however no files are written to it.
+    const std::vector<std::string>& files() const noexcept { return files_; }
+
+    /// Return busrpc root directory (the one containing 'api/' and 'services' subdirectories).
     /// \note If empty, working directory is assumed.
-    std::string rootDir = "";
+    const std::string& rootDir() const noexcept { return rootDir_; }
 
-    /// Output directory.
+    /// Return directory where to write configured files.
     /// \note If empty, '_configured/' subdirectory of the working directory is assumed.
-    std::string outputDir = "";
+    const std::string& outputDir() const noexcept { return outputDir_; }
+
+private:
+    std::variant<JavaOptions> options_;
+    std::vector<std::string> files_;
+    std::string rootDir_;
+    std::string outputDir_;
 };
 
 /// Configure protocol files for target language.

@@ -9,7 +9,7 @@ namespace {
 class VersionErrorCategory: public std::error_category {
 public:
     const char* name() const noexcept override { return "version"; }
-    std::string message(int) const override { return "unknown error"; }
+    std::string message(int) const override { return "Unknown error"; }
     bool equivalent(int, const std::error_condition&) const noexcept override { return false; }
 };
 

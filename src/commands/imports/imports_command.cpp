@@ -20,11 +20,11 @@ public:
     std::string message(int code) const override
     {
         switch (static_cast<ImportsErrc>(code)) {
-        case ImportsErrc::File_Read_Failed: return "failed to read file";
-        case ImportsErrc::Protobuf_Parsing_Failed: return "protobuf parsing error";
-        case ImportsErrc::File_Not_Found: return "file not found";
-        case ImportsErrc::Root_Does_Not_Exist: return "busrpc root directory does not exist";
-        default: return "unknown error";
+        case ImportsErrc::File_Read_Failed: return "Failed to read file";
+        case ImportsErrc::Protobuf_Parsing_Failed: return "Protobuf parsing error";
+        case ImportsErrc::File_Not_Found: return "File not found";
+        case ImportsErrc::Root_Does_Not_Exist: return "Busrpc root directory does not exist";
+        default: return "Unknown error";
         }
     }
 
@@ -77,11 +77,11 @@ std::error_code ImportsCommand::tryExecuteImpl(std::ostream& out, std::ostream& 
     std::filesystem::path rootPath;
 
     try {
-        InitCanonicalPathToExistingDirectory(rootPath, args().rootDir);
+        InitCanonicalPathToExistingDirectory(rootPath, args().rootDir());
     } catch (const std::filesystem::filesystem_error&) { }
 
     if (rootPath.empty()) {
-        ecol.add(ImportsErrc::Root_Does_Not_Exist, "root directory '" + args().rootDir + "' does not exist");
+        ecol.add(ImportsErrc::Root_Does_Not_Exist, "Root directory '" + args().rootDir() + "' does not exist");
         return ecol.result();
     }
 
@@ -89,19 +89,19 @@ std::error_code ImportsCommand::tryExecuteImpl(std::ostream& out, std::ostream& 
     sourceTree.MapPath("", rootPath.generic_string());
     protobuf::compiler::Importer importer(&sourceTree, ecol.getProtobufCollector());
 
-    for (const auto& file: args().files) {
+    for (const auto& file: args().files()) {
         std::filesystem::path filePath;
 
         try {
             if (!InitRelativePathToExistingFile(filePath, file, rootPath)) {
-                ecol.add(ImportsErrc::File_Not_Found, "file '" + file + "' is not found");
+                ecol.add(ImportsErrc::File_Not_Found, "File '" + file + "' is not found");
             }
         } catch (const std::filesystem::filesystem_error&) {
-            ecol.add(ImportsErrc::File_Read_Failed, "failed to access file '" + file + "'");
+            ecol.add(ImportsErrc::File_Read_Failed, "Failed to access file '" + file + "'");
         }
 
         if (!filePath.empty()) {
-            if (args().only_deps) {
+            if (args().onlyDeps()) {
                 ignored.insert(filePath.generic_string());
             }
 

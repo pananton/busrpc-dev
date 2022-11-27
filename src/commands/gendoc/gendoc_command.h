@@ -57,20 +57,30 @@ constexpr const char* GetGenDocFormatStr(GenDocFormat lang)
 }
 
 /// Arguments of the \c gendoc command.
-struct GenDocArgs {
+class GenDocArgs {
+public:
     /// Create \c gendoc command arguments.
-    GenDocArgs(GenDocFormat format, std::string rootDir = {}, std::string outputDir = {});
+    GenDocArgs(GenDocFormat format, std::string rootDir = {}, std::string outputDir = {}):
+        format_(format),
+        rootDir_(std::move(rootDir)),
+        outputDir_(std::move(outputDir))
+    { }
 
-    /// Documentation format (required).
-    GenDocFormat format;
+    /// Return documentation format (required).
+    GenDocFormat format() const noexcept { return format_; }
 
-    /// Busrpc root directory (the one containing 'api/' and 'services/' subdirectories).
+    /// Return busrpc root directory (the one containing 'api/' and 'services/' subdirectories).
     /// \note If empty, working directory is assumed.
-    std::string rootDir = "";
+    const std::string& rootDir() const noexcept { return rootDir_; }
 
-    /// Output directory.
+    /// Return directory where to write documentation files.
     /// \note If empty, '_docs/' subdirectory of the working directory is assumed.
-    std::string outputDir = "";
+    const std::string& outputDir() const noexcept { return outputDir_; }
+
+private:
+    GenDocFormat format_;
+    std::string rootDir_;
+    std::string outputDir_;
 };
 
 /// Generate API documentation.

@@ -12,13 +12,13 @@ public:
     std::string message(int code) const override
     {
         switch (static_cast<GenDocErrc>(code)) {
-        case GenDocErrc::File_Write_Failed: return "failed to write file";
-        case GenDocErrc::File_Read_Failed: return "failed to read file";
-        case GenDocErrc::Create_Output_Dir_Failed: return "failed to create output directory";
-        case GenDocErrc::Protobuf_Parsing_Failed: return "failed to parse protobuf file";
-        case GenDocErrc::Spec_Violated: return "busrpc specification is violated";
-        case GenDocErrc::Root_Does_Not_Exist: return "busrpc root directory does not exist";
-        default: return "unknown error";
+        case GenDocErrc::File_Write_Failed: return "Failed to write file";
+        case GenDocErrc::File_Read_Failed: return "Failed to read file";
+        case GenDocErrc::Create_Output_Dir_Failed: return "Failed to create output directory";
+        case GenDocErrc::Protobuf_Parsing_Failed: return "Failed to parse protobuf file";
+        case GenDocErrc::Spec_Violated: return "Busrpc specification is violated";
+        case GenDocErrc::Root_Does_Not_Exist: return "Busrpc root directory does not exist";
+        default: return "Unknown error";
         }
     }
 
@@ -36,12 +36,6 @@ public:
     }
 };
 } // namespace
-
-GenDocArgs::GenDocArgs(GenDocFormat format, std::string rootDir, std::string outputDir):
-    format(format),
-    rootDir(std::move(rootDir)),
-    outputDir(std::move(outputDir))
-{ }
 
 std::error_code GenDocCommand::tryExecuteImpl(std::ostream&, std::ostream&) const
 {

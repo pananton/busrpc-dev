@@ -1,5 +1,6 @@
 #include "commands/configure/configure_command.h"
 
+#include <cassert>
 #include <string>
 
 namespace busrpc {
@@ -12,13 +13,13 @@ public:
     std::string message(int code) const override
     {
         switch (static_cast<ConfigureErrc>(code)) {
-        case ConfigureErrc::File_Write_Failed: return "failed to write file";
-        case ConfigureErrc::File_Read_Failed: return "failed to read file";
-        case ConfigureErrc::Create_Output_Dir_Failed: return "failed to create output directory";
-        case ConfigureErrc::Protobuf_Parsing_Failed: return "failed to parse protobuf file";
-        case ConfigureErrc::File_Not_Found: return "file not found";
-        case ConfigureErrc::Root_Does_Not_Exist: return "busrpc root directory does not exist";
-        default: return "unknown error";
+        case ConfigureErrc::File_Write_Failed: return "Failed to write file";
+        case ConfigureErrc::File_Read_Failed: return "Failed to read file";
+        case ConfigureErrc::Create_Output_Dir_Failed: return "Failed to create output directory";
+        case ConfigureErrc::Protobuf_Parsing_Failed: return "Failed to parse protobuf file";
+        case ConfigureErrc::File_Not_Found: return "File not found";
+        case ConfigureErrc::Root_Does_Not_Exist: return "Busrpc root directory does not exist";
+        default: return "Unknown error";
         }
     }
 
@@ -37,15 +38,13 @@ public:
 };
 } // namespace
 
-ConfigureArgs::ConfigureArgs(ConfigureLang lang,
-                             std::vector<std::string> files,
-                             std::string rootDir,
-                             std::string outputDir):
-    lang(lang),
-    files(std::move(files)),
-    rootDir(std::move(rootDir)),
-    outputDir(std::move(outputDir))
-{ }
+ConfigureLang ConfigureArgs::lang() const noexcept
+{
+    switch (options_.index()) {
+    case 0: return ConfigureLang::Java;
+    default: assert(false); return static_cast<ConfigureLang>(0);
+    }
+}
 
 std::error_code ConfigureCommand::tryExecuteImpl(std::ostream&, std::ostream&) const
 {

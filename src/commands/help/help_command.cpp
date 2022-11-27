@@ -11,7 +11,7 @@ namespace {
 class HelpErrorCategory: public std::error_category {
 public:
     const char* name() const noexcept override { return "help"; }
-    std::string message(int) const override { return "unknown error"; }
+    std::string message(int) const override { return "Unknown error"; }
     bool equivalent(int, const std::error_condition&) const noexcept override { return false; }
 };
 } // namespace
@@ -20,7 +20,7 @@ std::error_code HelpCommand::tryExecuteImpl(std::ostream& out, std::ostream&) co
 {
     CLI::App app;
     InitApp(app);
-    const char* commandName = args().commandId ? GetCommandName(*(args().commandId)) : nullptr;
+    const char* commandName = args().commandId() ? GetCommandName(*(args().commandId())) : nullptr;
     CLI::App* appCommand = commandName ? app.get_subcommand(commandName) : &app;
 
     out << appCommand->help() << std::endl;

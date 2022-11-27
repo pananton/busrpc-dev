@@ -25,10 +25,17 @@ const std::error_category& help_error_category();
 std::error_code make_error_code(HelpErrc errc);
 
 /// Arguments of the \c help command.
-struct HelpArgs {
-    /// Command identifier.
+class HelpArgs {
+public:
+    /// Create \c help command arguments.
+    HelpArgs(std::optional<CommandId> commandId = std::nullopt): commandId_(std::move(commandId)) { }
+
+    /// Return identifier of the command for which help message should be outputted.
     /// \note If not set, then command outputs short information about all supported commands.
-    std::optional<CommandId> commandId = std::nullopt;
+    const std::optional<CommandId>& commandId() const noexcept { return commandId_; }
+
+private:
+    std::optional<CommandId> commandId_;
 };
 
 /// Output information about command.
