@@ -39,7 +39,7 @@ TEST(GenDocCommandTest, Description_For_Unknown_Command_Error_Code_Differs_From_
               gendoc_error_category().message(0));
     EXPECT_NE(gendoc_error_category().message(static_cast<int>(GenDocErrc::Spec_Violated)),
               gendoc_error_category().message(0));
-    EXPECT_NE(gendoc_error_category().message(static_cast<int>(GenDocErrc::Root_Does_Not_Exist)),
+    EXPECT_NE(gendoc_error_category().message(static_cast<int>(GenDocErrc::Project_Dir_Does_Not_Exist)),
               gendoc_error_category().message(0));
 }
 
@@ -50,7 +50,7 @@ TEST(GenDocCommandTest, Error_Codes_Are_Mapped_To_Appropriate_Error_Conditions)
     EXPECT_EQ(std::error_code(GenDocErrc::Create_Output_Dir_Failed), CommandError::File_Operation_Failed);
     EXPECT_EQ(std::error_code(GenDocErrc::Protobuf_Parsing_Failed), CommandError::Protobuf_Parsing_Failed);
     EXPECT_EQ(std::error_code(GenDocErrc::Spec_Violated), CommandError::Spec_Violated);
-    EXPECT_EQ(std::error_code(GenDocErrc::Root_Does_Not_Exist), CommandError::Invalid_Argument);
+    EXPECT_EQ(std::error_code(GenDocErrc::Project_Dir_Does_Not_Exist), CommandError::Invalid_Argument);
 }
 
 TEST(GenDocCommandTest, Help_Is_Defined_For_The_Command)

@@ -5,8 +5,8 @@
 
 namespace busrpc { namespace test {
 
-void WriteFile(const std::string& path, const std::string& content);
-std::string ReadFile(const std::string& path);
+void WriteFile(const std::filesystem::path& path, const std::string& content);
+std::string ReadFile(const std::filesystem::path& path);
 bool isNestedPath(const std::filesystem::path& root, const std::filesystem::path& path);
 
 class TmpDir {

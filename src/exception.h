@@ -17,7 +17,7 @@ public:
         commandId_(commandId)
     { }
 
-    /// Return failed command identifier.
+    /// Identifier of the failed command.
     CommandId commandId() const noexcept { return commandId_; }
 
 private:

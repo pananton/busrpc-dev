@@ -73,14 +73,25 @@ set(sources
     src/commands/version/version_command.h
     src/commands/version/version_command.cpp
     src/entities/api.h
+    src/entities/api.cpp
     src/entities/class.h
+    src/entities/class.cpp
     src/entities/constant.h
+    src/entities/constant.cpp
     src/entities/entity.h
     src/entities/enum.h
     src/entities/field.h
+    src/entities/field.cpp
     src/entities/method.h
+    src/entities/method.cpp
     src/entities/namespace.h
+    src/entities/namespace.cpp
+    src/entities/project.h
+    src/entities/project.cpp
     src/entities/service.h
+    src/entities/service.cpp
+    src/entities/services.h
+    src/entities/services.cpp
     src/entities/struct.h
     src/parser/parser.h
     src/parser/parser.cpp)

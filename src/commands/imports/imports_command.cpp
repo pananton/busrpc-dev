@@ -23,7 +23,7 @@ public:
         case ImportsErrc::File_Read_Failed: return "Failed to read file";
         case ImportsErrc::Protobuf_Parsing_Failed: return "Protobuf parsing error";
         case ImportsErrc::File_Not_Found: return "File not found";
-        case ImportsErrc::Root_Does_Not_Exist: return "Busrpc root directory does not exist";
+        case ImportsErrc::Project_Dir_Does_Not_Exist: return "Busrpc project directory does not exist";
         default: return "Unknown error";
         }
     }
@@ -34,7 +34,7 @@ public:
         case ImportsErrc::File_Read_Failed: return condition == CommandError::File_Operation_Failed;
         case ImportsErrc::Protobuf_Parsing_Failed: return condition == CommandError::Protobuf_Parsing_Failed;
         case ImportsErrc::File_Not_Found: return condition == CommandError::Invalid_Argument;
-        case ImportsErrc::Root_Does_Not_Exist: return condition == CommandError::Invalid_Argument;
+        case ImportsErrc::Project_Dir_Does_Not_Exist: return condition == CommandError::Invalid_Argument;
         default: return false;
         }
     }
@@ -74,26 +74,26 @@ std::error_code ImportsCommand::tryExecuteImpl(std::ostream& out, std::ostream& 
     ErrorCollector ecol(imports_error_category(), ImportsErrc::Protobuf_Parsing_Failed, err);
     std::set<std::string> imports;
     std::set<std::string> ignored;
-    std::filesystem::path rootPath;
+    std::filesystem::path projectPath;
 
     try {
-        InitCanonicalPathToExistingDirectory(rootPath, args().rootDir());
+        InitCanonicalPathToExistingDirectory(projectPath, args().projectDir());
     } catch (const std::filesystem::filesystem_error&) { }
 
-    if (rootPath.empty()) {
-        ecol.add(ImportsErrc::Root_Does_Not_Exist, "Root directory '" + args().rootDir() + "' does not exist");
+    if (projectPath.empty()) {
+        ecol.add(ImportsErrc::Project_Dir_Does_Not_Exist, "Project directory '" + args().projectDir() + "' does not exist");
         return ecol.result();
     }
 
     protobuf::compiler::DiskSourceTree sourceTree;
-    sourceTree.MapPath("", rootPath.generic_string());
+    sourceTree.MapPath("", projectPath.generic_string());
     protobuf::compiler::Importer importer(&sourceTree, ecol.getProtobufCollector());
 
     for (const auto& file: args().files()) {
         std::filesystem::path filePath;
 
         try {
-            if (!InitRelativePathToExistingFile(filePath, file, rootPath)) {
+            if (!InitRelativePathToExistingFile(filePath, file, projectPath)) {
                 ecol.add(ImportsErrc::File_Not_Found, "File '" + file + "' is not found");
             }
         } catch (const std::filesystem::filesystem_error&) {

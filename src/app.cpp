@@ -19,25 +19,25 @@ namespace busrpc {
 namespace {
 
 struct CheckOptions {
-    std::string rootDir = "";
+    std::string projectDir = {};
     bool skipDocsChecks = false;
     bool skipStyleChecks = false;
     bool warningAsError = false;
 };
 
 struct GenDocOptions {
-    std::string format = "";
-    std::string rootDir = "";
-    std::string outputDir = "";
+    std::string format = {};
+    std::string projectDir = {};
+    std::string outputDir = {};
 };
 
 struct HelpOptions {
-    std::string commandName = "";
+    std::string commandName = {};
 };
 
 struct ImportsOptions {
     std::vector<std::string> files = {};
-    std::string rootDir = "";
+    std::string projectDir = {};
     bool onlyDeps = false;
 };
 
@@ -49,11 +49,11 @@ auto CreateInvoker(std::ostream& out, std::ostream& err)
 
 // Functions to add common options to CLI:App
 
-void AddRootOption(CLI::App& app, std::string& root)
+void AddProjectDirOption(CLI::App& app, std::string& projectDir)
 {
-    app.add_option("-r,--root", root)
-        ->description("Busrpc root directory (the one containing 'api/' and 'services/' subdirectories)")
-        ->envname("BUSRPC_ROOT_DIR")
+    app.add_option("-r,--root", projectDir)
+        ->description("Busrpc project directory (the one containing 'api/' and 'services/' subdirectories)")
+        ->envname("BUSRPC_PROJECT_DIR")
         ->check(CLI::ExistingDirectory);
 }
 
@@ -78,10 +78,10 @@ void DefineCommand(CLI::App& app, const std::function<void(CheckArgs)>& callback
 
     app.final_callback([callback, optsPtr]() {
         callback(
-            {std::move(optsPtr->rootDir), optsPtr->skipDocsChecks, optsPtr->skipStyleChecks, optsPtr->warningAsError});
+            {std::move(optsPtr->projectDir), optsPtr->skipDocsChecks, optsPtr->skipStyleChecks, optsPtr->warningAsError});
     });
 
-    AddRootOption(app, optsPtr->rootDir);
+    AddProjectDirOption(app, optsPtr->projectDir);
 
     app.add_flag("--skip-docs", optsPtr->skipDocsChecks, "Skip API documentation checks");
     app.add_flag("--skip-style", optsPtr->skipStyleChecks, "Skip API protobuf style checks");
@@ -104,14 +104,14 @@ void DefineCommand(CLI::App& app, const std::function<void(GenDocArgs)>& callbac
 
         assert(format != static_cast<GenDocFormat>(0));
 
-        callback({format, std::move(optsPtr->rootDir), std::move(optsPtr->outputDir)});
+        callback({format, std::move(optsPtr->projectDir), std::move(optsPtr->outputDir)});
     });
 
     app.add_option("--format", optsPtr->format, "Documentation format")
         ->required(true)
         ->check(CLI::IsMember(std::set<std::string>{GetGenDocFormatStr(GenDocFormat::Json)}));
 
-    AddRootOption(app, optsPtr->rootDir);
+    AddProjectDirOption(app, optsPtr->projectDir);
     AddOutputDirOption(app, optsPtr->outputDir);
 }
 
@@ -149,10 +149,10 @@ void DefineCommand(CLI::App& app, const std::function<void(ImportsArgs)>& callba
     app.positionals_at_end(true);
 
     app.final_callback([callback, optsPtr]() {
-        callback({std::move(optsPtr->files), std::move(optsPtr->rootDir), optsPtr->onlyDeps});
+        callback({std::move(optsPtr->files), std::move(optsPtr->projectDir), optsPtr->onlyDeps});
     });
 
-    AddRootOption(app, optsPtr->rootDir);
+    AddProjectDirOption(app, optsPtr->projectDir);
     AddProtobufFilesPositionalOption(app, optsPtr->files);
 
     app.add_flag("--only-deps",

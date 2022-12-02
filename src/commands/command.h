@@ -15,8 +15,8 @@
 namespace busrpc {
 
 /// Command error.
-/// \note This \c enum is registered as an <tt>std::error_condition</tt>. It provides command-independent logical
-///       conditions to compare with command-specific detailed <tt>std::error_code</tt>.
+/// \note This \c enum is registered as an \c std::error_condition. It provides command-independent logical conditions
+///       to compare with command-specific detailed \c std::error_code.
 /// \note Many commands do not fail fast. When error is encountered, they output diagnostic information to the error
 ///       stream and continue processing. That means several errors may be encountered during a single invocation of
 ///       the command and all of them may have distinct error codes, so implementation needs to decide which code to
@@ -53,15 +53,15 @@ std::error_condition make_error_condition(CommandError e);
 class CommandBase {
 public:
     /// Create command.
-    CommandBase(CommandId id) noexcept: id_(id) { }
+    explicit CommandBase(CommandId id) noexcept: id_(id) { }
 
     /// Default virtual destructor.
     virtual ~CommandBase() = default;
 
-    /// Return command identifier.
+    /// Command identifier.
     CommandId id() const noexcept { return id_; }
 
-    /// Return command name.
+    /// Command name.
     const char* name() const noexcept { return GetCommandName(id_); }
 
     /// Execute command using \a out as \c stdout and \a err as stderr.
@@ -97,9 +97,9 @@ public:
     using ArgsType = TArgs;
 
     /// Create command with arguments \a args.
-    Command(ArgsType args): CommandBase(Id), args_(std::move(args)) { }
+    explicit Command(ArgsType args): CommandBase(Id), args_(std::move(args)) { }
 
-    /// Return command arguments.
+    /// Command arguments.
     const TArgs& args() const noexcept { return args_; }
 
 private:

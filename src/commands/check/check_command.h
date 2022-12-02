@@ -36,8 +36,8 @@ enum class CheckErrc {
     /// Busrpc specification is violated.
     Spec_Violated = 5,
 
-    /// Busrpc API root directory does not exist.
-    Root_Does_Not_Exist = 6
+    /// Busrpc project directory does not exist.
+    Project_Dir_Does_Not_Exist = 6
 };
 
 /// Return error category for the \c check command.
@@ -50,31 +50,31 @@ std::error_code make_error_code(CheckErrc errc);
 class CheckArgs {
 public:
     /// Create \c check command arguments.
-    CheckArgs(std::string rootDir = {},
+    CheckArgs(std::string projectDir = {},
               bool skipDocsChecks = false,
               bool skipStyleChecks = false,
               bool warningAsError = false):
-        rootDir_(std::move(rootDir)),
+        projectDir_(std::move(projectDir)),
         skipDocsChecks_(skipDocsChecks),
         skipStyleChecks_(skipStyleChecks),
         warningAsError_(warningAsError)
     { }
 
-    /// Return busrpc root directory (the one containing 'api/' and 'services/' subdirectories).
+    /// Busrpc project directory (the one containing 'api/' and 'services/' subdirectories).
     /// \note If empty, working directory is assumed.
-    const std::string& rootDir() const noexcept { return rootDir_; }
+    const std::string& projectDir() const noexcept { return projectDir_; }
 
-    /// Return flag indicating whether documentation rules check should be skipped.
+    /// Flag indicating whether documentation rules check should be skipped.
     bool skipDocsChecks() const noexcept { return skipDocsChecks_; }
 
-    /// Return flag indicating whether documentation rules check should be skipped.
+    /// Flag indicating whether documentation rules check should be skipped.
     bool skipStyleChecks() const noexcept { return skipStyleChecks_; }
 
-    /// Return flag indicating whether warnings should be treated as errors.
+    /// Flag indicating whether warnings should be treated as errors.
     bool warningAsError() const noexcept { return warningAsError_; }
 
 private:
-    std::string rootDir_;
+    std::string projectDir_;
     bool skipDocsChecks_;
     bool skipStyleChecks_;
     bool warningAsError_;
@@ -87,7 +87,7 @@ public:
     using BaseType = Command<CommandId::Check, CheckArgs>;
 
     /// Create command.
-    CheckCommand(CheckArgs args) noexcept: BaseType(std::move(args)) { }
+    explicit CheckCommand(CheckArgs args) noexcept: BaseType(std::move(args)) { }
 
 protected:
     std::error_code tryExecuteImpl(std::ostream& out, std::ostream& err) const override;

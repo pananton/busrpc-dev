@@ -30,7 +30,7 @@ public:
     /// Create \c help command arguments.
     HelpArgs(std::optional<CommandId> commandId = std::nullopt): commandId_(std::move(commandId)) { }
 
-    /// Return identifier of the command for which help message should be outputted.
+    /// Identifier of the command for which help message should be outputted.
     /// \note If not set, then command outputs short information about all supported commands.
     const std::optional<CommandId>& commandId() const noexcept { return commandId_; }
 

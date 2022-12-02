@@ -32,8 +32,8 @@ enum class GenDocErrc {
     /// Busrpc specification is violated.
     Spec_Violated = 5,
 
-    /// Busrpc root directory does not exist.
-    Root_Does_Not_Exist = 6
+    /// Busrpc project directory does not exist.
+    Project_Dir_Does_Not_Exist = 6
 };
 
 /// Return error category for the \c gendoc command.
@@ -48,6 +48,8 @@ enum class GenDocFormat {
     Json = 1
 };
 
+/// Return string representation of a documentation format.
+/// \note \c nullptr is returned if \a lang is unknown.
 constexpr const char* GetGenDocFormatStr(GenDocFormat lang)
 {
     switch (lang) {
@@ -60,26 +62,26 @@ constexpr const char* GetGenDocFormatStr(GenDocFormat lang)
 class GenDocArgs {
 public:
     /// Create \c gendoc command arguments.
-    GenDocArgs(GenDocFormat format, std::string rootDir = {}, std::string outputDir = {}):
+    GenDocArgs(GenDocFormat format, std::string projectDir = {}, std::string outputDir = {}):
         format_(format),
-        rootDir_(std::move(rootDir)),
+        projectDir_(std::move(projectDir)),
         outputDir_(std::move(outputDir))
     { }
 
-    /// Return documentation format (required).
+    /// Format of the documentation.
     GenDocFormat format() const noexcept { return format_; }
 
-    /// Return busrpc root directory (the one containing 'api/' and 'services/' subdirectories).
+    /// Busrpc project directory (the one containing 'api/' and 'services/' subdirectories).
     /// \note If empty, working directory is assumed.
-    const std::string& rootDir() const noexcept { return rootDir_; }
+    const std::string& projectDir() const noexcept { return projectDir_; }
 
-    /// Return directory where to write documentation files.
-    /// \note If empty, '_docs/' subdirectory of the working directory is assumed.
+    /// Output directory where to write documentation files.
+    /// \note If empty, 'docs/' subdirectory of the working directory is assumed.
     const std::string& outputDir() const noexcept { return outputDir_; }
 
 private:
     GenDocFormat format_;
-    std::string rootDir_;
+    std::string projectDir_;
     std::string outputDir_;
 };
 
@@ -90,7 +92,7 @@ public:
     using BaseType = Command<CommandId::GenDoc, GenDocArgs>;
 
     /// Create command.
-    GenDocCommand(GenDocArgs args) noexcept: BaseType(std::move(args)) { }
+    explicit GenDocCommand(GenDocArgs args) noexcept: BaseType(std::move(args)) { }
 
 protected:
     std::error_code tryExecuteImpl(std::ostream& out, std::ostream& err) const override;

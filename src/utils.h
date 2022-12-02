@@ -11,7 +11,7 @@ namespace busrpc {
 /// \throws std::filesystem::filesystem_error
 /// \note Value of \a path is not changed if any error occurs.
 /// \note If \a dir is empty, then canonical path to current directory is returned.
-bool InitCanonicalPathToExistingDirectory(std::filesystem::path& path, const std::string& dir = "");
+bool InitCanonicalPathToExistingDirectory(std::filesystem::path& path, const std::string& dir = {});
 
 /// Initialize \a path to a relative path to the existing file.
 /// \throws std::filesystem::filesystem_error

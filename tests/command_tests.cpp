@@ -12,8 +12,8 @@ namespace busrpc { namespace test {
 constexpr CommandId TestCommandId = CommandId::Imports;
 
 struct TestCommandArgs {
-    std::string output = "";
-    std::string error = "";
+    std::string output = {};
+    std::string error = {};
     std::error_code result = {0, imports_error_category()};
 };
 
@@ -71,18 +71,18 @@ TEST(CommandTest, Command_Error_Category_Is_command)
 
 TEST(CommandTest, Command_Error_Ctor_Sets_Command_Id)
 {
-    EXPECT_EQ(command_error(TestCommand::Id, ImportsErrc::Root_Does_Not_Exist).commandId(), TestCommand::Id);
+    EXPECT_EQ(command_error(TestCommand::Id, ImportsErrc::Project_Dir_Does_Not_Exist).commandId(), TestCommand::Id);
 }
 
 TEST(CommandTest, Command_Error_Ctor_Sets_Error_Code)
 {
-    EXPECT_EQ(command_error(TestCommand::Id, ImportsErrc::Root_Does_Not_Exist).code(),
-              ImportsErrc::Root_Does_Not_Exist);
+    EXPECT_EQ(command_error(TestCommand::Id, ImportsErrc::Project_Dir_Does_Not_Exist).code(),
+              ImportsErrc::Project_Dir_Does_Not_Exist);
 }
 
 TEST(CommandTest, Command_Error_Ctor_Adds_Command_Name_To_Error_Description)
 {
-    command_error err(TestCommand::Id, ImportsErrc::Root_Does_Not_Exist);
+    command_error err(TestCommand::Id, ImportsErrc::Project_Dir_Does_Not_Exist);
 
     EXPECT_NE(std::string_view(err.what()).find(GetCommandName(TestCommand::Id)), std::string_view::npos);
 }
@@ -211,7 +211,7 @@ TEST(CommandTest, Command_Is_Executed_Even_If_Output_And_Error_Streams_Are_Not_S
 
 TEST(CommandTest, Execute_Throws_Command_Error_If_Command_Fails)
 {
-    TestCommand cmd({"", "", ImportsErrc::File_Not_Found});
+    TestCommand cmd({{}, {}, ImportsErrc::File_Not_Found});
 
     EXPECT_COMMAND_EXCEPTION(cmd.execute(std::nullopt, std::nullopt), ImportsErrc::File_Not_Found);
 }

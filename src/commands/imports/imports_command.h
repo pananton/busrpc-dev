@@ -27,8 +27,8 @@ enum class ImportsErrc {
     /// File for which import tree should be built is not found.
     File_Not_Found = 3,
 
-    /// Busrpc root directory does not exist.
-    Root_Does_Not_Exist = 4
+    /// Busrpc project directory does not exist.
+    Project_Dir_Does_Not_Exist = 4
 };
 
 /// Return error category for the \c imports command.
@@ -41,25 +41,25 @@ std::error_code make_error_code(ImportsErrc errc);
 class ImportsArgs {
 public:
     /// Create \c imports command arguments.
-    ImportsArgs(std::vector<std::string> files = {}, std::string rootDir = {}, bool onlyDeps = false):
+    ImportsArgs(std::vector<std::string> files = {}, std::string projectDir = {}, bool onlyDeps = false):
         files_(std::move(files)),
-        rootDir_(std::move(rootDir)),
+        projectDir_(std::move(projectDir)),
         onlyDeps_(onlyDeps)
     { }
 
-    /// Files which imports to output (should be nested in the busrpc root directory).
+    /// Files which imports to output (should be nested in the busrpc project directory).
     const std::vector<std::string>& files() const noexcept { return files_; }
 
-    /// Return busrpc root directory (the one containing 'api/' and 'services/' subdirectories).
+    /// Busrpc project directory (the one containing 'api/' and 'services/' subdirectories).
     /// \note If empty, working directory is assumed.
-    const std::string& rootDir() const noexcept { return rootDir_; }
+    const std::string& projectDir() const noexcept { return projectDir_; }
 
-    /// Return flag indicating whether \ref files themselves should not be outputted.
+    /// Flag indicating whether \ref files themselves should not be outputted.
     bool onlyDeps() const noexcept { return onlyDeps_; }
 
 private:
     std::vector<std::string> files_;
-    std::string rootDir_;
+    std::string projectDir_;
     bool onlyDeps_;
 };
 
@@ -70,7 +70,7 @@ public:
     using BaseType = Command<CommandId::Imports, ImportsArgs>;
 
     /// Create command.
-    ImportsCommand(ImportsArgs args) noexcept: BaseType(std::move(args)) { }
+    explicit ImportsCommand(ImportsArgs args) noexcept: BaseType(std::move(args)) { }
 
 protected:
     std::error_code tryExecuteImpl(std::ostream& out, std::ostream& err) const override;

@@ -17,7 +17,7 @@ public:
         case CheckErrc::Protobuf_Style_Violated: return "Busrpc protobuf style violated";
         case CheckErrc::Undocumeted_Entity: return "Undocumented entities detected";
         case CheckErrc::Spec_Violated: return "Busrpc specification violated";
-        case CheckErrc::Root_Does_Not_Exist: return "Busrpc root directory does not exist";
+        case CheckErrc::Project_Dir_Does_Not_Exist: return "Busrpc project directory does not exist";
         default: return "Unknown error";
         }
     }
@@ -30,7 +30,7 @@ public:
         case CheckErrc::Protobuf_Style_Violated: return condition == CommandError::Spec_Violated;
         case CheckErrc::Undocumeted_Entity: return condition == CommandError::Spec_Violated;
         case CheckErrc::Spec_Violated: return condition == CommandError::Spec_Violated;
-        case CheckErrc::Root_Does_Not_Exist: return condition == CommandError::Invalid_Argument;
+        case CheckErrc::Project_Dir_Does_Not_Exist: return condition == CommandError::Invalid_Argument;
         default: return false;
         }
     }

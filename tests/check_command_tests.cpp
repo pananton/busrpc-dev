@@ -39,7 +39,7 @@ TEST(CheckCommandTest, Description_For_Unknown_Command_Error_Code_Differs_From_K
               check_error_category().message(0));
     EXPECT_NE(check_error_category().message(static_cast<int>(CheckErrc::Spec_Violated)),
               check_error_category().message(0));
-    EXPECT_NE(check_error_category().message(static_cast<int>(CheckErrc::Root_Does_Not_Exist)),
+    EXPECT_NE(check_error_category().message(static_cast<int>(CheckErrc::Project_Dir_Does_Not_Exist)),
               check_error_category().message(0));
 }
 
@@ -50,7 +50,7 @@ TEST(CheckCommandTest, Error_Codes_Are_Mapped_To_Appropriate_Error_Conditions)
     EXPECT_EQ(std::error_code(CheckErrc::Protobuf_Style_Violated), CommandError::Spec_Violated);
     EXPECT_EQ(std::error_code(CheckErrc::Undocumeted_Entity), CommandError::Spec_Violated);
     EXPECT_EQ(std::error_code(CheckErrc::Spec_Violated), CommandError::Spec_Violated);
-    EXPECT_EQ(std::error_code(CheckErrc::Root_Does_Not_Exist), CommandError::Invalid_Argument);
+    EXPECT_EQ(std::error_code(CheckErrc::Project_Dir_Does_Not_Exist), CommandError::Invalid_Argument);
 }
 
 TEST(CheckCommandTest, Help_Is_Defined_For_The_Command)

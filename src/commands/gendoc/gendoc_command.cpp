@@ -17,7 +17,7 @@ public:
         case GenDocErrc::Create_Output_Dir_Failed: return "Failed to create output directory";
         case GenDocErrc::Protobuf_Parsing_Failed: return "Failed to parse protobuf file";
         case GenDocErrc::Spec_Violated: return "Busrpc specification is violated";
-        case GenDocErrc::Root_Does_Not_Exist: return "Busrpc root directory does not exist";
+        case GenDocErrc::Project_Dir_Does_Not_Exist: return "Busrpc project directory does not exist";
         default: return "Unknown error";
         }
     }
@@ -30,7 +30,7 @@ public:
         case GenDocErrc::Create_Output_Dir_Failed: return condition == CommandError::File_Operation_Failed;
         case GenDocErrc::Protobuf_Parsing_Failed: return condition == CommandError::Protobuf_Parsing_Failed;
         case GenDocErrc::Spec_Violated: return condition == CommandError::Spec_Violated;
-        case GenDocErrc::Root_Does_Not_Exist: return condition == CommandError::Invalid_Argument;
+        case GenDocErrc::Project_Dir_Does_Not_Exist: return condition == CommandError::Invalid_Argument;
         default: return false;
         }
     }

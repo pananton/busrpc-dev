@@ -36,7 +36,7 @@ TEST(ImportsCommandTest, Description_For_Unknown_Command_Error_Code_Differs_From
               imports_error_category().message(0));
     EXPECT_NE(imports_error_category().message(static_cast<int>(ImportsErrc::File_Not_Found)),
               imports_error_category().message(0));
-    EXPECT_NE(imports_error_category().message(static_cast<int>(ImportsErrc::Root_Does_Not_Exist)),
+    EXPECT_NE(imports_error_category().message(static_cast<int>(ImportsErrc::Project_Dir_Does_Not_Exist)),
               imports_error_category().message(0));
 }
 
@@ -45,7 +45,7 @@ TEST(ImportsCommandTest, Error_Codes_Are_Mapped_To_Appropriate_Error_Conditions)
     EXPECT_EQ(std::error_code(ImportsErrc::File_Read_Failed), CommandError::File_Operation_Failed);
     EXPECT_EQ(std::error_code(ImportsErrc::Protobuf_Parsing_Failed), CommandError::Protobuf_Parsing_Failed);
     EXPECT_EQ(std::error_code(ImportsErrc::File_Not_Found), CommandError::Invalid_Argument);
-    EXPECT_EQ(std::error_code(ImportsErrc::Root_Does_Not_Exist), CommandError::Invalid_Argument);
+    EXPECT_EQ(std::error_code(ImportsErrc::Project_Dir_Does_Not_Exist), CommandError::Invalid_Argument);
 }
 
 TEST(ImportsCommandTest, Help_Is_Defined_For_The_Command)
@@ -58,7 +58,7 @@ TEST(ImportsCommandTest, Help_Is_Defined_For_The_Command)
     EXPECT_TRUE(err.str().empty());
 }
 
-TEST(ImportsCommandTest, Command_Succeeds_If_Invoked_Wo_Files_And_Valid_Root)
+TEST(ImportsCommandTest, Command_Succeeds_If_Invoked_Wo_Files_And_Valid_Project_Dir)
 {
     EXPECT_NO_THROW(ImportsCommand({}).execute(std::nullopt, std::nullopt));
 }
@@ -72,21 +72,21 @@ TEST(ImportsCommandTest, Command_Outputs_Nothing_If_Invoked_Wo_Files)
     EXPECT_TRUE(err.str().empty());
 }
 
-TEST(ImportsCommandTest, Command_Fails_If_Invoked_Wo_Files_And_Invalid_Root)
+TEST(ImportsCommandTest, Command_Fails_If_Invoked_Wo_Files_And_Invalid_Project_Dir)
 {
     std::ostringstream err;
 
-    EXPECT_COMMAND_EXCEPTION(ImportsCommand({{}, "missing_root"}).execute(std::nullopt, err),
-                             ImportsErrc::Root_Does_Not_Exist);
+    EXPECT_COMMAND_EXCEPTION(ImportsCommand({{}, "missing_project_dir"}).execute(std::nullopt, err),
+                             ImportsErrc::Project_Dir_Does_Not_Exist);
     EXPECT_FALSE(err.str().empty());
 }
 
-TEST(ImportsCommandTest, Command_Fails_If_Root_Does_Not_Exist)
+TEST(ImportsCommandTest, Command_Fails_If_Project_Dir_Does_Not_Exist)
 {
     std::ostringstream err;
 
-    EXPECT_COMMAND_EXCEPTION(ImportsCommand({{"missing_file.proto"}, "missing_root"}).execute(std::nullopt, err),
-                             ImportsErrc::Root_Does_Not_Exist);
+    EXPECT_COMMAND_EXCEPTION(ImportsCommand({{"missing_file.proto"}, "missing_project_dir"}).execute(std::nullopt, err),
+                             ImportsErrc::Project_Dir_Does_Not_Exist);
     EXPECT_FALSE(err.str().empty());
 }
 
@@ -103,7 +103,7 @@ TEST(ImportsCommandTest, Command_Fails_If_Some_File_Does_Not_Exist)
     EXPECT_FALSE(err.str().empty());
 }
 
-TEST(ImportsCommandTest, Command_Fails_If_Some_File_Is_Outside_The_Root)
+TEST(ImportsCommandTest, Command_Fails_If_Some_File_Is_Outside_The_Project_Dir)
 {
     std::ostringstream err;
     TmpDir tmp;
