@@ -55,11 +55,11 @@ set(sources
     src/app.h
     src/app.cpp
     src/exception.h
+    src/types.h
     src/utils.h
     src/utils.cpp
     src/commands/command.h
     src/commands/command.cpp
-    src/commands/command_id.h
     src/commands/error_collector.h
     src/commands/error_collector.cpp
     src/commands/check/check_command.h
@@ -78,10 +78,16 @@ set(sources
     src/entities/class.cpp
     src/entities/constant.h
     src/entities/constant.cpp
+    src/entities/entity.cpp
     src/entities/entity.h
     src/entities/enum.h
+    src/entities/enum.cpp
     src/entities/field.h
     src/entities/field.cpp
+    src/entities/implemented_method.h
+    src/entities/implemented_method.cpp
+    src/entities/invoked_method.h
+    src/entities/invoked_method.cpp
     src/entities/method.h
     src/entities/method.cpp
     src/entities/namespace.h
@@ -93,6 +99,7 @@ set(sources
     src/entities/services.h
     src/entities/services.cpp
     src/entities/struct.h
+    src/entities/struct.cpp
     src/parser/parser.h
     src/parser/parser.cpp)
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/src" FILES ${sources} src/main.cpp)

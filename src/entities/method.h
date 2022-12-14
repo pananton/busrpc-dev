@@ -1,52 +1,61 @@
 #pragma once
 
+#include "entities/class.h"
 #include "entities/entity.h"
+#include "entities/struct.h"
 
 #include <map>
 #include <string>
-#include <type_traits>
 
-/// \file method.h Busrpc method.
+/// \file method.h Method entity.
 
 namespace busrpc {
 
-class Struct;
-class Enum;
 class Class;
-class Parser;
 
-/// Busrpc method.
-class Method: public Entity {
+/// Method entity.
+class Method: public GeneralCompositeEntity {
 public:
+    using GeneralCompositeEntity::addStruct;
+    using GeneralCompositeEntity::addEnum;
+
     /// Method descriptor.
-    const Struct* descriptor() const noexcept;
+    const Struct* descriptor() const noexcept { return descriptor_; }
 
     /// Method parameters.
     /// \note \c nullptr if method does not have parameters.
-    const Struct* params() const noexcept;
+    const Struct* params() const noexcept { return params_; }
 
     /// Method return value.
     /// \note \c nullptr if method is one-way.
-    const Struct* retval() const noexcept;
-
-    /// Structures defined in the method directory (ordered by name).
-    const std::map<std::string, const Struct*>& structs() const noexcept { return nestedStructs_; }
-
-    /// Enumerations defined in the method directory (ordered by name).
-    const std::map<std::string, const Enum*>& enums() const noexcept { return nestedEnums_; }
+    const Struct* retval() const noexcept { return retval_; }
 
     /// Flag indicating whether method is static.
-    bool isStatic() const noexcept;
+    bool isStatic() const noexcept { return isStatic_; }
+
+    /// Flag indicating whether methods has parameters.
+    bool hasParams() const noexcept { return params() != nullptr; }
+
+    /// Flag indicating whether method is one-way (i.e., does not have a retval).
+    bool isOneway() const noexcept { return retval() == nullptr; }
 
     /// Class where method is defined.
     const Class* parent() const noexcept;
 
+    /// Class where method is defined.
+    Class* parent() noexcept;
+
+protected:
+    /// Create method entity.
+    Method(CompositeEntity* cls, const std::string& name);
+
 private:
-    friend class Parser;
+    friend class CompositeEntity;
+    void onNestedEntityAdded(Entity* entity);
 
-    Method(): Entity(EntityType::Method) { }
-
-    std::map<std::string, const Struct*> nestedStructs_ = {};
-    std::map<std::string, const Enum*> nestedEnums_ = {};
+    const Struct* descriptor_ = nullptr;
+    const Struct* params_ = nullptr;
+    const Struct* retval_ = nullptr;
+    bool isStatic_ = false;
 };
 } // namespace busrpc

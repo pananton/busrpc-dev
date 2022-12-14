@@ -1,33 +1,49 @@
 #pragma once
 
+#include "entities/constant.h"
 #include "entities/entity.h"
 
+#include <filesystem>
 #include <map>
 #include <string>
 
-/// \file enum.h Enumeration.
+/// \file enum.h Enumeration entity.
 
 namespace busrpc {
 
 class Constant;
-class Parser;
 
-/// Enumeration.
+/// Enumeration entity.
 /// \note Represents protobuf \c enum type.
-class Enum: public Entity {
+class Enum: public CompositeEntity {
 public:
-    /// Protobuf package name where enumeration is defined.
+    /// Protobuf package for the corresponding \c enum protobuf type.
     const std::string& package() const noexcept { return package_; }
+
+    /// File for the corresponding \c enum protobuf type.
+    /// \note Returned value is comprised of \ref Entity::dir value and a filename specified when enumeration
+    ///       was created.
+    const std::filesystem::path& file() const noexcept { return file_; }
 
     /// Enumeration constants ordered by their names.
     const std::map<std::string, const Constant*>& constants() const noexcept { return constants_; }
 
+    /// Add enumeration constant.
+    /// \throws name_conflict_error if constant with the same name is already added
+    Constant* addConstant(const std::string& name, int32_t value, const std::string& blockComment = {});
+
+protected:
+    /// Create enumeration entity.
+    Enum(CompositeEntity* parent,
+         const std::string& name,
+         const std::string& filename,
+         const std::string& blockComment);
+
 private:
-    friend class Parser;
+    friend class CompositeEntity;
 
-    Enum(): Entity(EntityType::Enum) { }
-
-    std::string package_ = {};
+    std::string package_;
+    std::filesystem::path file_;
     std::map<std::string, const Constant*> constants_;
 };
 } // namespace busrpc

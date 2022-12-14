@@ -1,49 +1,82 @@
 #pragma once
 
 #include "entities/entity.h"
+#include "entities/implemented_method.h"
+#include "entities/invoked_method.h"
+#include "entities/services.h"
+#include "entities/struct.h"
 
 #include <map>
 #include <string>
 
-/// \file service.h Busrpc service.
+/// \file service.h Service entity.
 
 namespace busrpc {
 
-class Struct;
-class Enum;
 class Services;
-class Parser;
+class ImplementedMethod;
+class InvokedMethod;
 
-/// Busrpc service.
-class Service: public Entity {
+/// Service entity.
+class Service: public GeneralCompositeEntity {
 public:
+    using GeneralCompositeEntity::addStruct;
+    using GeneralCompositeEntity::addEnum;
+
+    /// Name of the documentation command, which sets service author.
+    static constexpr const char* Author_Doc_Command = "author";
+
+    /// Name of the documentation command, which sets service contact email.
+    static constexpr const char* Email_Doc_Command = "author";
+
+    /// Name of the documentation command, which sets service sources/documentation URL.
+    static constexpr const char* Url_Doc_Command = "url";
+
+    /// Service descriptor.
+    const Struct* descriptor() const noexcept { return descriptor_; }
+
     /// Service config.
-    /// \note Can be \c nullptr, if config is not defined for a service.
     const Struct* config() const noexcept { return config_; }
 
-    /// Class methods ordered by name.
-    const std::map<std::string, const Method*>& methods() const noexcept { return methods_; }
+    /// Implemented methods ordered by method distinguished name.
+    const std::map<std::string, const ImplementedMethod*>& implementedMethods() const noexcept
+    {
+        return implementedMethods_;
+    }
 
-    /// Structures defined in the class directory (ordered by name).
-    const std::map<std::string, const Struct*>& structs() const noexcept { return nestedStructs_; }
+    /// Invoked methods ordered by method distinguished name.
+    const std::map<std::string, const InvokedMethod*>& invokedMethods() const noexcept { return invokedMethods_; }
 
-    /// Enumerations defined in the class directory (ordered by name).
-    const std::map<std::string, const Enum*>& enums() const noexcept { return nestedEnums_; }
+    /// Service author.
+    const std::string& author() const noexcept { return author_; }
 
-    /// Flag indicating whether class is static.
-    bool isStatic() const noexcept { return objectId_ == nullptr; }
+    /// Service contact email.
+    const std::string& email() const noexcept { return email_; }
 
-    /// Namespace where class is defined.
-    const Namespace* parent() const noexcept;
+    /// URL with service sources or some additional documentation.
+    const std::string& url() const noexcept { return url_; }
+
+    /// Entity representing all services.
+    const Services* parent() const noexcept;
+
+    /// Entity representing all services.
+    Services* parent() noexcept;
+
+protected:
+    /// Create namespace entity.
+    Service(CompositeEntity* services, const std::string& name);
 
 private:
-    friend class Parser;
+    friend class CompositeEntity;
+    void onNestedEntityAdded(Entity* entity);
+    void parseDocCommands();
 
-    Class(): Entity(EntityType::Class) { }
-
-    const Struct* objectId_ = nullptr;
-    std::map<std::string, const Method*> methods_ = {};
-    std::map<std::string, const Struct*> nestedStructs_ = {};
-    std::map<std::string, const Enum*> nestedEnums_ = {};
+    const Struct* descriptor_ = nullptr;
+    const Struct* config_ = nullptr;
+    std::map<std::string, const ImplementedMethod*> implementedMethods_;
+    std::map<std::string, const InvokedMethod*> invokedMethods_;
+    std::string author_;
+    std::string email_;
+    std::string url_;
 };
 } // namespace busrpc

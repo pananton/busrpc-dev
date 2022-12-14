@@ -1,6 +1,30 @@
 #include "utils.h"
 
+#include <sstream>
+
 namespace busrpc {
+
+std::vector<std::string> SplitString(const std::string& str, char delimiter, TokenCompressMode mode)
+{
+    std::stringstream s(str);
+    std::string line;
+    std::vector<std::string> result;
+
+    while (std::getline(s, line, delimiter)) {
+        if (!line.empty() || mode == TokenCompressMode::Off) {
+            result.push_back(std::move(line));
+        }
+    }
+
+    return result;
+}
+
+std::string TrimString(const std::string& str)
+{
+    constexpr const char* whitespace = " \t";
+    auto start = str.find_first_not_of(whitespace);
+    return start != std::string::npos ? str.substr(start, (str.find_last_not_of(whitespace) - start) + 1) : "";
+}
 
 bool InitCanonicalPathToExistingDirectory(std::filesystem::path& path, const std::string& dir)
 {

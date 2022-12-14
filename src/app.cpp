@@ -123,12 +123,7 @@ void DefineCommand(CLI::App& app, const std::function<void(HelpArgs)>& callback)
     app.description("Show help about the command");
 
     app.final_callback([callback, optsPtr]() {
-        std::optional<CommandId> id(GetCommandId(optsPtr->commandName.c_str()));
-
-        if (id == static_cast<CommandId>(0)) {
-            id.reset();
-        }
-
+        auto id = GetCommandId(optsPtr->commandName.c_str());
         callback({std::move(id)});
     });
 

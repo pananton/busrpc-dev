@@ -9,14 +9,91 @@
 
 namespace busrpc { namespace test {
 
-TEST(InitCanonicalPathToExistingDirectoryTest, Returns_False_If_Dir_Does_Not_Exist)
+TEST(UtilsTest, SplitString_Splits_Empty_String_To_Zero_Tokens)
+{
+    EXPECT_TRUE(SplitString("", '\n', TokenCompressMode::Off).empty());
+}
+
+TEST(UtilsTest, SplitString_Splits_String_Wo_Delimiter_To_Single_Token)
+{
+    std::string str = "test string";
+    auto result = SplitString(str, '-', TokenCompressMode::Off);
+
+    ASSERT_EQ(result.size(), 1);
+    EXPECT_EQ(result[0], str);
+}
+
+TEST(UtilsTest, SplitString_Splits_String_With_Multiple_Delimiters_To_Corresponding_Number_Of_Tokens)
+{
+    std::string str = "str1 str2 str3";
+    auto result = SplitString(str, ' ');
+
+    ASSERT_EQ(result.size(), 3);
+    EXPECT_EQ(result[0], "str1");
+    EXPECT_EQ(result[1], "str2");
+    EXPECT_EQ(result[2], "str3");
+}
+
+TEST(UtilsTest, SplitString_Returns_Empty_Tokens_If_Token_Compression_Is_Off)
+{
+    std::string str = "\n\nline 1\n\nline 2\n\n";
+    auto result = SplitString(str, '\n', TokenCompressMode::Off);
+
+    ASSERT_EQ(result.size(), 6);
+    EXPECT_EQ(result[0], "");
+    EXPECT_EQ(result[1], "");
+    EXPECT_EQ(result[2], "line 1");
+    EXPECT_EQ(result[3], "");
+    EXPECT_EQ(result[4], "line 2");
+    EXPECT_EQ(result[5], "");
+}
+
+TEST(UtilsTest, SplitString_Skips_Empty_Tokens_If_Token_Compression_Is_On)
+{
+    std::string str = "\n\nline 1\n\nline 2\n\n";
+    auto result = SplitString(str, '\n', TokenCompressMode::On);
+
+    ASSERT_EQ(result.size(), 2);
+    EXPECT_EQ(result[0], "line 1");
+    EXPECT_EQ(result[1], "line 2");
+}
+
+TEST(UtilsTest, TrimString_Correctly_Handles_Empty_String)
+{
+    EXPECT_TRUE(TrimString("").empty());
+}
+
+TEST(UtilsTest, TrimString_Correctly_Handles_String_Consisting_Of_Whitespaces_Only)
+{
+    EXPECT_TRUE(TrimString(" ").empty());
+    EXPECT_TRUE(TrimString("\t").empty());
+    EXPECT_TRUE(TrimString("   \t \t").empty());
+}
+
+TEST(UtilsTest, TrimString_Correctly_Handles_String_Wo_Whitespaces)
+{
+    std::string str = "abc";
+
+    EXPECT_EQ(str, TrimString(str));
+
+    str = "a";
+
+    EXPECT_EQ(str, TrimString(str));
+}
+
+TEST(UtilsTest, TrimString_Correctly_Handles_String_With_Whitespaces)
+{
+    EXPECT_EQ(TrimString("\tabc \t def \t "), "abc \t def");
+}
+
+TEST(UtilsTest, InitCanonicalPathToExistingDirectory_Returns_False_If_Dir_Does_Not_Exist)
 {
     std::filesystem::path path;
 
     EXPECT_FALSE(InitCanonicalPathToExistingDirectory(path, "missing_directory"));
 }
 
-TEST(InitCanonicalPathToExistingDirectoryTest, Returns_False_If_Argument_Is_File)
+TEST(UtilsTest, InitCanonicalPathToExistingDirectory_Returns_False_If_Argument_Is_File)
 {
     std::filesystem::path path;
     TmpDir tmp;
@@ -25,7 +102,7 @@ TEST(InitCanonicalPathToExistingDirectoryTest, Returns_False_If_Argument_Is_File
     EXPECT_FALSE(InitCanonicalPathToExistingDirectory(path, "tmp/file.txt"));
 }
 
-TEST(InitCanonicalPathToExistingDirectoryTest, Path_Is_Not_Modified_If_Any_Error_Occurs)
+TEST(UtilsTest, InitCanonicalPathToExistingDirectory_Does_Not_Modify_Path_If_Any_Error_Occurs)
 {
     std::filesystem::path path = "aaa";
     TmpDir tmp;
@@ -38,7 +115,7 @@ TEST(InitCanonicalPathToExistingDirectoryTest, Path_Is_Not_Modified_If_Any_Error
     EXPECT_EQ(path, "aaa");
 }
 
-TEST(InitCanonicalPathToExistingDirectoryTest, Initializes_Current_Path_By_Default)
+TEST(UtilsTest, InitCanonicalPathToExistingDirectory_Initializes_Current_Path_By_Default)
 {
     std::filesystem::path path;
 
@@ -46,7 +123,7 @@ TEST(InitCanonicalPathToExistingDirectoryTest, Initializes_Current_Path_By_Defau
     EXPECT_EQ(path, std::filesystem::current_path());
 }
 
-TEST(InitCanonicalPathToExistingDirectoryTest, Weakly_initializes_Canonical_Path_If_Dir_Exists)
+TEST(UtilsTest, InitCanonicalPathToExistingDirectory_Initializes_Canonical_Path_If_Dir_Exists)
 {
     std::filesystem::path path;
     TmpDir tmp;
@@ -63,7 +140,7 @@ TEST(InitCanonicalPathToExistingDirectoryTest, Weakly_initializes_Canonical_Path
     EXPECT_TRUE(std::filesystem::is_regular_file(path / "file2.txt"));
 }
 
-TEST(InitRelativePathToExistingFile, Returns_False_If_Filename_Is_Empty)
+TEST(UtilsTest, InitRelativePathToExistingFile_Returns_False_If_Filename_Is_Empty)
 {
     std::filesystem::path path;
 
@@ -71,7 +148,7 @@ TEST(InitRelativePathToExistingFile, Returns_False_If_Filename_Is_Empty)
     EXPECT_FALSE(InitRelativePathToExistingFile(path, "", "."));
 }
 
-TEST(InitRelativePathToExistingFile, Returns_False_If_File_Does_Not_Exist)
+TEST(UtilsTest, InitRelativePathToExistingFile_Returns_False_If_File_Does_Not_Exist)
 {
     std::filesystem::path path;
 
@@ -92,7 +169,7 @@ TEST(InitRelativePathToExistingFile, Returns_False_If_File_Does_Not_Exist)
     EXPECT_FALSE(InitRelativePathToExistingFile(path, (std::filesystem::current_path() / "missing_file.txt").string()));
 }
 
-TEST(InitRelativePathToExistingFile, Returns_False_If_Argument_Is_Not_File)
+TEST(UtilsTest, InitRelativePathToExistingFile_Returns_False_If_Argument_Is_Not_File)
 {
     std::filesystem::path path;
     TmpDir tmp;
@@ -102,7 +179,7 @@ TEST(InitRelativePathToExistingFile, Returns_False_If_Argument_Is_Not_File)
     EXPECT_FALSE(InitRelativePathToExistingFile(path, "tmp/subdir"));
 }
 
-TEST(InitRelativePathToExistingFile, Returns_False_If_File_Outside_Root_Is_Specified)
+TEST(UtilsTest, InitRelativePathToExistingFile_Returns_False_If_File_Outside_Root_Is_Specified)
 {
     std::filesystem::path path;
     TmpDir tmp;
@@ -114,7 +191,7 @@ TEST(InitRelativePathToExistingFile, Returns_False_If_File_Outside_Root_Is_Speci
         path, (std::filesystem::absolute(tmp.path()) / "file1.txt").string(), "tmp/subdir"));
 }
 
-TEST(InitRelativePathToExistingFile, Path_Is_Not_Modified_If_Any_Error_Occurs)
+TEST(UtilsTest, InitRelativePathToExistingFile_Does_Not_Modify_Path_If_Any_Error_Occurs)
 {
     std::filesystem::path path = "original";
     TmpDir tmp;
@@ -131,7 +208,7 @@ TEST(InitRelativePathToExistingFile, Path_Is_Not_Modified_If_Any_Error_Occurs)
     EXPECT_EQ(path, "original");
 }
 
-TEST(InitRelativePathToExistingFile, Returns_Relative_Path_Without_Leading_Dot)
+TEST(UtilsTest, InitRelativePathToExistingFile_Returns_Relative_Path_Without_Leading_Dot)
 {
     std::filesystem::path path;
     TmpDir tmp;

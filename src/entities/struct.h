@@ -1,96 +1,115 @@
 #pragma once
 
 #include "entities/entity.h"
+#include "entities/enum.h"
+#include "entities/field.h"
+#include "types.h"
 
+#include <filesystem>
 #include <map>
 #include <string>
-#include <type_traits>
-#include <vector>
 
-/// \file field.h Structure.
+/// \file struct.h Structure entity.
 
 namespace busrpc {
 
-class Field;
 class Enum;
-class Parser;
+class Field;
+class MapField;
 
-/// Structure type, which determines semantic of the structure.
-enum class StructType {
-    General = 1,           ///< General structure.
-    Call_Message = 2,      ///< Network message representing method call.
-    Result_Message = 3,    ///< Network message representing method result.
-    API_Desc = 4,          ///< API descriptor.
-    Namespace_Desc = 5,    ///< Namespace descriptor.
-    Class_Desc = 6,        ///< Class descriptor.
-    Method_Desc = -7,      ///< Method descriptor.
-    Object_Id = 8,         ///< Object identifier.
-    Method_Params = 9,     ///< Method parameters.
-    Method_Retval = 10,    ///< Method return value.
-    Method_Exception = 11, ///< Method exception.
-    Service_Desc = 12,     ///< Service descriptor.
-    Service_Config = 13    ///< Service config.
-};
-
-/// Return string representation of a structure type.
-/// \note \c nullptr is returned if \a type is unknown.
-constexpr const char* GetStructTypeStr(StructType type)
-{
-    using enum StructType;
-
-    switch (type) {
-    case General: return "general";
-    case Call_Message: return "call message";
-    case Result_Message: return "result message";
-    case API_Desc: return "API descriptor";
-    case Namespace_Desc: return "namespace descriptor";
-    case Class_Desc: return "class descriptor";
-    case Method_Desc: return "method descriptor";
-    case Object_Id: return "object identifier";
-    case Method_Params: return "method parameters";
-    case Method_Retval: return "method return value";
-    case Method_Exception: return "method exception type";
-    case Service_Desc: return "service descriptor";
-    case Service_Config: return "service config";
-    default: return nullptr;
-    }
-}
-/// Structure.
+/// Structure entity.
 /// \note Represents protobuf \c message type.
-class Struct: public Entity {
+class Struct: public GeneralCompositeEntity {
 public:
-    /// Protobuf package name where enumeration is defined.
+    /// Protobuf package for the corresponding \c message protobuf type.
     const std::string& package() const noexcept { return package_; }
 
     /// Type of the structure.
-    StructType structType() const noexcept { return structType_; }
+    StructTypeId structType() const noexcept { return structType_; }
+
+    /// File for the corresponding \c message protobuf type.
+    /// \note Returned value is comprised of \ref Entity::dir value and a filename specified when structure
+    ///       was created.
+    const std::filesystem::path& file() const noexcept { return file_; }
+
+    /// Field flags.
+    StructFlags flags() const noexcept { return flags_; }
+
+    /// Flag indicating whether structure data is hashed when used as a busrpc endpoint component.
+    bool isHashed() const noexcept { return CheckAll(flags_, StructFlags::Hashed); }
 
     /// Structure fields ordered by name.
     const std::map<std::string, const Field*>& fields() const noexcept { return fields_; }
 
-    /// Directly nested structures ordered by name.
-    /// \note Does not return indirectly nested structures (for example, if S1 defines S2, which defines S3, then
-    ///       method \ref structs called for S1 object will not return C).
-    const std::map<std::string, const Struct*>& structs() const noexcept { return nestedStructs_; }
+    /// Add field with [scalar](https://developers.google.com/protocol-buffers/docs/proto3#scalar) type.
+    /// \throws name_conflict_error if field with the same name is already added
+    /// \throws entity_error if field does not represent a valid protobuf \c message field
+    Field* addScalarField(const std::string& name,
+                          int32_t number,
+                          FieldTypeId type,
+                          FieldFlags flags = FieldFlags::None,
+                          const std::string& oneofName = {},
+                          const std::string& defaultValue = {},
+                          const std::string& blockComment = {});
 
-    /// Directly nested enumerations ordered by name.
-    /// \note Does not return indirectly nested enumerations (for example, if S1 defines structure S2, which defines
-    ///       enumeration E1, then method \ref enums called for S1 object will not return E1).
-    const std::map<std::string, const Enum*>& enums() const noexcept { return nestedEnums_; }
+    /// Add field with custom structure type.
+    /// \throws name_conflict_error if field with the same name is already added
+    /// \throws entity_error if field does not represent a valid protobuf \c message field
+    Field* addStructField(const std::string& name,
+                          int32_t number,
+                          const std::string& typeName,
+                          FieldFlags flags = FieldFlags::None,
+                          const std::string& oneofName = {},
+                          const std::string& blockComment = {});
 
-    /// Flag indicating whether structure data is hashed when used as a busrpc endpoint component.
-    bool isHashed() const noexcept { return flags_ & static_cast<std::underlying_type_t<Flags>>(Flags::Hashed); }
+    /// Add field with enumeration type.
+    /// \throws name_conflict_error if field with the same name is already added
+    /// \throws entity_error if field does not represent a valid protobuf \c message field
+    Field* addEnumField(const std::string& name,
+                        int32_t number,
+                        const std::string& typeName,
+                        FieldFlags flags = FieldFlags::None,
+                        const std::string& oneofName = {},
+                        const std::string& blockComment = {});
+
+    /// Add field with \c map type.
+    /// \throws name_conflict_error if field with the same name is already added
+    /// \throws entity_error if field does not represent a valid protobuf \c message field
+    /// \note Parameter \a valueTypeName is only meaningful if \a valueType is custom user-defined type (protobuf
+    ///       \c message or \c enum).
+    MapField* addMapField(const std::string& name,
+                          int32_t number,
+                          FieldTypeId keyType,
+                          FieldTypeId valueType,
+                          const std::string& valueTypeName = {},
+                          const std::string& blockComment = {});
+
+    /// Add nested structure.
+    /// \throws name_conflict_error if entity with the same name is already added
+    Struct* addStruct(const std::string& name,
+                      StructFlags flags = StructFlags::None,
+                      const std::string& blockComment = {});
+
+    /// Add nested enumeration.
+    /// \throws name_conflict_error if entity with the same name is already added
+    Enum* addEnum(const std::string& name, const std::string& blockComment = {});
+
+protected:
+    /// Create structure entity.
+    Struct(CompositeEntity* parent,
+           const std::string& name,
+           const std::string& filename,
+           StructFlags flags,
+           const std::string& blockComment);
 
 private:
-    enum class Flags { Hashed = 1 };
-    friend class Parser;
+    friend class CompositeEntity;
+    void checkFieldNumberIsFree(const std::string& fieldName, int32_t fieldNumber) const;
 
-    Struct(): Entity(EntityType::Struct) { }
-
-    StructType structType_ = static_cast<StructType>(0);
-    std::map<std::string, const Field*> fields_ = {};
-    std::map<std::string, const Struct*> nestedStructs_ = {};
-    std::map<std::string, const Enum*> nestedEnums_ = {};
-    std::underlying_type_t<Flags> flags_ = 0;
+    StructTypeId structType_;
+    std::string package_;
+    std::filesystem::path file_;
+    StructFlags flags_ = StructFlags::None;
+    std::map<std::string, const Field*> fields_;
 };
 } // namespace busrpc

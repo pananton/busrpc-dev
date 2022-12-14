@@ -1,4 +1,5 @@
 #include "app.h"
+#include "utils.h"
 #include "commands/help/help_command.h"
 #include "commands/imports/imports_command.h"
 #include "utils/common.h"
@@ -179,7 +180,7 @@ TEST(ImportsCommandTest, Command_Ouputs_Files_Only_Once_In_Desc_Order_Of_Their_N
     EXPECT_NO_THROW(cmd.execute(out, err));
     EXPECT_TRUE(err.str().empty());
 
-    output = SplitByNewline(out.str());
+    output = SplitString(out.str());
 
     ASSERT_EQ(output.size(), 5);
     EXPECT_EQ(output[0], "aaa/bbb/file4.proto");
@@ -207,7 +208,7 @@ TEST(ImportsCommandTest, Command_Succeeds_If_Same_File_Specified_Multiple_Times)
         ImportsCommand({{"file1.proto", "file2.proto", "file1.proto", "file2.proto"}, "tmp"}).execute(out, err));
     EXPECT_TRUE(err.str().empty());
 
-    auto output = SplitByNewline(out.str());
+    auto output = SplitString(out.str());
 
     ASSERT_EQ(output.size(), 2);
     EXPECT_EQ(output[0], "file1.proto");
@@ -235,7 +236,7 @@ TEST(ImportsCommandTest, Command_Ignores_Imported_System_Files)
     EXPECT_NO_THROW(ImportsCommand({{"file2.proto"}, "tmp"}).execute(out, err));
     EXPECT_TRUE(err.str().empty());
 
-    auto output = SplitByNewline(out.str());
+    auto output = SplitString(out.str());
 
     ASSERT_EQ(output.size(), 2);
     EXPECT_EQ(output[0], "file1.proto");
@@ -268,7 +269,7 @@ TEST(ImportsCommandTest, Command_Does_Not_Output_Original_Files_If_Only_Deps_Fla
         ImportsCommand({{"file3.proto", "file2.proto", "file4.proto", "file3.proto"}, "tmp", true}).execute(out, err));
     EXPECT_TRUE(err.str().empty());
 
-    auto output = SplitByNewline(out.str());
+    auto output = SplitString(out.str());
 
     ASSERT_EQ(output.size(), 1);
     EXPECT_EQ(output[0], "file1.proto");
@@ -295,7 +296,7 @@ TEST(ImportsCommandTest, Command_Tries_To_Proceed_After_Error)
         ImportsErrc::File_Not_Found);
     EXPECT_FALSE(err.str().empty());
 
-    auto output = SplitByNewline(out.str());
+    auto output = SplitString(out.str());
 
     ASSERT_EQ(output.size(), 2);
     EXPECT_EQ(output[0], "file1.proto");
@@ -324,7 +325,7 @@ TEST(ImportsCommandTest, App_Runs_Command_If_Command_Name_Is_Specified_As_Subcom
     EXPECT_NO_THROW(app.parse(argc, argv));
     EXPECT_TRUE(err.str().empty());
 
-    auto output = SplitByNewline(out.str());
+    auto output = SplitString(out.str());
 
     ASSERT_EQ(output.size(), 2);
     EXPECT_EQ(output[0], "file1.proto");

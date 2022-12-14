@@ -1,10 +1,46 @@
-#include "entities/namespace.h"
 #include "entities/api.h"
+
+#include <cassert>
 
 namespace busrpc {
 
-const API* Namespace::parent() const noexcept
+Namespace::Namespace(CompositeEntity* api, const std::string& name):
+    GeneralCompositeEntity(api, EntityTypeId::Namespace, name)
 {
-    return static_cast<const API*>(Entity::parent());
+    assert(dynamic_cast<Api*>(this->parent()));
+    setNestedEntityAddedCallback([this](Entity* entity) { onNestedEntityAdded(entity); });
+}
+
+const Api* Namespace::parent() const noexcept
+{
+    return static_cast<const Api*>(GeneralCompositeEntity::parent());
+}
+
+Api* Namespace::parent() noexcept
+{
+    return static_cast<Api*>(GeneralCompositeEntity::parent());
+}
+
+Class* Namespace::addClass(const std::string& name)
+{
+    Class* cls = addNestedEntity<Class>(name);
+    classes_[cls->name()] = cls;
+    return cls;
+}
+
+void Namespace::onNestedEntityAdded(Entity* entity)
+{
+    if (entity->type() == EntityTypeId::Struct) {
+        auto structEntity = static_cast<Struct*>(entity);
+
+        switch (structEntity->structType()) {
+        case StructTypeId::Namespace_Desc:
+            descriptor_ = structEntity;
+            setDocumentation(
+                structEntity->description(), structEntity->briefDescription(), structEntity->docCommands());
+            break;
+        default: break;
+        }
+    }
 }
 } // namespace busrpc

@@ -54,14 +54,14 @@ private:
     mutable bool isExecuted_ = false;
 };
 
-TEST(CommandTest, Get_Command_Name_Returns_Nullptr_For_Unknown_Command)
+TEST(CommandTest, GetCommandName_Returns_Nullptr_For_Unknown_Command)
 {
     EXPECT_EQ(GetCommandName(static_cast<CommandId>(0)), nullptr);
 }
 
-TEST(CommandTest, Get_Command_Id_Returns_Zero_For_Unknown_Command_Name)
+TEST(CommandTest, GetCommandId_Returns_Nullopt_For_Unknown_Command_Name)
 {
-    EXPECT_EQ(GetCommandId("unknown command"), static_cast<CommandId>(0));
+    EXPECT_FALSE(GetCommandId("unknown command"));
 }
 
 TEST(CommandTest, Command_Error_Category_Is_command)

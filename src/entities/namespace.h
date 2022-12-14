@@ -1,42 +1,51 @@
 #pragma once
 
+#include "entities/api.h"
+#include "entities/class.h"
 #include "entities/entity.h"
+#include "entities/struct.h"
 
 #include <map>
 #include <string>
 
-/// \file namespace.h Busrpc namespace.
+/// \file namespace.h Namespace entity.
 
 namespace busrpc {
 
+class Api;
 class Class;
-class Struct;
-class Enum;
-class API;
-class Parser;
 
-/// Busrpc namespace.
-class Namespace: public Entity {
+/// Namespace entity.
+class Namespace: public GeneralCompositeEntity {
 public:
-    /// Namespace classes ordered by name.
+    using GeneralCompositeEntity::addStruct;
+    using GeneralCompositeEntity::addEnum;
+
+    /// Namespace descriptor.
+    const Struct* descriptor() const noexcept { return descriptor_; }
+
+    /// Namespace classes.
     const std::map<std::string, const Class*>& classes() const noexcept { return classes_; }
 
-    /// Structures defined in the namespace directory (ordered by name).
-    const std::map<std::string, const Struct*>& structs() const noexcept { return nestedStructs_; }
+    /// API where namespace is defined.
+    const Api* parent() const noexcept;
 
-    /// Enumerations defined in the namespace directory (ordered by name).
-    const std::map<std::string, const Enum*>& enums() const noexcept { return nestedEnums_; }
+    /// API where namespace is defined.
+    Api* parent() noexcept;
 
-    /// API to which namespace belongs.
-    const API* parent() const noexcept;
+    /// Add class.
+    /// \throws name_conflict_error if nested entity with the same name already exists
+    Class* addClass(const std::string& name);
+
+protected:
+    /// Create namespace entity.
+    Namespace(CompositeEntity* api, const std::string& name);
 
 private:
-    friend class Parser;
+    friend class CompositeEntity;
+    void onNestedEntityAdded(Entity* entity);
 
-    Namespace(): Entity(EntityType::Namespace) { }
-
-    std::map<std::string, const Class*> classes_ = {};
-    std::map<std::string, const Struct*> nestedStructs_ = {};
-    std::map<std::string, const Enum*> nestedEnums_ = {};
+    const Struct* descriptor_ = nullptr;
+    std::map<std::string, const Class*> classes_;
 };
 } // namespace busrpc

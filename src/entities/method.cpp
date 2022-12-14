@@ -1,50 +1,41 @@
 #include "entities/method.h"
-#include "entities/class.h"
-#include "entities/struct.h"
 
 #include <cassert>
 
 namespace busrpc {
 
-const Struct* Method::descriptor() const noexcept
+Method::Method(CompositeEntity* cls, const std::string& name): GeneralCompositeEntity(cls, EntityTypeId::Method, name)
 {
-    auto it = nestedStructs_.find("MethodDesc");
-    assert(it != nestedStructs_.end() && it->second->structType() == StructType::Method_Desc);
-    return it->second;
-}
-
-const Struct* Method::params() const noexcept
-{
-    auto it = descriptor()->structs().find("Params");
-
-    if (it != descriptor()->structs().end()) {
-        assert(it->second->structType() == StructType::Method_Params);
-        return it->second;
-    } else {
-        return nullptr;
-    }
-}
-
-const Struct* Method::retval() const noexcept
-{
-    auto it = descriptor()->structs().find("Retval");
-
-    if (it != descriptor()->structs().end()) {
-        assert(it->second->structType() == StructType::Method_Retval);
-        return it->second;
-    } else {
-        return nullptr;
-    }
-}
-
-bool Method::isStatic() const noexcept
-{
-    return descriptor()->structs().count("Static") != 0;
+    assert(dynamic_cast<Class*>(this->parent()));
+    setNestedEntityAddedCallback([this](Entity* entity) { onNestedEntityAdded(entity); });
 }
 
 const Class* Method::parent() const noexcept
 {
-    assert(Entity::parent()->type() == EntityType::Class);
-    return static_cast<const Class*>(Entity::parent());
+    return static_cast<const Class*>(GeneralCompositeEntity::parent());
+}
+
+Class* Method::parent() noexcept
+{
+    return static_cast<Class*>(GeneralCompositeEntity::parent());
+}
+
+void Method::onNestedEntityAdded(Entity* entity)
+{
+    if (entity->type() == EntityTypeId::Struct) {
+        auto structEntity = static_cast<Struct*>(entity);
+
+        switch (structEntity->structType()) {
+        case StructTypeId::Method_Desc:
+            descriptor_ = structEntity;
+            setDocumentation(
+                structEntity->description(), structEntity->briefDescription(), structEntity->docCommands());
+            break;
+        case StructTypeId::Static_Marker: isStatic_ = true; break;
+        case StructTypeId::Method_Params: params_ = structEntity; break;
+        case StructTypeId::Method_Retval: retval_ = structEntity; break;
+        default: break;
+        }
+    }
 }
 } // namespace busrpc

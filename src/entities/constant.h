@@ -1,17 +1,18 @@
 #pragma once
 
 #include "entities/entity.h"
+#include "entities/enum.h"
 
 #include <cstdint>
+#include <string>
 
-/// \file constant.h Enumeration constant.
+/// \file constant.h Enumeration constant entity.
 
 namespace busrpc {
 
 class Enum;
-class Parser;
 
-/// Enumeration constant.
+/// Enumeration constant entity.
 class Constant: public Entity {
 public:
     /// Value of the constant.
@@ -20,11 +21,16 @@ public:
     /// Enumeration to which constant belongs.
     const Enum* parent() const noexcept;
 
+    /// Enumeration to which constant belongs.
+    Enum* parent() noexcept;
+
+protected:
+    /// Create enumeration constant entity.
+    Constant(CompositeEntity* parent, const std::string& name, int32_t value, const std::string& blockComment);
+
 private:
-    friend class Parser;
+    friend class CompositeEntity;
 
-    Constant(): Entity(EntityType::Constant) { }
-
-    int32_t value_ = 0;
+    int32_t value_;
 };
 } // namespace busrpc

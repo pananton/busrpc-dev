@@ -2,10 +2,22 @@
 
 #include <filesystem>
 #include <string>
+#include <vector>
 
 /// \file utils.h Utilities.
 
 namespace busrpc {
+
+/// Turns token compression on or off for \ref SplitString function.
+enum class TokenCompressMode { Off = 1, On = 2 };
+
+/// Split \a str into a vector of tokens.
+std::vector<std::string> SplitString(const std::string& str,
+                                     char delimeter = '\n',
+                                     TokenCompressMode mode = TokenCompressMode::Off);
+
+/// Remove leading and trailing spaces/tabs from \a str.
+std::string TrimString(const std::string& str);
 
 /// Initialize \a path to a canonical path to the existing directory.
 /// \throws std::filesystem::filesystem_error

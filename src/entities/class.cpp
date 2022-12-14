@@ -1,33 +1,46 @@
 #include "entities/class.h"
-#include "entities/namespace.h"
-#include "entities/struct.h"
 
 #include <cassert>
 
 namespace busrpc {
 
-const Struct* Class::descriptor() const noexcept
+Class::Class(CompositeEntity* ns, const std::string& name): GeneralCompositeEntity(ns, EntityTypeId::Class, name)
 {
-    auto it = nestedStructs_.find("ClassDesc");
-    assert(it != nestedStructs_.end() && it->second->structType() == StructType::Class_Desc);
-    return it->second;
-}
-
-const Struct* Class::objectId() const noexcept
-{
-    auto it = descriptor()->structs().find("ObjectId");
-
-    if (it != descriptor()->structs().end()) {
-        assert(it->second->structType() == StructType::Object_Id);
-        return it->second;
-    } else {
-        return nullptr;
-    }
+    assert(dynamic_cast<Namespace*>(this->parent()));
+    setNestedEntityAddedCallback([this](Entity* entity) { onNestedEntityAdded(entity); });
 }
 
 const Namespace* Class::parent() const noexcept
 {
-    assert(Entity::parent()->type() == EntityType::Namespace);
-    return static_cast<const Namespace*>(Entity::parent());
+    return static_cast<const Namespace*>(GeneralCompositeEntity::parent());
+}
+
+Namespace* Class::parent() noexcept
+{
+    return static_cast<Namespace*>(GeneralCompositeEntity::parent());
+}
+
+Method* Class::addMethod(const std::string& name)
+{
+    Method* method = addNestedEntity<Method>(name);
+    methods_[method->name()] = method;
+    return method;
+}
+
+void Class::onNestedEntityAdded(Entity* entity)
+{
+    if (entity->type() == EntityTypeId::Struct) {
+        auto structEntity = static_cast<Struct*>(entity);
+
+        switch (structEntity->structType()) {
+        case StructTypeId::Class_Desc:
+            descriptor_ = structEntity;
+            setDocumentation(
+                structEntity->description(), structEntity->briefDescription(), structEntity->docCommands());
+            break;
+        case StructTypeId::Object_Id: objectId_ = structEntity; break;
+        default: break;
+        }
+    }
 }
 } // namespace busrpc

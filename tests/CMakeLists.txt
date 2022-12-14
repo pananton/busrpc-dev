@@ -15,7 +15,19 @@ fetch_gtest(${BUSRPC_GTEST_TAG})
 #----------------------------------------------------------------------------------------------------------------------
 
 set(sources
+    exception_tests.cpp
     utils_tests.cpp
+    bitwise_enum_tests.cpp
+    common_entity_tests.cpp
+    project_entity_tests.cpp
+    api_entity_tests.cpp
+    namespace_entity_tests.cpp
+    class_entity_tests.cpp
+    method_entity_tests.cpp
+    enum_entity_tests.cpp
+    struct_entity_tests.cpp
+    services_entity_tests.cpp
+    service_entity_tests.cpp
     command_tests.cpp
     error_collector_tests.cpp
     check_command_tests.cpp

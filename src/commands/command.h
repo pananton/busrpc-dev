@@ -1,7 +1,7 @@
 #pragma once
 
-#include "commands/command_id.h"
 #include "exception.h"
+#include "types.h"
 
 #include <concepts>
 #include <optional>

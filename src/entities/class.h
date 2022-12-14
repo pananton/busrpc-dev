@@ -1,52 +1,60 @@
 #pragma once
 
 #include "entities/entity.h"
+#include "entities/method.h"
+#include "entities/namespace.h"
+#include "entities/struct.h"
 
 #include <map>
 #include <string>
+#include <type_traits>
 
-/// \file class.h Busrpc class.
+/// \file class.h Class entity.
 
 namespace busrpc {
 
-class Method;
-class Struct;
-class Enum;
 class Namespace;
-class Parser;
+class Method;
 
-/// Busrpc class.
-class Class: public Entity {
+/// Class entity.
+class Class: public GeneralCompositeEntity {
 public:
-    /// Method descriptor.
-    const Struct* descriptor() const noexcept;
+    using GeneralCompositeEntity::addStruct;
+    using GeneralCompositeEntity::addEnum;
 
-    /// Class object identifier.
-    /// \note \c nullptr if class is static.
-    const Struct* objectId() const noexcept;
+    /// Class descriptor.
+    const Struct* descriptor() const noexcept { return descriptor_; }
 
-    /// Class methods ordered by name.
-    const std::map<std::string, const Method*>& methods() const noexcept { return methods_; }
-
-    /// Structures defined in the class directory (ordered by name).
-    const std::map<std::string, const Struct*>& structs() const noexcept { return nestedStructs_; }
-
-    /// Enumerations defined in the class directory (ordered by name).
-    const std::map<std::string, const Enum*>& enums() const noexcept { return nestedEnums_; }
+    /// Object identifier.
+    /// \note \c nullptr if class is static, i.e. does not have objects.
+    const Struct* objectId() const noexcept { return objectId_; }
 
     /// Flag indicating whether class is static.
     bool isStatic() const noexcept { return objectId() == nullptr; }
 
+    /// Class methods.
+    const std::map<std::string, const Method*>& methods() const noexcept { return methods_; }
+
     /// Namespace where class is defined.
     const Namespace* parent() const noexcept;
 
+    /// Namespace where class is defined.
+    Namespace* parent() noexcept;
+
+    /// Add method.
+    /// \throws name_conflict_error if nested entity with the same name already exists
+    Method* addMethod(const std::string& name);
+
+protected:
+    /// Create class entity.
+    Class(CompositeEntity* ns, const std::string& name);
+
 private:
-    friend class Parser;
+    friend class CompositeEntity;
+    void onNestedEntityAdded(Entity* entity);
 
-    Class(): Entity(EntityType::Class) { }
-
-    std::map<std::string, const Method*> methods_ = {};
-    std::map<std::string, const Struct*> nestedStructs_ = {};
-    std::map<std::string, const Enum*> nestedEnums_ = {};
+    const Struct* descriptor_ = nullptr;
+    const Struct* objectId_ = nullptr;
+    std::map<std::string, const Method*> methods_;
 };
 } // namespace busrpc
