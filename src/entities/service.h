@@ -23,14 +23,11 @@ public:
     using GeneralCompositeEntity::addStruct;
     using GeneralCompositeEntity::addEnum;
 
-    /// Name of the documentation command, which sets service author.
-    static constexpr const char* Author_Doc_Command = "author";
+    /// Entity representing all services.
+    const Services* parent() const noexcept;
 
-    /// Name of the documentation command, which sets service contact email.
-    static constexpr const char* Email_Doc_Command = "author";
-
-    /// Name of the documentation command, which sets service sources/documentation URL.
-    static constexpr const char* Url_Doc_Command = "url";
+    /// Entity representing all services.
+    Services* parent() noexcept;
 
     /// Service descriptor.
     const Struct* descriptor() const noexcept { return descriptor_; }
@@ -55,12 +52,6 @@ public:
 
     /// URL with service sources or some additional documentation.
     const std::string& url() const noexcept { return url_; }
-
-    /// Entity representing all services.
-    const Services* parent() const noexcept;
-
-    /// Entity representing all services.
-    Services* parent() noexcept;
 
 protected:
     /// Create namespace entity.

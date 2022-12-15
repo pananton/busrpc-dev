@@ -25,11 +25,7 @@ public:
 
 protected:
     /// Create invoked method entity.
-    InvokedMethod(CompositeEntity* service,
-                  const std::string& name,
-                  const std::vector<std::string>& description,
-                  const std::string& briefDescription,
-                  const std::multimap<std::string, std::string>& docCommands);
+    InvokedMethod(CompositeEntity* service, const std::string& name, EntityDocs docs = {});
 
 private:
     friend class CompositeEntity;

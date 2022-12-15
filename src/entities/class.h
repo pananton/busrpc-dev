@@ -22,6 +22,12 @@ public:
     using GeneralCompositeEntity::addStruct;
     using GeneralCompositeEntity::addEnum;
 
+    /// Namespace where class is defined.
+    const Namespace* parent() const noexcept;
+
+    /// Namespace where class is defined.
+    Namespace* parent() noexcept;
+
     /// Class descriptor.
     const Struct* descriptor() const noexcept { return descriptor_; }
 
@@ -34,12 +40,6 @@ public:
 
     /// Class methods.
     const std::map<std::string, const Method*>& methods() const noexcept { return methods_; }
-
-    /// Namespace where class is defined.
-    const Namespace* parent() const noexcept;
-
-    /// Namespace where class is defined.
-    Namespace* parent() noexcept;
 
     /// Add method.
     /// \throws name_conflict_error if nested entity with the same name already exists

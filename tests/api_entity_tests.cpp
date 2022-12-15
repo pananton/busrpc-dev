@@ -25,11 +25,8 @@ TEST_F(ApiEntityTest, Api_Entity_Is_Correctly_Initialized_When_Created_By_Projec
     EXPECT_EQ(api_->dname(), std::string(Project_Entity_Name) + "." + Api_Entity_Name);
     EXPECT_EQ(api_->parent(), project_.get());
     EXPECT_EQ(static_cast<const Api*>(api_)->parent(), project_.get());
-
-    EXPECT_FALSE(api_->description().empty());
-    EXPECT_FALSE(api_->briefDescription().empty());
-    ASSERT_EQ(api_->description().size(), 1);
-    EXPECT_EQ(api_->description()[0], Api_Entity_Comment);
+    ASSERT_EQ(api_->docs().description().size(), 1);
+    EXPECT_EQ(api_->docs().description()[0], Api_Entity_Comment);
 }
 
 TEST_F(ApiEntityTest, addNamespace_Stores_Added_Namespace)

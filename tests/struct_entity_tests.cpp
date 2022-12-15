@@ -10,20 +10,20 @@ protected:
     void SetUp() override
     {
         project_ = std::make_shared<Project>();
+        docs_ = EntityDocs({"Brief description.", "Description"}, {{"cmd", {"cmd value"}}});
+
         auto api = project_->addApi();
         auto ns = api->addNamespace("namespace");
         auto cls = ns->addClass("class");
         auto method = cls->addMethod("method");
 
-        std::string blockComment = "\\cmd cmd value\n"
-                                   "Brief description.\n"
-                                   "Description.";
         method_ = method;
-        structure_ = method->addStruct("Struct", "struct.proto", StructFlags::Hashed, blockComment);
+        structure_ = method->addStruct("Struct", "struct.proto", StructFlags::Hashed, docs_);
     }
 
 protected:
     std::shared_ptr<Project> project_;
+    EntityDocs docs_;
     const Method* method_ = nullptr;
     Struct* structure_ = nullptr;
 };
@@ -45,13 +45,9 @@ TEST_F(StructEntityTest, Struct_Entity_Is_Correctly_Initialized_When_Created_By_
     EXPECT_TRUE(structure_->isHashed());
     EXPECT_TRUE(structure_->fields().empty());
 
-    ASSERT_EQ(structure_->description().size(), 2);
-    EXPECT_EQ(structure_->description()[0], "Brief description.");
-    EXPECT_EQ(structure_->description()[1], "Description.");
-    EXPECT_EQ(structure_->briefDescription(), "Brief description.");
-    EXPECT_EQ(structure_->docCommands().size(), 1);
-    ASSERT_NE(structure_->docCommands().find("cmd"), structure_->docCommands().end());
-    EXPECT_EQ(structure_->docCommands().find("cmd")->second, "cmd value");
+    EXPECT_EQ(structure_->docs().description(), docs_.description());
+    EXPECT_EQ(structure_->docs().brief(), docs_.brief());
+    EXPECT_EQ(structure_->docs().commands(), docs_.commands());
 }
 
 TEST_F(StructEntityTest, Nested_Structs_And_Enums_Share_Parent_Struct_Package_And_File)
@@ -75,7 +71,7 @@ TEST_F(StructEntityTest, addScalarField_Correctly_Initializes_And_Stores_Added_F
                                                    FieldFlags::Optional | FieldFlags::Observable | FieldFlags::Hashed,
                                                    "oneofName",
                                                    "1001",
-                                                   "Brief description."));
+                                                   {docs_.description()}));
     ASSERT_NE(structure_->fields().find("field"), structure_->fields().end());
     EXPECT_EQ(structure_->fields().find("field")->second, field);
     EXPECT_EQ(structure_->fields().size(), 1);
@@ -97,10 +93,9 @@ TEST_F(StructEntityTest, addScalarField_Correctly_Initializes_And_Stores_Added_F
     EXPECT_EQ(field->oneofName(), "oneofName");
     EXPECT_EQ(field->defaultValue(), "1001");
 
-    ASSERT_EQ(field->description().size(), 1);
-    EXPECT_EQ(field->description()[0], "Brief description.");
-    EXPECT_EQ(field->briefDescription(), "Brief description.");
-    EXPECT_TRUE(field->docCommands().empty());
+    EXPECT_EQ(field->docs().description(), docs_.description());
+    EXPECT_EQ(field->docs().brief(), docs_.brief());
+    EXPECT_TRUE(field->docs().commands().empty());
 }
 
 TEST_F(StructEntityTest, addStructField_Correctly_Initializes_And_Stores_Added_Field)
@@ -108,7 +103,7 @@ TEST_F(StructEntityTest, addStructField_Correctly_Initializes_And_Stores_Added_F
     Field* field = nullptr;
 
     ASSERT_TRUE(field = structure_->addStructField(
-                    "field", 13, "MyStruct", FieldFlags::None, "oneofName", "Brief description."));
+                    "field", 13, "MyStruct", FieldFlags::None, "oneofName", {docs_.description()}));
     ASSERT_NE(structure_->fields().find("field"), structure_->fields().end());
     EXPECT_EQ(structure_->fields().find("field")->second, field);
     EXPECT_EQ(structure_->fields().size(), 1);
@@ -130,17 +125,17 @@ TEST_F(StructEntityTest, addStructField_Correctly_Initializes_And_Stores_Added_F
     EXPECT_EQ(field->oneofName(), "oneofName");
     EXPECT_TRUE(field->defaultValue().empty());
 
-    ASSERT_EQ(field->description().size(), 1);
-    EXPECT_EQ(field->description()[0], "Brief description.");
-    EXPECT_EQ(field->briefDescription(), "Brief description.");
-    EXPECT_TRUE(field->docCommands().empty());
+    EXPECT_EQ(field->docs().description(), docs_.description());
+    EXPECT_EQ(field->docs().brief(), docs_.brief());
+    EXPECT_TRUE(field->docs().commands().empty());
 }
 
 TEST_F(StructEntityTest, addEnumField_Correctly_Initializes_And_Stores_Added_Field)
 {
     Field* field = nullptr;
 
-    ASSERT_TRUE(field = structure_->addEnumField("field", 13, "MyEnum", FieldFlags::Repeated, "", "\\cmd cmd value"));
+    ASSERT_TRUE(field =
+                    structure_->addEnumField("field", 13, "MyEnum", FieldFlags::Repeated, "", {docs_.description()}));
     ASSERT_NE(structure_->fields().find("field"), structure_->fields().end());
     EXPECT_EQ(structure_->fields().find("field")->second, field);
     EXPECT_EQ(structure_->fields().size(), 1);
@@ -162,11 +157,9 @@ TEST_F(StructEntityTest, addEnumField_Correctly_Initializes_And_Stores_Added_Fie
     EXPECT_TRUE(field->oneofName().empty());
     EXPECT_TRUE(field->defaultValue().empty());
 
-    EXPECT_TRUE(field->description().empty());
-    EXPECT_TRUE(field->briefDescription().empty());
-    ASSERT_NE(field->docCommands().find("cmd"), field->docCommands().end());
-    EXPECT_EQ(field->docCommands().find("cmd")->second, "cmd value");
-    EXPECT_EQ(field->docCommands().size(), 1);
+    EXPECT_EQ(field->docs().description(), docs_.description());
+    EXPECT_EQ(field->docs().brief(), docs_.brief());
+    EXPECT_TRUE(field->docs().commands().empty());
 }
 
 TEST_F(StructEntityTest, addMapField_Correctly_Initializes_And_Stores_Added_Field)
@@ -199,9 +192,9 @@ TEST_F(StructEntityTest, addMapField_Correctly_Initializes_And_Stores_Added_Fiel
     EXPECT_EQ(field->valueType(), FieldTypeId::String);
     EXPECT_EQ(field->valueTypeName(), GetFieldTypeIdStr(FieldTypeId::String));
 
-    EXPECT_TRUE(field->description().empty());
-    EXPECT_TRUE(field->briefDescription().empty());
-    EXPECT_TRUE(field->docCommands().empty());
+    EXPECT_TRUE(field->docs().description().empty());
+    EXPECT_TRUE(field->docs().brief().empty());
+    EXPECT_TRUE(field->docs().commands().empty());
 }
 
 TEST_F(StructEntityTest, Adding_Field_Throws_Entity_Error_If_Field_Number_Is_Invalid)

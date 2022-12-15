@@ -21,17 +21,17 @@ public:
     using GeneralCompositeEntity::addStruct;
     using GeneralCompositeEntity::addEnum;
 
-    /// Namespace descriptor.
-    const Struct* descriptor() const noexcept { return descriptor_; }
-
-    /// Namespace classes.
-    const std::map<std::string, const Class*>& classes() const noexcept { return classes_; }
-
     /// API where namespace is defined.
     const Api* parent() const noexcept;
 
     /// API where namespace is defined.
     Api* parent() noexcept;
+
+    /// Namespace descriptor.
+    const Struct* descriptor() const noexcept { return descriptor_; }
+
+    /// Namespace classes.
+    const std::map<std::string, const Class*>& classes() const noexcept { return classes_; }
 
     /// Add class.
     /// \throws name_conflict_error if nested entity with the same name already exists

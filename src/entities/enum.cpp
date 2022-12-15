@@ -8,8 +8,8 @@ namespace busrpc {
 Enum::Enum(CompositeEntity* parent,
            const std::string& name,
            const std::string& filename,
-           const std::string& blockComment):
-    CompositeEntity(parent, EntityTypeId::Enum, name, blockComment),
+           EntityDocs docs):
+    CompositeEntity(parent, EntityTypeId::Enum, name, std::move(docs)),
     package_{},
     file_{},
     constants_{}
@@ -34,9 +34,9 @@ Enum::Enum(CompositeEntity* parent,
     }
 }
 
-Constant* Enum::addConstant(const std::string& name, int32_t value, const std::string& blockComment)
+Constant* Enum::addConstant(const std::string& name, int32_t value, EntityDocs docs)
 {
-    Constant* constant = addNestedEntity<Constant>(name, value, blockComment);
+    Constant* constant = addNestedEntity<Constant>(name, value, std::move(docs));
     constants_[constant->name()] = constant;
     return constant;
 }

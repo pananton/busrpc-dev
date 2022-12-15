@@ -28,9 +28,9 @@ TEST_F(ClassEntityTest, Class_Entity_Is_Correctly_Initialized_When_Created_By_Na
     EXPECT_EQ(cls_->name(), "class");
     EXPECT_EQ(cls_->dir(), std::filesystem::path(Api_Entity_Name) / "namespace" / "class");
     EXPECT_EQ(cls_->dname(), std::string(Project_Entity_Name) + "." + Api_Entity_Name + ".namespace.class");
-    EXPECT_TRUE(cls_->description().empty());
-    EXPECT_TRUE(cls_->briefDescription().empty());
-    EXPECT_TRUE(cls_->docCommands().empty());
+    EXPECT_TRUE(cls_->docs().description().empty());
+    EXPECT_TRUE(cls_->docs().brief().empty());
+    EXPECT_TRUE(cls_->docs().commands().empty());
     EXPECT_EQ(cls_->parent(), ns_);
     EXPECT_EQ(static_cast<const Class*>(cls_)->parent(), ns_);
     EXPECT_FALSE(cls_->descriptor());
@@ -59,19 +59,15 @@ TEST_F(ClassEntityTest, Adding_ClassDesc_Struct_Sets_Class_Descriptor)
 
 TEST_F(ClassEntityTest, Adding_ClassDesc_Struct_Sets_Class_Documentation)
 {
-    std::string blockComment = "\\cmd cmd value\n"
-                               "Brief description.\n";
+    EntityDocs docs({"Brief description."}, {{"cmd", {"cmd value"}}});
     Struct* desc = nullptr;
 
     EXPECT_TRUE(desc = cls_->addStruct(
-                    GetPredefinedStructName(StructTypeId::Class_Desc), "class.proto", StructFlags::None, blockComment));
+                    GetPredefinedStructName(StructTypeId::Class_Desc), "class.proto", StructFlags::None, docs));
     EXPECT_EQ(desc, cls_->descriptor());
-    ASSERT_EQ(cls_->description().size(), 1);
-    EXPECT_EQ(cls_->description()[0], "Brief description.");
-    EXPECT_EQ(cls_->briefDescription(), "Brief description.");
-    EXPECT_EQ(cls_->docCommands().size(), 1);
-    ASSERT_NE(cls_->docCommands().find("cmd"), cls_->docCommands().end());
-    EXPECT_EQ(cls_->docCommands().find("cmd")->second, "cmd value");
+    EXPECT_EQ(cls_->docs().description(), docs.description());
+    EXPECT_EQ(cls_->docs().brief(), docs.brief());
+    EXPECT_EQ(cls_->docs().commands(), docs.commands());
 }
 
 TEST_F(ClassEntityTest, Adding_ObjectId_Struct_To_Descriptor_Sets_Class_Object_Identifier)

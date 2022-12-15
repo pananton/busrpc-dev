@@ -20,14 +20,14 @@ public:
     using GeneralCompositeEntity::addStruct;
     using GeneralCompositeEntity::addEnum;
 
-    /// Project services.
-    const std::map<std::string, const Service*>& services() const noexcept { return services_; }
-
     /// Project to which entity belongs.
     const Project* parent() const noexcept;
 
     /// Project to which entity belongs.
     Project* parent() noexcept;
+
+    /// Project services.
+    const std::map<std::string, const Service*>& services() const noexcept { return services_; }
 
     /// Add service.
     /// \throws name_conflict_error if nested entity with the same name already exists

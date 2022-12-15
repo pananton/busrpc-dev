@@ -50,7 +50,7 @@ public:
                           FieldFlags flags = FieldFlags::None,
                           const std::string& oneofName = {},
                           const std::string& defaultValue = {},
-                          const std::string& blockComment = {});
+                          EntityDocs docs = {});
 
     /// Add field with custom structure type.
     /// \throws name_conflict_error if field with the same name is already added
@@ -60,7 +60,7 @@ public:
                           const std::string& typeName,
                           FieldFlags flags = FieldFlags::None,
                           const std::string& oneofName = {},
-                          const std::string& blockComment = {});
+                          EntityDocs docs = {});
 
     /// Add field with enumeration type.
     /// \throws name_conflict_error if field with the same name is already added
@@ -70,7 +70,7 @@ public:
                         const std::string& typeName,
                         FieldFlags flags = FieldFlags::None,
                         const std::string& oneofName = {},
-                        const std::string& blockComment = {});
+                        EntityDocs docs = {});
 
     /// Add field with \c map type.
     /// \throws name_conflict_error if field with the same name is already added
@@ -82,17 +82,17 @@ public:
                           FieldTypeId keyType,
                           FieldTypeId valueType,
                           const std::string& valueTypeName = {},
-                          const std::string& blockComment = {});
+                          EntityDocs docs = {});
 
     /// Add nested structure.
     /// \throws name_conflict_error if entity with the same name is already added
     Struct* addStruct(const std::string& name,
                       StructFlags flags = StructFlags::None,
-                      const std::string& blockComment = {});
+                      EntityDocs docs = {});
 
     /// Add nested enumeration.
     /// \throws name_conflict_error if entity with the same name is already added
-    Enum* addEnum(const std::string& name, const std::string& blockComment = {});
+    Enum* addEnum(const std::string& name, EntityDocs docs = {});
 
 protected:
     /// Create structure entity.
@@ -100,7 +100,7 @@ protected:
            const std::string& name,
            const std::string& filename,
            StructFlags flags,
-           const std::string& blockComment);
+           EntityDocs docs = {});
 
 private:
     friend class CompositeEntity;

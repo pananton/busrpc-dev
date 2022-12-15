@@ -27,9 +27,9 @@ TEST_F(NamespaceEntityTest, Namespace_Entity_Is_Correctly_Initialized_When_Creat
     EXPECT_EQ(ns_->name(), "namespace");
     EXPECT_EQ(ns_->dir(), std::filesystem::path(Api_Entity_Name) / "namespace");
     EXPECT_EQ(ns_->dname(), std::string(Project_Entity_Name) + "." + Api_Entity_Name + ".namespace");
-    EXPECT_TRUE(ns_->description().empty());
-    EXPECT_TRUE(ns_->briefDescription().empty());
-    EXPECT_TRUE(ns_->docCommands().empty());
+    EXPECT_TRUE(ns_->docs().description().empty());
+    EXPECT_TRUE(ns_->docs().brief().empty());
+    EXPECT_TRUE(ns_->docs().commands().empty());
     EXPECT_EQ(ns_->parent(), api_);
     EXPECT_EQ(static_cast<const Namespace*>(ns_)->parent(), api_);
     EXPECT_FALSE(ns_->descriptor());
@@ -56,21 +56,14 @@ TEST_F(NamespaceEntityTest, Adding_NamespaceDesc_Struct_Sets_Namespace_Descripto
 
 TEST_F(NamespaceEntityTest, Adding_NamespaceDesc_Struct_Sets_Namespace_Documentation)
 {
-    std::string blockComment = "\\cmd cmd value\n"
-                               "Brief description.\n"
-                               "Description.";
+    EntityDocs docs({"Brief description.", "Description"}, {{"cmd", {"cmd value"}}});
     Struct* desc = nullptr;
 
-    EXPECT_TRUE(
-        desc = ns_->addStruct(
-            GetPredefinedStructName(StructTypeId::Namespace_Desc), "namespace.proto", StructFlags::None, blockComment));
+    EXPECT_TRUE(desc = ns_->addStruct(
+                    GetPredefinedStructName(StructTypeId::Namespace_Desc), "namespace.proto", StructFlags::None, docs));
     EXPECT_EQ(desc, ns_->descriptor());
-    ASSERT_EQ(ns_->description().size(), 2);
-    EXPECT_EQ(ns_->description()[0], "Brief description.");
-    EXPECT_EQ(ns_->description()[1], "Description.");
-    EXPECT_EQ(ns_->briefDescription(), "Brief description.");
-    EXPECT_EQ(ns_->docCommands().size(), 1);
-    ASSERT_NE(ns_->docCommands().find("cmd"), ns_->docCommands().end());
-    EXPECT_EQ(ns_->docCommands().find("cmd")->second, "cmd value");
+    EXPECT_EQ(ns_->docs().description(), docs.description());
+    EXPECT_EQ(ns_->docs().brief(), docs.brief());
+    EXPECT_EQ(ns_->docs().commands(), docs.commands());
 }
 }} // namespace busrpc::test

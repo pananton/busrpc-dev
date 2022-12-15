@@ -35,8 +35,7 @@ void Class::onNestedEntityAdded(Entity* entity)
         switch (structEntity->structType()) {
         case StructTypeId::Class_Desc:
             descriptor_ = structEntity;
-            setDocumentation(
-                structEntity->description(), structEntity->briefDescription(), structEntity->docCommands());
+            setDocumentation(structEntity->docs());
             break;
         case StructTypeId::Object_Id: objectId_ = structEntity; break;
         default: break;

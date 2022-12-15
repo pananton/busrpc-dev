@@ -71,8 +71,8 @@ TEST_F(ProjectEntityTest, Ctor_Correctly_Initializes_Project_Entity)
     EXPECT_EQ(project_->parent(), nullptr);
     EXPECT_EQ(static_cast<const Project*>(project_.get())->parent(), nullptr);
     EXPECT_EQ(project_->root(), Test_Root);
-    ASSERT_EQ(project_->description().size(), 1);
-    EXPECT_EQ(project_->description()[0], Project_Entity_Comment);
+    ASSERT_EQ(project_->docs().description().size(), 1);
+    EXPECT_EQ(project_->docs().description()[0], Project_Entity_Comment);
 }
 
 TEST_F(ProjectEntityTest, Ctor_Does_Not_Initialize_Api_And_Services)

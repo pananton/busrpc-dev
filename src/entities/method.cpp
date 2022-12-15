@@ -28,8 +28,7 @@ void Method::onNestedEntityAdded(Entity* entity)
         switch (structEntity->structType()) {
         case StructTypeId::Method_Desc:
             descriptor_ = structEntity;
-            setDocumentation(
-                structEntity->description(), structEntity->briefDescription(), structEntity->docCommands());
+            setDocumentation(structEntity->docs());
             break;
         case StructTypeId::Static_Marker: isStatic_ = true; break;
         case StructTypeId::Method_Params: params_ = structEntity; break;

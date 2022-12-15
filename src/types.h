@@ -4,6 +4,7 @@
 #include <string_view>
 #include <type_traits>
 
+/// \namespace doc_cmd Names of the supported documentation commands.
 /// \file types.h Common types.
 
 /// Creates neccessary overloads in order to use enum values as binary flags.
@@ -446,4 +447,18 @@ constexpr const char* GetFieldTypeIdStr(FieldTypeId id)
     default: return nullptr;
     }
 }
+
+namespace doc_cmd {
+/// Service author.
+inline constexpr const char* Service_Author = "author";
+
+/// Service contact email.
+inline constexpr const char* Service_Email = "email";
+
+/// Service sources/documentation URL.
+inline constexpr const char* Service_Url = "url";
+
+/// Value of the object identifier or some observable parameter accepted by the implementor.
+inline constexpr const char* Accepted_Value = "accept";
+} // namespace doc_cmd
 } // namespace busrpc

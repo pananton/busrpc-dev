@@ -9,16 +9,16 @@ protected:
     void SetUp() override
     {
         project_ = std::make_shared<Project>();
+        docs_ = EntityDocs({"Brief description.", "Description"}, {{"cmd", {"cmd value"}}});
         auto api = project_->addApi();
-        std::string blockComment = "\\cmd cmd value\n"
-                                   "Brief description.\n"
-                                   "Description.";
+
         api_ = api;
-        enum_ = api->addEnum("Enum", "enum.proto", blockComment);
+        enum_ = api->addEnum("Enum", "enum.proto", docs_);
     }
 
 protected:
     std::shared_ptr<Project> project_;
+    EntityDocs docs_;
     const Api* api_ = nullptr;
     Enum* enum_ = nullptr;
 };
@@ -35,20 +35,16 @@ TEST_F(EnumEntityTest, Enum_Entity_Is_Correctly_Initialized_When_Created_By_Pare
     EXPECT_EQ(enum_->file(), enum_->dir() / "enum.proto");
     EXPECT_TRUE(enum_->constants().empty());
 
-    ASSERT_EQ(enum_->description().size(), 2);
-    EXPECT_EQ(enum_->description()[0], "Brief description.");
-    EXPECT_EQ(enum_->description()[1], "Description.");
-    EXPECT_EQ(enum_->briefDescription(), "Brief description.");
-    EXPECT_EQ(enum_->docCommands().size(), 1);
-    ASSERT_NE(enum_->docCommands().find("cmd"), enum_->docCommands().end());
-    EXPECT_EQ(enum_->docCommands().find("cmd")->second, "cmd value");
+    EXPECT_EQ(enum_->docs().description(), docs_.description());
+    EXPECT_EQ(enum_->docs().brief(), docs_.brief());
+    EXPECT_EQ(enum_->docs().commands(), docs_.commands());
 }
 
 TEST_F(EnumEntityTest, addConstant_Correctly_Initializes_And_Stores_Added_Constant)
 {
     Constant* constant = nullptr;
 
-    ASSERT_TRUE(constant = enum_->addConstant("constant", 13, "Brief description."));
+    ASSERT_TRUE(constant = enum_->addConstant("constant", 13, {docs_.description()}));
     ASSERT_NE(enum_->constants().find("constant"), enum_->constants().end());
     ASSERT_EQ(enum_->constants().find("constant")->second, constant);
 
@@ -59,9 +55,8 @@ TEST_F(EnumEntityTest, addConstant_Correctly_Initializes_And_Stores_Added_Consta
     EXPECT_EQ(static_cast<const Constant*>(constant)->parent(), enum_);
     EXPECT_EQ(constant->value(), 13);
 
-    ASSERT_EQ(constant->description().size(), 1);
-    EXPECT_EQ(constant->description()[0], "Brief description.");
-    EXPECT_EQ(constant->briefDescription(), "Brief description.");
-    EXPECT_TRUE(constant->docCommands().empty());
+    EXPECT_EQ(constant->docs().description(), docs_.description());
+    EXPECT_EQ(constant->docs().brief(), docs_.brief());
+    EXPECT_TRUE(constant->docs().commands().empty());
 }
 }} // namespace busrpc::test

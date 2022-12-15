@@ -22,6 +22,37 @@ class CompositeEntity;
 class Enum;
 class Struct;
 
+/// Entity documentation.
+class EntityDocs {
+public:
+    /// Create entity documentation from the \a description and \a commands.
+    /// \warning If vector representing documentation command value is empty, then constructor will add empty string
+    ///          as a command value.
+    /// \note Brief description is the first item of the \a description.
+    EntityDocs(std::vector<std::string> description = {},
+               std::map<std::string, std::vector<std::string>> commands = {});
+
+    /// Create entity documentation from the protobuf file block comment.
+    /// \note Parameter \a blockComment should not contain characters, which start a comment line (like '//', etc.).
+    explicit EntityDocs(const std::string& blockComment);
+
+    /// Entity description.
+    const std::vector<std::string>& description() const noexcept { return description_; }
+
+    /// Entity brief description.
+    const std::string& brief() const noexcept { return brief_; }
+
+    /// Entity documentation commands ordered by command name.
+    /// \note Each documentation command is a name-value pair. Because same documentation command may be specified
+    ///       more that once for an entity, returned \c map uses \c vector to store all values.
+    const std::map<std::string, std::vector<std::string>>& commands() const noexcept { return commands_; }
+
+private:
+    std::vector<std::string> description_;
+    std::string brief_;
+    std::map<std::string, std::vector<std::string>> commands_;
+};
+
 /// Entity base class.
 class Entity {
 public:
@@ -30,6 +61,14 @@ public:
 
     Entity(Entity&&) = default;
     Entity& operator=(Entity&&) = default;
+
+    /// Parent entity.
+    /// \note \c nullptr for \ref Project entity.
+    const CompositeEntity* parent() const noexcept { return parent_; }
+
+    /// Parent entity.
+    /// \note \c nullptr for \ref Project entity.
+    CompositeEntity* parent() noexcept { return parent_; }
 
     /// Entity type.
     EntityTypeId type() const noexcept { return type_; }
@@ -40,55 +79,25 @@ public:
     /// Directory where entity is defined.
     const std::filesystem::path& dir() const noexcept { return dir_; }
 
-    /// Entity description.
-    /// \note Result \c std::vector contains lines of block comment bound to the entity in a protobuf file except for
-    ///       lines which start with a busrpc documentation command.
-    const std::vector<std::string>& description() const noexcept { return description_; }
-
-    /// Entity brief description (the first line of the \ref description of exists).
-    /// \note Empty if description is not specified and \ref description return empty vector.
-    const std::string& briefDescription() const noexcept { return briefDescription_; }
-
-    /// Entity documentation commands.
-    /// \note Key in the return type is documentation command name and value is command argument.
-    const std::multimap<std::string, std::string>& docCommands() const noexcept { return docCommands_; }
-
-    /// Parent entity.
-    /// \note \c nullptr for \ref Project entity.
-    const CompositeEntity* parent() const noexcept { return parent_; }
-
-    /// Parent entity.
-    /// \note \c nullptr for \ref Project entity.
-    CompositeEntity* parent() noexcept { return parent_; }
+    /// Entity documentation.
+    const EntityDocs& docs() const noexcept { return docs_; }
 
     /// Destructor.
     virtual ~Entity() = default;
 
 protected:
     /// Create entity.
-    Entity(CompositeEntity* parent, EntityTypeId type, const std::string& name, const std::string& blockComment = {});
+    Entity(CompositeEntity* parent, EntityTypeId type, const std::string& name, EntityDocs docs = {});
 
     /// Set entity documentation.
-    void setDocumentation(const std::vector<std::string>& description,
-                          const std::string briefDescription,
-                          const std::multimap<std::string, std::string> docCommands)
-    {
-        description_ = description;
-        briefDescription_ = briefDescription;
-        docCommands_ = docCommands;
-    }
+    void setDocumentation(EntityDocs docs) noexcept { docs_ = std::move(docs); }
 
 private:
-    void parseBlockComment(const std::string& blockComment);
-
     CompositeEntity* parent_;
     EntityTypeId type_;
     std::string name_;
-
     std::filesystem::path dir_;
-    std::vector<std::string> description_;
-    std::string briefDescription_;
-    std::multimap<std::string, std::string> docCommands_;
+    EntityDocs docs_;
 
     std::map<std::string, const Entity*> nested_;
     std::queue<std::shared_ptr<Entity>> storage_;
@@ -115,10 +124,7 @@ public:
 
 protected:
     /// Create distinguished entity.
-    DistinguishedEntity(CompositeEntity* parent,
-                        EntityTypeId type,
-                        const std::string& name,
-                        const std::string& blockComment = {});
+    DistinguishedEntity(CompositeEntity* parent, EntityTypeId type, const std::string& name, EntityDocs docs = {});
 
 private:
     std::string dname_;
@@ -151,11 +157,8 @@ protected:
     using NestedEntityAddedCallback = std::function<void(Entity*)>;
 
     /// Create composite entity.
-    CompositeEntity(CompositeEntity* parent,
-                    EntityTypeId type,
-                    const std::string& name,
-                    const std::string& blockComment = {}):
-        DistinguishedEntity(parent, type, name, blockComment),
+    CompositeEntity(CompositeEntity* parent, EntityTypeId type, const std::string& name, EntityDocs docs = {}):
+        DistinguishedEntity(parent, type, name, std::move(docs)),
         storage_{},
         nested_{},
         onNestedEntityAdded_(parent ? parent->onNestedEntityAdded_ : NestedEntityAddedCallback{})
@@ -235,11 +238,8 @@ public:
 
 protected:
     /// Create general composite entity.
-    GeneralCompositeEntity(CompositeEntity* parent,
-                           EntityTypeId type,
-                           const std::string& name,
-                           const std::string& blockComment = {}):
-        CompositeEntity(parent, type, name, blockComment)
+    GeneralCompositeEntity(CompositeEntity* parent, EntityTypeId type, const std::string& name, EntityDocs docs = {}):
+        CompositeEntity(parent, type, name, std::move(docs))
     { }
 
     /// Add nested structure.
@@ -252,7 +252,7 @@ protected:
     Struct* addStruct(const std::string& name,
                       const std::string& filename,
                       StructFlags flags = StructFlags::None,
-                      const std::string& blockComment = {});
+                      EntityDocs docs = {});
 
     /// Add nested enumeration.
     /// \throws name_conflict_error if entity with the same name is already added
@@ -261,7 +261,7 @@ protected:
     /// If
     ///       general composite entity represents \ref Struct entity, then this parameter is ignored and
     ///       parent structure filename is used instead of if.
-    Enum* addEnum(const std::string& name, const std::string& filename, const std::string& blockComment = {});
+    Enum* addEnum(const std::string& name, const std::string& filename, EntityDocs docs = {});
 
 private:
     std::map<std::string, const Struct*> structs_ = {};

@@ -5,7 +5,7 @@
 namespace busrpc {
 
 Api::Api(CompositeEntity* project):
-    GeneralCompositeEntity(project, EntityTypeId::Api, Api_Entity_Name, Api_Entity_Comment)
+    GeneralCompositeEntity(project, EntityTypeId::Api, Api_Entity_Name, {{Api_Entity_Comment}, {}})
 {
     assert(dynamic_cast<Project*>(this->parent()));
     setNestedEntityAddedCallback([this](Entity* entity) { onNestedEntityAdded(entity); });

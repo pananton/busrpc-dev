@@ -16,6 +16,12 @@ class Struct;
 /// Structure field entity.
 class Field: public Entity {
 public:
+    /// Structure to which field belongs.
+    const Struct* parent() const noexcept;
+
+    /// Structure to which field belongs.
+    Struct* parent() noexcept;
+
     /// Field [number](https://developers.google.com/protocol-buffers/docs/proto3#assigning_field_numbers).
     int32_t number() const noexcept { return number_; }
 
@@ -54,12 +60,6 @@ public:
     /// \note Empty string if default value does not exist.
     const std::string& defaultValue() const noexcept { return defaultValue_; }
 
-    /// Structure to which field belongs.
-    const Struct* parent() const noexcept;
-
-    /// Structure to which field belongs.
-    Struct* parent() noexcept;
-
 protected:
     /// Create field entity.
     /// \throws entity_error if field does not represent a valid protobuf \c message field
@@ -71,7 +71,7 @@ protected:
           FieldFlags flags,
           const std::string& oneofName,
           const std::string& defaultValue,
-          const std::string& blockComment);
+          EntityDocs docs = {});
 
 private:
     friend class CompositeEntity;
@@ -106,7 +106,7 @@ protected:
              FieldTypeId keyType,
              FieldTypeId valueType,
              const std::string& valueTypeName,
-             const std::string& blockComment);
+             EntityDocs docs = {});
 
 private:
     friend class CompositeEntity;

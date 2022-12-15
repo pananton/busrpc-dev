@@ -4,15 +4,10 @@
 
 namespace busrpc {
 
-InvokedMethod::InvokedMethod(CompositeEntity* service,
-                             const std::string& name,
-                             const std::vector<std::string>& description,
-                             const std::string& briefDescription,
-                             const std::multimap<std::string, std::string>& docCommands):
-    Entity(service, EntityTypeId::Implemented_Method, name, "")
+InvokedMethod::InvokedMethod(CompositeEntity* service, const std::string& name, EntityDocs docs):
+    Entity(service, EntityTypeId::Implemented_Method, name, std::move(docs))
 {
     assert(dynamic_cast<Service*>(this->parent()));
-    setDocumentation(description, briefDescription, docCommands);
 }
 
 const Service* InvokedMethod::parent() const noexcept

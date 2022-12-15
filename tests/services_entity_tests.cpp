@@ -25,11 +25,8 @@ TEST_F(ServicesEntityTest, Services_Entity_Is_Correctly_Initialized_When_Created
     EXPECT_EQ(services_->dname(), std::string(Project_Entity_Name) + "." + Services_Entity_Name);
     EXPECT_EQ(services_->parent(), project_.get());
     EXPECT_EQ(static_cast<const Services*>(services_)->parent(), project_.get());
-
-    EXPECT_FALSE(services_->description().empty());
-    EXPECT_FALSE(services_->briefDescription().empty());
-    ASSERT_EQ(services_->description().size(), 1);
-    EXPECT_EQ(services_->description()[0], Services_Entity_Comment);
+    ASSERT_EQ(services_->docs().description().size(), 1);
+    EXPECT_EQ(services_->docs().description()[0], Services_Entity_Comment);
 }
 
 TEST_F(ServicesEntityTest, addServices_Stores_Added_Services)

@@ -22,6 +22,12 @@ public:
     using GeneralCompositeEntity::addStruct;
     using GeneralCompositeEntity::addEnum;
 
+    /// Project to which API belongs.
+    const Project* parent() const noexcept;
+
+    /// Project to which API belongs.
+    Project* parent() noexcept;
+
     /// Network message representing API call.
     const Struct* callMessage() const noexcept { return callMessage_; }
 
@@ -37,12 +43,6 @@ public:
 
     /// API namespaces.
     const std::map<std::string, const Namespace*>& namespaces() const noexcept { return namespaces_; }
-
-    /// Project to which API belongs.
-    const Project* parent() const noexcept;
-
-    /// Project to which API belongs.
-    Project* parent() noexcept;
 
     /// Add namespace.
     /// \throws name_conflict_error if nested entity with the same name already exists

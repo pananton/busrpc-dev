@@ -9,8 +9,8 @@ Struct::Struct(CompositeEntity* parent,
                const std::string& name,
                const std::string& filename,
                StructFlags flags,
-               const std::string& blockComment):
-    GeneralCompositeEntity(parent, EntityTypeId::Struct, name, blockComment),
+               EntityDocs docs):
+    GeneralCompositeEntity(parent, EntityTypeId::Struct, name, std::move(docs)),
     structType_{},
     package_{},
     file_{},
@@ -50,10 +50,10 @@ Field* Struct::addScalarField(const std::string& name,
                               FieldFlags flags,
                               const std::string& oneofName,
                               const std::string& defaultValue,
-                              const std::string& blockComment)
+                              EntityDocs docs)
 {
     checkFieldNumberIsFree(name, number);
-    Field* field = addNestedEntity<Field>(name, number, type, "", flags, oneofName, defaultValue, blockComment);
+    Field* field = addNestedEntity<Field>(name, number, type, "", flags, oneofName, defaultValue, std::move(docs));
     fields_[field->name()] = field;
     return field;
 }
@@ -63,11 +63,11 @@ Field* Struct::addStructField(const std::string& name,
                               const std::string& typeName,
                               FieldFlags flags,
                               const std::string& oneofName,
-                              const std::string& blockComment)
+                              EntityDocs docs)
 {
     checkFieldNumberIsFree(name, number);
     Field* field =
-        addNestedEntity<Field>(name, number, FieldTypeId::Message, typeName, flags, oneofName, "", blockComment);
+        addNestedEntity<Field>(name, number, FieldTypeId::Message, typeName, flags, oneofName, "", std::move(docs));
     fields_[field->name()] = field;
     return field;
 }
@@ -77,11 +77,11 @@ Field* Struct::addEnumField(const std::string& name,
                             const std::string& typeName,
                             FieldFlags flags,
                             const std::string& oneofName,
-                            const std::string& blockComment)
+                            EntityDocs docs)
 {
     checkFieldNumberIsFree(name, number);
     Field* field =
-        addNestedEntity<Field>(name, number, FieldTypeId::Enum, typeName, flags, oneofName, "", blockComment);
+        addNestedEntity<Field>(name, number, FieldTypeId::Enum, typeName, flags, oneofName, "", std::move(docs));
     fields_[field->name()] = field;
     return field;
 }
@@ -91,22 +91,22 @@ MapField* Struct::addMapField(const std::string& name,
                               FieldTypeId keyType,
                               FieldTypeId valueType,
                               const std::string& valueTypeName,
-                              const std::string& blockComment)
+                              EntityDocs docs)
 {
     checkFieldNumberIsFree(name, number);
-    MapField* field = addNestedEntity<MapField>(name, number, keyType, valueType, valueTypeName, blockComment);
+    MapField* field = addNestedEntity<MapField>(name, number, keyType, valueType, valueTypeName, std::move(docs));
     fields_[field->name()] = field;
     return field;
 }
 
-Struct* Struct::addStruct(const std::string& name, StructFlags flags, const std::string& blockComment)
+Struct* Struct::addStruct(const std::string& name, StructFlags flags, EntityDocs docs)
 {
-    return GeneralCompositeEntity::addStruct(name, "", flags, blockComment);
+    return GeneralCompositeEntity::addStruct(name, "", flags, std::move(docs));
 }
 
-Enum* Struct::addEnum(const std::string& name, const std::string& blockComment)
+Enum* Struct::addEnum(const std::string& name, EntityDocs docs)
 {
-    return GeneralCompositeEntity::addEnum(name, "", blockComment);
+    return GeneralCompositeEntity::addEnum(name, "", std::move(docs));
 }
 
 void Struct::checkFieldNumberIsFree(const std::string& fieldName, int32_t fieldNumber) const

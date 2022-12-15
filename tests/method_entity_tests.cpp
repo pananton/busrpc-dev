@@ -29,9 +29,9 @@ TEST_F(MethodEntityTest, Method_Entity_Is_Correctly_Initialized_When_Created_By_
     EXPECT_EQ(method_->name(), "method");
     EXPECT_EQ(method_->dir(), std::filesystem::path(Api_Entity_Name) / "namespace" / "class" / "method");
     EXPECT_EQ(method_->dname(), std::string(Project_Entity_Name) + "." + Api_Entity_Name + ".namespace.class.method");
-    EXPECT_TRUE(method_->description().empty());
-    EXPECT_TRUE(method_->briefDescription().empty());
-    EXPECT_TRUE(method_->docCommands().empty());
+    EXPECT_TRUE(method_->docs().description().empty());
+    EXPECT_TRUE(method_->docs().brief().empty());
+    EXPECT_TRUE(method_->docs().commands().empty());
     EXPECT_EQ(method_->parent(), cls_);
     EXPECT_EQ(static_cast<const Method*>(method_)->parent(), cls_);
     EXPECT_FALSE(method_->descriptor());
@@ -53,18 +53,16 @@ TEST_F(MethodEntityTest, Adding_MethodDesc_Struct_Sets_Method_Descriptor)
 
 TEST_F(MethodEntityTest, Adding_MethodDesc_Struct_Sets_Method_Documentation)
 {
-    std::string blockComment = "\\cmd cmd value\n";
+    EntityDocs docs({}, {{"cmd", {"cmd value"}}});
     Struct* desc = nullptr;
 
     EXPECT_TRUE(
         desc = method_->addStruct(
-            GetPredefinedStructName(StructTypeId::Method_Desc), "method.proto", StructFlags::None, blockComment));
+            GetPredefinedStructName(StructTypeId::Method_Desc), "method.proto", StructFlags::None, docs));
     EXPECT_EQ(desc, method_->descriptor());
-    EXPECT_TRUE(method_->description().empty());
-    EXPECT_TRUE(method_->briefDescription().empty());
-    EXPECT_EQ(method_->docCommands().size(), 1);
-    ASSERT_NE(method_->docCommands().find("cmd"), method_->docCommands().end());
-    EXPECT_EQ(method_->docCommands().find("cmd")->second, "cmd value");
+    EXPECT_EQ(method_->docs().description(), docs.description());
+    EXPECT_EQ(method_->docs().brief(), docs.brief());
+    EXPECT_EQ(method_->docs().commands(), docs.commands());
 }
 
 TEST_F(MethodEntityTest, Adding_Params_Struct_To_Descriptor_Sets_Method_Parameters)

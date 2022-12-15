@@ -5,32 +5,23 @@
 
 namespace busrpc {
 
-Entity::Entity(CompositeEntity* parent, EntityTypeId type, const std::string& name, const std::string& blockComment):
-    parent_(parent),
-    type_(type),
-    name_(name),
-    dir_{},
-    description_{},
-    docCommands_{}
+EntityDocs::EntityDocs(std::vector<std::string> description, std::map<std::string, std::vector<std::string>> commands):
+    description_(std::move(description)),
+    brief_{},
+    commands_(std::move(commands))
 {
-    if (parent_) {
-        dir_ = parent_->dir();
-
-        switch (type_) {
-        case EntityTypeId::Struct:
-        case EntityTypeId::Field:
-        case EntityTypeId::Enum:
-        case EntityTypeId::Constant:
-        case EntityTypeId::Implemented_Method:
-        case EntityTypeId::Invoked_Method: break;
-        default: dir_ /= name_;
-        }
+    if (!description_.empty()) {
+        brief_ = description_[0];
     }
 
-    parseBlockComment(blockComment);
+    for (auto it = commands_.begin(); it != commands_.end(); ++it) {
+        if (it->second.empty()) {
+            it->second.emplace_back("");
+        }
+    }
 }
 
-void Entity::parseBlockComment(const std::string& blockComment)
+EntityDocs::EntityDocs(const std::string& blockComment)
 {
     constexpr const char* whitespace = " \t";
     auto lines = SplitString(blockComment);
@@ -51,21 +42,43 @@ void Entity::parseBlockComment(const std::string& blockComment)
                 nameLength = nameEndPos - nameStartPos;
             }
 
-            docCommands_.emplace(line.substr(nameStartPos, nameLength),
-                                 nameEndPos != std::string::npos ? TrimString(line.substr(nameEndPos)) : "");
+            auto it = commands_.emplace(line.substr(nameStartPos, nameLength), std::vector<std::string>{}).first;
+            it->second.emplace_back(nameEndPos != std::string::npos ? TrimString(line.substr(nameEndPos)) : "");
         }
     }
 
     if (!description_.empty()) {
-        briefDescription_ = description_.front();
+        brief_ = description_.front();
+    }
+}
+
+Entity::Entity(CompositeEntity* parent, EntityTypeId type, const std::string& name, EntityDocs docs):
+    parent_(parent),
+    type_(type),
+    name_(name),
+    dir_{},
+    docs_(std::move(docs))
+{
+    if (parent_) {
+        dir_ = parent_->dir();
+
+        switch (type_) {
+        case EntityTypeId::Struct:
+        case EntityTypeId::Field:
+        case EntityTypeId::Enum:
+        case EntityTypeId::Constant:
+        case EntityTypeId::Implemented_Method:
+        case EntityTypeId::Invoked_Method: break;
+        default: dir_ /= name_;
+        }
     }
 }
 
 DistinguishedEntity::DistinguishedEntity(CompositeEntity* parent,
                                          EntityTypeId type,
                                          const std::string& name,
-                                         const std::string& blockComment):
-    Entity(parent, type, name, blockComment),
+                                         EntityDocs docs):
+    Entity(parent, type, name, std::move(docs)),
     dname_{}
 {
     if (parent) {
@@ -78,18 +91,16 @@ DistinguishedEntity::DistinguishedEntity(CompositeEntity* parent,
 Struct* GeneralCompositeEntity::addStruct(const std::string& name,
                                           const std::string& filename,
                                           StructFlags flags,
-                                          const std::string& blockComment)
+                                          EntityDocs docs)
 {
-    auto ptr = addNestedEntity<Struct>(name, filename, flags, blockComment);
+    auto ptr = addNestedEntity<Struct>(name, filename, flags, std::move(docs));
     structs_[ptr->name()] = ptr;
     return ptr;
 }
 
-Enum* GeneralCompositeEntity::addEnum(const std::string& name,
-                                      const std::string& filename,
-                                      const std::string& blockComment)
+Enum* GeneralCompositeEntity::addEnum(const std::string& name, const std::string& filename, EntityDocs docs)
 {
-    auto ptr = addNestedEntity<Enum>(name, filename, blockComment);
+    auto ptr = addNestedEntity<Enum>(name, filename, std::move(docs));
     enums_[ptr->name()] = ptr;
     return ptr;
 }

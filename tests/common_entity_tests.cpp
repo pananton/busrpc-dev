@@ -10,32 +10,29 @@ namespace busrpc { namespace test {
 
 class TestEntity: public Entity {
 public:
-    TestEntity(CompositeEntity* parent,
-               EntityTypeId type,
-               const std::string& name,
-               const std::string& blockComment = ""):
-        Entity(parent, type, name, blockComment)
+    TestEntity(CompositeEntity* parent, EntityTypeId type, const std::string& name, EntityDocs docs = {}):
+        Entity(parent, type, name, std::move(docs))
     { }
 };
 
 class TestDistinguishedEntity: public DistinguishedEntity {
 public:
     TestDistinguishedEntity(CompositeEntity* parent, EntityTypeId type, const std::string& name):
-        DistinguishedEntity(parent, type, name, "")
+        DistinguishedEntity(parent, type, name, {})
     { }
 };
 
 class TestCompositeEntity: public CompositeEntity {
 public:
     TestCompositeEntity(CompositeEntity* parent, EntityTypeId type, const std::string& name):
-        CompositeEntity(parent, type, name, "")
+        CompositeEntity(parent, type, name, {})
     { }
 
     TestCompositeEntity(CompositeEntity* parent,
                         EntityTypeId type,
                         const std::string& name,
                         std::function<void(Entity*)> onNestedEntityAdded):
-        CompositeEntity(parent, type, name, "")
+        CompositeEntity(parent, type, name, {})
     {
         setNestedEntityAddedCallback(std::move(onNestedEntityAdded));
     }
@@ -73,9 +70,9 @@ TEST(CommonEntityTest, Entity_Ctor_Correctly_Initializes_Object)
     EXPECT_EQ(entity.type(), EntityTypeId::Struct);
     EXPECT_EQ(entity.name(), entityName);
     EXPECT_TRUE(entity.dir().empty());
-    EXPECT_TRUE(entity.description().empty());
-    EXPECT_TRUE(entity.briefDescription().empty());
-    EXPECT_TRUE(entity.docCommands().empty());
+    EXPECT_TRUE(entity.docs().description().empty());
+    EXPECT_TRUE(entity.docs().brief().empty());
+    EXPECT_TRUE(entity.docs().commands().empty());
     EXPECT_FALSE(entity.parent());
     EXPECT_FALSE(static_cast<const Entity*>(&entity)->parent());
 }
@@ -113,60 +110,12 @@ TEST(CommonEntityTest, Entity_Ctor_Correctly_Initializes_Parent)
 
 TEST(CommonEntityTest, Entity_Ctor_Correctly_Initializes_Entity_Documentation)
 {
-    std::string blockComment = "\\cmd1\tFirst cmd1 instance   \n"
-                               "\tThis is a brief description. \n"
-                               " This is the first line of long description.\t\n"
-                               "\\cmd2\n"
-                               "\\\n"
-                               "\\ \t\n"
-                               " \\ Empty command value\n"
-                               "This is the second line of long description,\n"
-                               "\n"
-                               " \t \n"
-                               "which continues on the third line.\n"
-                               "  \t  \\cmd1 Second cmd1 instance\t";
-    TestEntity entity(nullptr, EntityTypeId::Struct, "entity", blockComment);
+    EntityDocs docs({"Brief description.", "Description."}, {{"cmd1", {"value1"}}, {"cmd2", {"value2", "value3"}}});
+    TestEntity entity(nullptr, EntityTypeId::Struct, "entity", docs);
 
-    EXPECT_EQ(entity.briefDescription(), "\tThis is a brief description. ");
-
-    ASSERT_EQ(entity.description().size(), 6);
-    EXPECT_EQ(entity.description()[0], entity.briefDescription());
-    EXPECT_EQ(entity.description()[1], " This is the first line of long description.\t");
-    EXPECT_EQ(entity.description()[2], "This is the second line of long description,");
-    EXPECT_EQ(entity.description()[3], "");
-    EXPECT_EQ(entity.description()[4], " \t ");
-    EXPECT_EQ(entity.description()[5], "which continues on the third line.");
-
-    std::multimap<std::string, std::string> docCommands = entity.docCommands();
-
-    EXPECT_EQ(docCommands.size(), 6);
-    ASSERT_NE(docCommands.find("cmd1"), docCommands.end());
-    EXPECT_EQ(docCommands.find("cmd1")->second, "First cmd1 instance");
-
-    docCommands.erase(docCommands.find("cmd1"));
-
-    ASSERT_NE(docCommands.find("cmd1"), docCommands.end());
-    EXPECT_EQ(docCommands.find("cmd1")->second, "Second cmd1 instance");
-
-    docCommands.erase(docCommands.find("cmd1"));
-
-    ASSERT_NE(docCommands.find("cmd2"), docCommands.end());
-    EXPECT_EQ(docCommands.find("cmd2")->second, "");
-
-    docCommands.erase(docCommands.find("cmd2"));
-
-    ASSERT_NE(docCommands.find(""), docCommands.end());
-    EXPECT_EQ(docCommands.find("")->second, "");
-
-    docCommands.erase(docCommands.find(""));
-
-    ASSERT_NE(docCommands.find(""), docCommands.end());
-    EXPECT_EQ(docCommands.find("")->second, "");
-
-    docCommands.erase(docCommands.find(""));
-
-    ASSERT_NE(docCommands.find(""), docCommands.end());
-    EXPECT_EQ(docCommands.find("")->second, "Empty command value");
+    EXPECT_EQ(entity.docs().description(), docs.description());
+    EXPECT_EQ(entity.docs().brief(), docs.brief());
+    EXPECT_EQ(entity.docs().commands(), docs.commands());
 }
 
 TEST(CommonEntityTest, Distinguished_Entity_Ctor_Correctly_Initializes_Dname)

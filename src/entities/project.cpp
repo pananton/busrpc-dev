@@ -5,7 +5,7 @@
 namespace busrpc {
 
 Project::Project(std::filesystem::path root):
-    CompositeEntity(nullptr, EntityTypeId::Project, Project_Entity_Name, Project_Entity_Comment),
+    CompositeEntity(nullptr, EntityTypeId::Project, Project_Entity_Name, {{Project_Entity_Comment}, {}}),
     root_(std::move(root))
 {
     setNestedEntityAddedCallback([this](Entity* entity) { onNestedEntityAdded(entity); });

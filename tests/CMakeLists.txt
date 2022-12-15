@@ -18,6 +18,7 @@ set(sources
     exception_tests.cpp
     utils_tests.cpp
     bitwise_enum_tests.cpp
+    entity_docs_tests.cpp
     common_entity_tests.cpp
     project_entity_tests.cpp
     api_entity_tests.cpp

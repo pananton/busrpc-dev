@@ -5,15 +5,10 @@
 
 namespace busrpc {
 
-ImplementedMethod::ImplementedMethod(CompositeEntity* service,
-                                     const std::string& name,
-                                     const std::vector<std::string>& description,
-                                     const std::string& briefDescription,
-                                     const std::multimap<std::string, std::string>& docCommands):
-    Entity(service, EntityTypeId::Implemented_Method, name, "")
+ImplementedMethod::ImplementedMethod(CompositeEntity* service, const std::string& name, EntityDocs docs):
+    Entity(service, EntityTypeId::Implemented_Method, name, std::move(docs))
 {
     assert(dynamic_cast<Service*>(this->parent()));
-    setDocumentation(description, briefDescription, docCommands);
     parseDocCommands();
 }
 
@@ -27,24 +22,31 @@ Service* ImplementedMethod::parent() noexcept
     return static_cast<Service*>(Entity::parent());
 }
 
-void ImplementedMethod::parseDocCommands() {
-    for (auto it = docCommands().find(Accept_Doc_Command); it != docCommands().upper_bound(Accept_Doc_Command); ++it) {
-        std::string name;
-        std::string value;
-        auto nameEnd = it->second.find_first_of(" \t");
+void ImplementedMethod::parseDocCommands()
+{
+    auto acceptedValues = docs().commands().find(doc_cmd::Accepted_Value);
 
-        if (nameEnd != std::string::npos) {
-            name = it->second.substr(0, nameEnd);
-            value = TrimString(it->second.substr(nameEnd + 1));
+    if (acceptedValues == docs().commands().end()) {
+        return;
+    }
+
+    for (const auto& cmdValue: acceptedValues->second) {
+        std::string paramName;
+        std::string paramValue;
+        auto paramNameEnd = cmdValue.find_first_of(" \t");
+
+        if (paramNameEnd != std::string::npos) {
+            paramName = cmdValue.substr(0, paramNameEnd);
+            paramValue = TrimString(cmdValue.substr(paramNameEnd + 1));
         } else {
-            name = it->second;
-            value = "";
+            paramName = cmdValue;
+            paramValue = "";
         }
 
-        if (name == "@object_id") {
-            acceptedObjectId_ = value;
+        if (paramName == "@object_id") {
+            acceptedObjectId_ = paramValue;
         } else {
-            acceptedParams_[name] = value;
+            acceptedParams_[paramName] = paramValue;
         }
     }
 }

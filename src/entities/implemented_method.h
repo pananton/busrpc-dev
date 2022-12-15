@@ -6,7 +6,6 @@
 #include <map>
 #include <optional>
 #include <string>
-#include <vector>
 
 /// \file implemented_method.h Implemented method entity.
 
@@ -18,8 +17,11 @@ class Service;
 /// \note Name of the \c ImplementedEntity entity is the distinguished name of the corresponding \ref Method entity.
 class ImplementedMethod: public Entity {
 public:
-    /// Name of the documentation command, which specifies accepted object identifier and observable parameter values.
-    static constexpr const char* Accept_Doc_Command = "accept";
+    /// Service, which implements method.
+    const Service* parent() const noexcept;
+
+    /// Service, which implements method.
+    Service* parent() noexcept;
 
     /// Description of accepted object identifier value.
     const std::optional<std::string>& acceptedObjectId() const noexcept { return acceptedObjectId_; }
@@ -27,19 +29,9 @@ public:
     /// Descriptions of accepted observable paremeter values ordered by parameter name.
     const std::map<std::string, std::string>& acceptedParams() const noexcept { return acceptedParams_; }
 
-    /// Service, which implements method.
-    const Service* parent() const noexcept;
-
-    /// Service, which implements method.
-    Service* parent() noexcept;
-
 protected:
     /// Create implemented method entity.
-    ImplementedMethod(CompositeEntity* service,
-                      const std::string& name,
-                      const std::vector<std::string>& description,
-                      const std::string& briefDescription,
-                      const std::multimap<std::string, std::string>& docCommands);
+    ImplementedMethod(CompositeEntity* service, const std::string& name, EntityDocs docs = {});
 
 private:
     friend class CompositeEntity;

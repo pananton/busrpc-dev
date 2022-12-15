@@ -5,7 +5,7 @@
 namespace busrpc {
 
 Services::Services(CompositeEntity* project):
-    GeneralCompositeEntity(project, EntityTypeId::Services, Services_Entity_Name, Services_Entity_Comment)
+    GeneralCompositeEntity(project, EntityTypeId::Services, Services_Entity_Name, {{Services_Entity_Comment}, {}})
 {
     assert(dynamic_cast<Project*>(this->parent()));
 }

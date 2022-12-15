@@ -36,8 +36,7 @@ void Namespace::onNestedEntityAdded(Entity* entity)
         switch (structEntity->structType()) {
         case StructTypeId::Namespace_Desc:
             descriptor_ = structEntity;
-            setDocumentation(
-                structEntity->description(), structEntity->briefDescription(), structEntity->docCommands());
+            setDocumentation(structEntity->docs());
             break;
         default: break;
         }

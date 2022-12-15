@@ -4,8 +4,8 @@
 
 namespace busrpc {
 
-Constant::Constant(CompositeEntity* parent, const std::string& name, int32_t value, const std::string& blockComment):
-    Entity(parent, EntityTypeId::Constant, name, blockComment),
+Constant::Constant(CompositeEntity* parent, const std::string& name, int32_t value, EntityDocs docs):
+    Entity(parent, EntityTypeId::Constant, name, std::move(docs)),
     value_(value)
 {
     assert(dynamic_cast<Enum*>(this->parent()));

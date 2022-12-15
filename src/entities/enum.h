@@ -30,14 +30,11 @@ public:
 
     /// Add enumeration constant.
     /// \throws name_conflict_error if constant with the same name is already added
-    Constant* addConstant(const std::string& name, int32_t value, const std::string& blockComment = {});
+    Constant* addConstant(const std::string& name, int32_t value, EntityDocs docs = {});
 
 protected:
     /// Create enumeration entity.
-    Enum(CompositeEntity* parent,
-         const std::string& name,
-         const std::string& filename,
-         const std::string& blockComment);
+    Enum(CompositeEntity* parent, const std::string& name, const std::string& filename, EntityDocs docs = {});
 
 private:
     friend class CompositeEntity;

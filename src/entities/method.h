@@ -19,6 +19,12 @@ public:
     using GeneralCompositeEntity::addStruct;
     using GeneralCompositeEntity::addEnum;
 
+    /// Class where method is defined.
+    const Class* parent() const noexcept;
+
+    /// Class where method is defined.
+    Class* parent() noexcept;
+
     /// Method descriptor.
     const Struct* descriptor() const noexcept { return descriptor_; }
 
@@ -38,12 +44,6 @@ public:
 
     /// Flag indicating whether method is one-way (i.e., does not have a retval).
     bool isOneway() const noexcept { return retval() == nullptr; }
-
-    /// Class where method is defined.
-    const Class* parent() const noexcept;
-
-    /// Class where method is defined.
-    Class* parent() noexcept;
 
 protected:
     /// Create method entity.

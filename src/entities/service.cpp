@@ -29,8 +29,7 @@ void Service::onNestedEntityAdded(Entity* entity)
         switch (structEntity->structType()) {
         case StructTypeId::Service_Desc:
             descriptor_ = structEntity;
-            setDocumentation(
-                structEntity->description(), structEntity->briefDescription(), structEntity->docCommands());
+            setDocumentation(structEntity->docs());
             parseDocCommands();
             break;
         case StructTypeId::Service_Config: config_ = structEntity; break;
@@ -52,20 +51,14 @@ void Service::onNestedEntityAdded(Entity* entity)
             auto methodName = calcMethodName(fieldEntity->fieldTypeName());
 
             if (!methodName.empty()) {
-                auto implMethod = addNestedEntity<ImplementedMethod>(methodName,
-                                                                     fieldEntity->description(),
-                                                                     fieldEntity->briefDescription(),
-                                                                     fieldEntity->docCommands());
+                auto implMethod = addNestedEntity<ImplementedMethod>(methodName, fieldEntity->docs());
                 implementedMethods_[implMethod->name()] = implMethod;
             }
         } else if (fieldEntity->parent()->structType() == StructTypeId::Service_Invokes) {
             auto methodName = calcMethodName(fieldEntity->fieldTypeName());
 
             if (!methodName.empty()) {
-                auto invkMethod = addNestedEntity<InvokedMethod>(methodName,
-                                                                 fieldEntity->description(),
-                                                                 fieldEntity->briefDescription(),
-                                                                 fieldEntity->docCommands());
+                auto invkMethod = addNestedEntity<InvokedMethod>(methodName, fieldEntity->docs());
                 invokedMethods_[invkMethod->name()] = invkMethod;
             }
         }
@@ -74,22 +67,25 @@ void Service::onNestedEntityAdded(Entity* entity)
 
 void Service::parseDocCommands()
 {
-    auto it = docCommands().find(Author_Doc_Command);
+    auto it = docs().commands().find(doc_cmd::Service_Author);
 
-    if (it != docCommands().end()) {
-        author_ = it->second;
+    if (it != docs().commands().end()) {
+        assert(!it->second.empty());
+        author_ = it->second.back();
     }
 
-    it = docCommands().find(Email_Doc_Command);
+    it = docs().commands().find(doc_cmd::Service_Email);
 
-    if (it != docCommands().end()) {
-        email_ = it->second;
+    if (it != docs().commands().end()) {
+        assert(!it->second.empty());
+        email_ = it->second.back();
     }
 
-    it = docCommands().find(Url_Doc_Command);
+    it = docs().commands().find(doc_cmd::Service_Url);
 
-    if (it != docCommands().end()) {
-        url_ = it->second;
+    if (it != docs().commands().end()) {
+        assert(!it->second.empty());
+        url_ = it->second.back();
     }
 }
 } // namespace busrpc

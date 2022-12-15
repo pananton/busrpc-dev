@@ -27,9 +27,9 @@ TEST_F(ServiceEntityTest, Service_Entity_Is_Correctly_Initialized_When_Created_B
     EXPECT_EQ(service_->name(), "service");
     EXPECT_EQ(service_->dir(), std::filesystem::path(Services_Entity_Name) / "service");
     EXPECT_EQ(service_->dname(), std::string(Project_Entity_Name) + "." + Services_Entity_Name + ".service");
-    EXPECT_TRUE(service_->description().empty());
-    EXPECT_TRUE(service_->briefDescription().empty());
-    EXPECT_TRUE(service_->docCommands().empty());
+    EXPECT_TRUE(service_->docs().description().empty());
+    EXPECT_TRUE(service_->docs().brief().empty());
+    EXPECT_TRUE(service_->docs().commands().empty());
     EXPECT_EQ(service_->parent(), services_);
     EXPECT_EQ(static_cast<const Service*>(service_)->parent(), services_);
     EXPECT_FALSE(service_->descriptor());
@@ -48,28 +48,21 @@ TEST_F(ServiceEntityTest, Adding_ServiceDesc_Struct_Sets_Service_Descriptor)
 
 TEST_F(ServiceEntityTest, Adding_ServiceDesc_Struct_Sets_Service_Documentation)
 {
-    std::string blockComment = "\\author John Doe\n"
-                               "\\email jdoe@company.com\n"
-                               "\\url git@company.com:project/services/service.git\n"
-                               "Brief description.\n"
-                               "Description.";
+    EntityDocs docs({"Brief description.", "Description."},
+                    {{doc_cmd::Service_Author, {"John Doe"}},
+                     {doc_cmd::Service_Email, {"jdoe@company.com"}},
+                     {doc_cmd::Service_Url, {"git@company.com:project/services/service.git"}}});
     Struct* desc = nullptr;
 
-    EXPECT_TRUE(
-        desc = service_->addStruct(
-            GetPredefinedStructName(StructTypeId::Service_Desc), "service.proto", StructFlags::None, blockComment));
+    EXPECT_TRUE(desc = service_->addStruct(
+                    GetPredefinedStructName(StructTypeId::Service_Desc), "service.proto", StructFlags::None, docs));
     EXPECT_EQ(desc, service_->descriptor());
-    ASSERT_EQ(service_->description().size(), 2);
-    EXPECT_EQ(service_->description()[0], "Brief description.");
-    EXPECT_EQ(service_->description()[1], "Description.");
-    EXPECT_EQ(service_->briefDescription(), "Brief description.");
-    EXPECT_EQ(service_->docCommands().size(), 3);
-    ASSERT_NE(service_->docCommands().find(Service::Author_Doc_Command), service_->docCommands().end());
-    ASSERT_NE(service_->docCommands().find(Service::Email_Doc_Command), service_->docCommands().end());
-    ASSERT_NE(service_->docCommands().find(Service::Url_Doc_Command), service_->docCommands().end());
-    EXPECT_EQ(service_->docCommands().find(Service::Author_Doc_Command)->second, service_->author());
-    EXPECT_EQ(service_->docCommands().find(Service::Email_Doc_Command)->second, service_->email());
-    EXPECT_EQ(service_->docCommands().find(Service::Url_Doc_Command)->second, service_->url());
+    EXPECT_EQ(service_->docs().description(), docs.description());
+    EXPECT_EQ(service_->docs().brief(), docs.brief());
+    EXPECT_EQ(service_->docs().commands(), docs.commands());
+    EXPECT_EQ(service_->author(), docs.commands().find(doc_cmd::Service_Author)->second.back());
+    EXPECT_EQ(service_->email(), docs.commands().find(doc_cmd::Service_Email)->second.back());
+    EXPECT_EQ(service_->url(), docs.commands().find(doc_cmd::Service_Url)->second.back());
 }
 
 TEST_F(ServiceEntityTest, Adding_Config_Struct_To_Descriptor_Sets_Service_Config)
@@ -104,22 +97,19 @@ TEST_F(ServiceEntityTest, Adding_Field_To_Implements_Struct_Creates_Implemented_
     EXPECT_EQ(implMethod->name(), methodName);
     EXPECT_EQ(implMethod->dir(), service_->dir());
     EXPECT_EQ(implMethod->parent(), service_);
-    EXPECT_TRUE(implMethod->description().empty());
-    EXPECT_TRUE(implMethod->briefDescription().empty());
-    EXPECT_TRUE(implMethod->docCommands().empty());
+    EXPECT_TRUE(implMethod->docs().description().empty());
+    EXPECT_TRUE(implMethod->docs().brief().empty());
+    EXPECT_TRUE(implMethod->docs().commands().empty());
 }
 
 TEST_F(ServiceEntityTest, Implemented_Method_Documentation_Is_Correctly_Initialized)
 {
+    EntityDocs docs(
+        {"Brief description.", "Description."},
+        {{"cmd", {"cmd value"}}, {doc_cmd::Accepted_Value, {"param1 value1", "@object_id some id", "param2"}}});
     Struct* desc = nullptr;
     Struct* impl = nullptr;
     std::string methodName = "api.namespace.class.method";
-    std::string blockComment = "\\cmd cmd value\n"
-                               "\\accept param1 value1\n"
-                               "\\accept @object_id some id\n"
-                               "\\accept param2\n"
-                               "Brief description.\n"
-                               "Description.";
 
     ASSERT_TRUE(desc = service_->addStruct(GetPredefinedStructName(StructTypeId::Service_Desc), "service.proto"));
     ASSERT_TRUE(impl = desc->addStruct(GetPredefinedStructName(StructTypeId::Service_Implements)));
@@ -128,20 +118,15 @@ TEST_F(ServiceEntityTest, Implemented_Method_Documentation_Is_Correctly_Initiali
                                      methodName + "." + GetPredefinedStructName(StructTypeId::Method_Desc),
                                      FieldFlags::None,
                                      "",
-                                     blockComment));
+                                     docs));
     ASSERT_NE(service_->implementedMethods().find(methodName), service_->implementedMethods().end());
     EXPECT_EQ(service_->implementedMethods().size(), 1);
 
     auto implMethod = service_->implementedMethods().find(methodName)->second;
 
-    ASSERT_EQ(implMethod->description().size(), 2);
-    EXPECT_EQ(implMethod->description()[0], "Brief description.");
-    EXPECT_EQ(implMethod->description()[1], "Description.");
-    EXPECT_EQ(implMethod->briefDescription(), "Brief description.");
-    EXPECT_EQ(implMethod->docCommands().size(), 4);
-    ASSERT_NE(implMethod->docCommands().find("cmd"), implMethod->docCommands().end());
-    EXPECT_EQ(implMethod->docCommands().find("cmd")->second, "cmd value");
-
+    EXPECT_EQ(implMethod->docs().description(), docs.description());
+    EXPECT_EQ(implMethod->docs().brief(), docs.brief());
+    EXPECT_EQ(implMethod->docs().commands(), docs.commands());
     ASSERT_TRUE(implMethod->acceptedObjectId());
     EXPECT_EQ(*implMethod->acceptedObjectId(), "some id");
     ASSERT_NE(implMethod->acceptedParams().find("param1"), implMethod->acceptedParams().end());
@@ -173,19 +158,17 @@ TEST_F(ServiceEntityTest, Adding_Fields_To_Invokes_Struct_Creates_Invoked_Method
     EXPECT_EQ(invkMethod->name(), methodName);
     EXPECT_EQ(invkMethod->dir(), service_->dir());
     EXPECT_EQ(invkMethod->parent(), service_);
-    EXPECT_TRUE(invkMethod->description().empty());
-    EXPECT_TRUE(invkMethod->briefDescription().empty());
-    EXPECT_TRUE(invkMethod->docCommands().empty());
+    EXPECT_TRUE(invkMethod->docs().description().empty());
+    EXPECT_TRUE(invkMethod->docs().brief().empty());
+    EXPECT_TRUE(invkMethod->docs().commands().empty());
 }
 
 TEST_F(ServiceEntityTest, Invoked_Method_Documentation_Is_Correctly_Initialized)
 {
+    EntityDocs docs({"Brief description.", "Description"}, {{"cmd", {"cmd value"}}});
     Struct* desc = nullptr;
     Struct* invk = nullptr;
     std::string methodName = "api.namespace.class.method";
-    std::string blockComment = "\\cmd cmd value\n"
-                               "Brief description.\n"
-                               "Description.";
 
     ASSERT_TRUE(desc = service_->addStruct(GetPredefinedStructName(StructTypeId::Service_Desc), "service.proto"));
     ASSERT_TRUE(invk = desc->addStruct(GetPredefinedStructName(StructTypeId::Service_Invokes)));
@@ -194,18 +177,14 @@ TEST_F(ServiceEntityTest, Invoked_Method_Documentation_Is_Correctly_Initialized)
                                      methodName + "." + GetPredefinedStructName(StructTypeId::Method_Desc),
                                      FieldFlags::None,
                                      "",
-                                     blockComment));
+                                     docs));
     ASSERT_NE(service_->invokedMethods().find(methodName), service_->invokedMethods().end());
     EXPECT_EQ(service_->invokedMethods().size(), 1);
 
     auto invkMethod = service_->invokedMethods().find(methodName)->second;
 
-    ASSERT_EQ(invkMethod->description().size(), 2);
-    EXPECT_EQ(invkMethod->description()[0], "Brief description.");
-    EXPECT_EQ(invkMethod->description()[1], "Description.");
-    EXPECT_EQ(invkMethod->briefDescription(), "Brief description.");
-    EXPECT_EQ(invkMethod->docCommands().size(), 1);
-    ASSERT_NE(invkMethod->docCommands().find("cmd"), invkMethod->docCommands().end());
-    EXPECT_EQ(invkMethod->docCommands().find("cmd")->second, "cmd value");
+    EXPECT_EQ(invkMethod->docs().description(), docs.description());
+    EXPECT_EQ(invkMethod->docs().brief(), docs.brief());
+    EXPECT_EQ(invkMethod->docs().commands(), docs.commands());
 }
 }} // namespace busrpc::test
