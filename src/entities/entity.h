@@ -166,6 +166,7 @@ protected:
 
     /// Create entity and add it to the list of nested entites.
     /// \tparam TArgs arguments that forwarded to \c TEntity constructor.
+    /// \throws entity_error if \a name is invalid
     /// \throws name_conflict_error if entity with the same name is already added
     template<EntityConcept TEntity, typename... TArgs>
     TEntity* addNestedEntity(TArgs&&... args)

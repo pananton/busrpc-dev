@@ -59,6 +59,10 @@ Entity::Entity(CompositeEntity* parent, EntityTypeId type, const std::string& na
     dir_{},
     docs_(std::move(docs))
 {
+    if (!IsValidEntityName(name)) {
+        throw entity_error(type_, name_, "invalid entity name");
+    }
+
     if (parent_) {
         dir_ = parent_->dir();
 

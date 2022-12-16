@@ -189,6 +189,7 @@ TEST_F(StructEntityTest, addMapField_Correctly_Initializes_And_Stores_Added_Fiel
     EXPECT_TRUE(field->defaultValue().empty());
 
     EXPECT_EQ(field->keyType(), FieldTypeId::Fixed32);
+    EXPECT_EQ(field->keyTypeName(), GetFieldTypeIdStr(field->keyType()));
     EXPECT_EQ(field->valueType(), FieldTypeId::String);
     EXPECT_EQ(field->valueTypeName(), GetFieldTypeIdStr(FieldTypeId::String));
 
@@ -220,14 +221,6 @@ TEST_F(StructEntityTest, Adding_Field_Throws_Entity_Error_If_Field_Flags_Are_Mut
         structure_->addScalarField("field", 1, FieldTypeId::Bool, FieldFlags::Optional | FieldFlags::Repeated),
         EntityTypeId::Struct,
         structure_->dname());
-    EXPECT_ENTITY_EXCEPTION(
-        structure_->addScalarField("field", 1, FieldTypeId::Bool, FieldFlags::Repeated | FieldFlags::Observable),
-        EntityTypeId::Struct,
-        structure_->dname());
-    EXPECT_ENTITY_EXCEPTION(
-        structure_->addScalarField("field", 1, FieldTypeId::Bool, FieldFlags::Repeated | FieldFlags::Hashed),
-        EntityTypeId::Struct,
-        structure_->dname());
 }
 
 TEST_F(StructEntityTest, Adding_Field_Throws_Entity_Error_If_Field_Flags_Conflict_With_Oneof)
@@ -238,7 +231,7 @@ TEST_F(StructEntityTest, Adding_Field_Throws_Entity_Error_If_Field_Flags_Conflic
         structure_->dname());
 }
 
-TEST_F(StructEntityTest, Adding_Field_Throws_Entity_Error_If_Typename_Is_Not_Specified_For_Field_With_Custom_Type)
+TEST_F(StructEntityTest, Adding_Field_Throws_Entity_Error_If_Invalid_Custom_Typename_Is_Specified)
 {
     EXPECT_ENTITY_EXCEPTION(structure_->addStructField("field", 1, ""), EntityTypeId::Struct, structure_->dname());
     EXPECT_ENTITY_EXCEPTION(structure_->addEnumField("field", 1, ""), EntityTypeId::Struct, structure_->dname());
@@ -246,6 +239,15 @@ TEST_F(StructEntityTest, Adding_Field_Throws_Entity_Error_If_Typename_Is_Not_Spe
                             EntityTypeId::Struct,
                             structure_->dname());
     EXPECT_ENTITY_EXCEPTION(structure_->addMapField("field", 1, FieldTypeId::Int32, FieldTypeId::Enum, ""),
+                            EntityTypeId::Struct,
+                            structure_->dname());
+
+    EXPECT_ENTITY_EXCEPTION(structure_->addStructField("field", 1, "0a"), EntityTypeId::Struct, structure_->dname());
+    EXPECT_ENTITY_EXCEPTION(structure_->addEnumField("field", 1, "a..b"), EntityTypeId::Struct, structure_->dname());
+    EXPECT_ENTITY_EXCEPTION(structure_->addMapField("field", 1, FieldTypeId::Int32, FieldTypeId::Message, ".a.b"),
+                            EntityTypeId::Struct,
+                            structure_->dname());
+    EXPECT_ENTITY_EXCEPTION(structure_->addMapField("field", 1, FieldTypeId::Int32, FieldTypeId::Enum, "a.b."),
                             EntityTypeId::Struct,
                             structure_->dname());
 }

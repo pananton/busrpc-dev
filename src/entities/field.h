@@ -75,6 +75,12 @@ protected:
 
 private:
     friend class CompositeEntity;
+    bool checkNumberIsValid() const noexcept;
+    bool checkFlagsAreNotMutuallyExcelusive() const noexcept;
+    bool checkFlagsDoNotConflictWithOneof() const noexcept;
+    bool checkTypeDoesNotConflictWithOneof() const noexcept;
+    bool checkTypeDoesNotConflictWithFlags() const noexcept;
+    bool checkTypeNameIsValid() const noexcept;
 
     int32_t number_;
     FieldTypeId fieldType_;
@@ -89,6 +95,9 @@ class MapField: public Field {
 public:
     /// Key type.
     FieldTypeId keyType() const noexcept { return keyType_; }
+
+    /// Key type name.
+    const std::string& keyTypeName() const noexcept { return keyTypeName_; }
 
     /// Value type.
     FieldTypeId valueType() const noexcept { return valueType_; }
@@ -110,8 +119,12 @@ protected:
 
 private:
     friend class CompositeEntity;
+    bool checkKeyTypeIsValid() const noexcept;
+    bool checkValueTypeIsValid() const noexcept;
+    bool checkValueTypeNameIsValid() const noexcept;
 
     FieldTypeId keyType_;
+    std::string keyTypeName_;
     FieldTypeId valueType_;
     std::string valueTypeName_;
 };

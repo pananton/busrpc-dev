@@ -62,6 +62,33 @@ TEST(CommonEntityTest, GetEntityTypeStr_Returns_Nullptr_For_Unknown_Entity_Type)
     EXPECT_FALSE(GetEntityTypeIdStr(static_cast<EntityTypeId>(0)));
 }
 
+TEST(CommonEntityTest, IsValidEntityName_Returns_True_For_Name_Consisting_Of_Alphanumericals_And_Underscores)
+{
+    EXPECT_TRUE(IsValidEntityName("a"));
+    EXPECT_TRUE(IsValidEntityName("a1"));
+    EXPECT_TRUE(IsValidEntityName("_a"));
+    EXPECT_TRUE(IsValidEntityName("a_"));
+    EXPECT_TRUE(IsValidEntityName("_1"));
+    EXPECT_TRUE(IsValidEntityName("_"));
+}
+
+TEST(CommonEntityTest, IsValidEntityName_Returns_False_For_Name_Which_Contains_Prohibited_Characters)
+{
+    EXPECT_FALSE(IsValidEntityName(".a"));
+    EXPECT_FALSE(IsValidEntityName("a.b"));
+    EXPECT_FALSE(IsValidEntityName("a."));
+}
+
+TEST(CommonEntityTest, IsValidEntityName_Returns_False_For_Name_Which_Stars_With_Digit)
+{
+    EXPECT_FALSE(IsValidEntityName("0a"));
+}
+
+TEST(CommonEntityTest, IsValidEntityName_Returns_False_For_Empty_Name)
+{
+    EXPECT_FALSE(IsValidEntityName(""));
+}
+
 TEST(CommonEntityTest, Entity_Ctor_Correctly_Initializes_Object)
 {
     std::string entityName = "entity";
@@ -116,6 +143,11 @@ TEST(CommonEntityTest, Entity_Ctor_Correctly_Initializes_Entity_Documentation)
     EXPECT_EQ(entity.docs().description(), docs.description());
     EXPECT_EQ(entity.docs().brief(), docs.brief());
     EXPECT_EQ(entity.docs().commands(), docs.commands());
+}
+
+TEST(CommonEntityTest, Entity_Ctor_Throws_If_Entity_Name_Is_Invalid)
+{
+    EXPECT_ENTITY_EXCEPTION(TestEntity(nullptr, EntityTypeId::Struct, ""), EntityTypeId::Struct, "");
 }
 
 TEST(CommonEntityTest, Distinguished_Entity_Ctor_Correctly_Initializes_Dname)

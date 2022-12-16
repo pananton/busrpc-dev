@@ -168,6 +168,23 @@ constexpr const char* GetEntityTypeIdStr(EntityTypeId id)
     }
 }
 
+/// Return \c true if specified \a name is a valid entity name.
+/// \note Because busrpc entity names are mapped to a protobuf entities (\c message, \c enum, \c package, etc.), they
+///       should satisfy the same constraints. Valid entity name should consist of alphanumerical characters and
+///       underscores and should not start with a digit.
+constexpr bool IsValidEntityName(std::string_view name)
+{
+    for (auto sym: name) {
+        if (sym == '_' || (sym >= '0' && sym <= '9') || (sym >= 'A' && sym <= 'Z') || (sym >= 'a' && sym <= 'z')) {
+            continue;
+        }
+
+        return false;
+    }
+
+    return !name.empty() && !(name[0] >= '0' && name[0] <= '9');
+}
+
 /// Busrpc structure type identifier.
 /// \note Structure type identifier determines semantics of the structure.
 enum class StructTypeId {
