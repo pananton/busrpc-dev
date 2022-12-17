@@ -4,6 +4,11 @@
 
 namespace busrpc { namespace test {
 
+class TestImportedMethod: public ImportedMethod {
+public:
+    TestImportedMethod(std::string dname, EntityDocs docs = {}): ImportedMethod(std::move(dname), std::move(docs)) { }
+};
+
 class ServiceEntityTest: public ::testing::Test {
 protected:
     void SetUp() override
@@ -75,11 +80,25 @@ TEST_F(ServiceEntityTest, Adding_Config_Struct_To_Descriptor_Sets_Service_Config
     EXPECT_EQ(service_->config(), config);
 }
 
+TEST(ComponentEntityTest, OrderImportedMethodsByDnameAsc_Returns_Correct_Result)
+{
+    TestImportedMethod m1("method1");
+    TestImportedMethod m2("method2");
+
+    EXPECT_TRUE(OrderImportedMethodsByDnameAsc()(m1, m2));
+    EXPECT_FALSE(OrderImportedMethodsByDnameAsc()(m2, m1));
+    EXPECT_TRUE(OrderImportedMethodsByDnameAsc()(m1, "method2"));
+    EXPECT_FALSE(OrderImportedMethodsByDnameAsc()(m2, "method1"));
+    EXPECT_TRUE(OrderImportedMethodsByDnameAsc()("method1", m2));
+    EXPECT_FALSE(OrderImportedMethodsByDnameAsc()("method2", m1));
+}
+
 TEST_F(ServiceEntityTest, Adding_Field_To_Implements_Struct_Creates_Implemented_Method)
 {
     Struct* desc = nullptr;
     Struct* impl = nullptr;
-    std::string methodName = "api.namespace.class.method1";
+    std::string methodName =
+        std::string(Project_Entity_Name) + "." + std::string(Api_Entity_Name) + ".namespace.class.method1";
 
     ASSERT_TRUE(desc = service_->addStruct(GetPredefinedStructName(StructTypeId::Service_Desc), "service.proto"));
     ASSERT_TRUE(impl = desc->addStruct(GetPredefinedStructName(StructTypeId::Service_Implements)));
@@ -89,17 +108,13 @@ TEST_F(ServiceEntityTest, Adding_Field_To_Implements_Struct_Creates_Implemented_
         impl->addStructField("field1", 1, methodName + "." + GetPredefinedStructName(StructTypeId::Method_Desc)));
     ASSERT_NE(service_->implementedMethods().find(methodName), service_->implementedMethods().end());
     EXPECT_EQ(service_->implementedMethods().size(), 1);
-    EXPECT_NE(service_->nested().find(methodName), service_->nested().end());
 
-    auto implMethod = service_->implementedMethods().find(methodName)->second;
+    const auto& implMethod = *(service_->implementedMethods().find(methodName));
 
-    EXPECT_EQ(implMethod->type(), EntityTypeId::Implemented_Method);
-    EXPECT_EQ(implMethod->name(), methodName);
-    EXPECT_EQ(implMethod->dir(), service_->dir());
-    EXPECT_EQ(implMethod->parent(), service_);
-    EXPECT_TRUE(implMethod->docs().description().empty());
-    EXPECT_TRUE(implMethod->docs().brief().empty());
-    EXPECT_TRUE(implMethod->docs().commands().empty());
+    EXPECT_EQ(implMethod.dname(), methodName);
+    EXPECT_TRUE(implMethod.docs().description().empty());
+    EXPECT_TRUE(implMethod.docs().brief().empty());
+    EXPECT_TRUE(implMethod.docs().commands().empty());
 }
 
 TEST_F(ServiceEntityTest, Implemented_Method_Documentation_Is_Correctly_Initialized)
@@ -109,7 +124,8 @@ TEST_F(ServiceEntityTest, Implemented_Method_Documentation_Is_Correctly_Initiali
         {{"cmd", {"cmd value"}}, {doc_cmd::Accepted_Value, {"param1 value1", "@object_id some id", "param2"}}});
     Struct* desc = nullptr;
     Struct* impl = nullptr;
-    std::string methodName = "api.namespace.class.method";
+    std::string methodName =
+        std::string(Project_Entity_Name) + "." + std::string(Api_Entity_Name) + ".namespace.class.method1";
 
     ASSERT_TRUE(desc = service_->addStruct(GetPredefinedStructName(StructTypeId::Service_Desc), "service.proto"));
     ASSERT_TRUE(impl = desc->addStruct(GetPredefinedStructName(StructTypeId::Service_Implements)));
@@ -122,25 +138,26 @@ TEST_F(ServiceEntityTest, Implemented_Method_Documentation_Is_Correctly_Initiali
     ASSERT_NE(service_->implementedMethods().find(methodName), service_->implementedMethods().end());
     EXPECT_EQ(service_->implementedMethods().size(), 1);
 
-    auto implMethod = service_->implementedMethods().find(methodName)->second;
+    const auto& implMethod = *(service_->implementedMethods().find(methodName));
 
-    EXPECT_EQ(implMethod->docs().description(), docs.description());
-    EXPECT_EQ(implMethod->docs().brief(), docs.brief());
-    EXPECT_EQ(implMethod->docs().commands(), docs.commands());
-    ASSERT_TRUE(implMethod->acceptedObjectId());
-    EXPECT_EQ(*implMethod->acceptedObjectId(), "some id");
-    ASSERT_NE(implMethod->acceptedParams().find("param1"), implMethod->acceptedParams().end());
-    EXPECT_EQ(implMethod->acceptedParams().find("param1")->second, "value1");
-    ASSERT_NE(implMethod->acceptedParams().find("param2"), implMethod->acceptedParams().end());
-    EXPECT_EQ(implMethod->acceptedParams().find("param2")->second, "");
-    EXPECT_EQ(implMethod->acceptedParams().size(), 2);
+    EXPECT_EQ(implMethod.docs().description(), docs.description());
+    EXPECT_EQ(implMethod.docs().brief(), docs.brief());
+    EXPECT_EQ(implMethod.docs().commands(), docs.commands());
+    ASSERT_TRUE(implMethod.acceptedObjectId());
+    EXPECT_EQ(*implMethod.acceptedObjectId(), "some id");
+    ASSERT_NE(implMethod.acceptedParams().find("param1"), implMethod.acceptedParams().end());
+    EXPECT_EQ(implMethod.acceptedParams().find("param1")->second, "value1");
+    ASSERT_NE(implMethod.acceptedParams().find("param2"), implMethod.acceptedParams().end());
+    EXPECT_EQ(implMethod.acceptedParams().find("param2")->second, "");
+    EXPECT_EQ(implMethod.acceptedParams().size(), 2);
 }
 
 TEST_F(ServiceEntityTest, Adding_Fields_To_Invokes_Struct_Creates_Invoked_Method)
 {
     Struct* desc = nullptr;
     Struct* invk = nullptr;
-    std::string methodName = "api.namespace.class.method1";
+    std::string methodName =
+        std::string(Project_Entity_Name) + "." + std::string(Api_Entity_Name) + ".namespace.class.method1";
 
     ASSERT_TRUE(desc = service_->addStruct(GetPredefinedStructName(StructTypeId::Service_Desc), "service.proto"));
     ASSERT_TRUE(invk = desc->addStruct(GetPredefinedStructName(StructTypeId::Service_Invokes)));
@@ -150,17 +167,13 @@ TEST_F(ServiceEntityTest, Adding_Fields_To_Invokes_Struct_Creates_Invoked_Method
         invk->addStructField("field1", 1, methodName + "." + GetPredefinedStructName(StructTypeId::Method_Desc)));
     ASSERT_NE(service_->invokedMethods().find(methodName), service_->invokedMethods().end());
     EXPECT_EQ(service_->invokedMethods().size(), 1);
-    EXPECT_NE(service_->nested().find(methodName), service_->nested().end());
 
-    auto invkMethod = service_->invokedMethods().find(methodName)->second;
+    const auto& invkMethod = *(service_->invokedMethods().find(methodName));
 
-    EXPECT_EQ(invkMethod->type(), EntityTypeId::Implemented_Method);
-    EXPECT_EQ(invkMethod->name(), methodName);
-    EXPECT_EQ(invkMethod->dir(), service_->dir());
-    EXPECT_EQ(invkMethod->parent(), service_);
-    EXPECT_TRUE(invkMethod->docs().description().empty());
-    EXPECT_TRUE(invkMethod->docs().brief().empty());
-    EXPECT_TRUE(invkMethod->docs().commands().empty());
+    EXPECT_EQ(invkMethod.dname(), methodName);
+    EXPECT_TRUE(invkMethod.docs().description().empty());
+    EXPECT_TRUE(invkMethod.docs().brief().empty());
+    EXPECT_TRUE(invkMethod.docs().commands().empty());
 }
 
 TEST_F(ServiceEntityTest, Invoked_Method_Documentation_Is_Correctly_Initialized)
@@ -168,7 +181,8 @@ TEST_F(ServiceEntityTest, Invoked_Method_Documentation_Is_Correctly_Initialized)
     EntityDocs docs({"Brief description.", "Description"}, {{"cmd", {"cmd value"}}});
     Struct* desc = nullptr;
     Struct* invk = nullptr;
-    std::string methodName = "api.namespace.class.method";
+    std::string methodName =
+        std::string(Project_Entity_Name) + "." + std::string(Api_Entity_Name) + ".namespace.class.method1";
 
     ASSERT_TRUE(desc = service_->addStruct(GetPredefinedStructName(StructTypeId::Service_Desc), "service.proto"));
     ASSERT_TRUE(invk = desc->addStruct(GetPredefinedStructName(StructTypeId::Service_Invokes)));
@@ -181,10 +195,10 @@ TEST_F(ServiceEntityTest, Invoked_Method_Documentation_Is_Correctly_Initialized)
     ASSERT_NE(service_->invokedMethods().find(methodName), service_->invokedMethods().end());
     EXPECT_EQ(service_->invokedMethods().size(), 1);
 
-    auto invkMethod = service_->invokedMethods().find(methodName)->second;
+    const auto& invkMethod = *(service_->invokedMethods().find(methodName));
 
-    EXPECT_EQ(invkMethod->docs().description(), docs.description());
-    EXPECT_EQ(invkMethod->docs().brief(), docs.brief());
-    EXPECT_EQ(invkMethod->docs().commands(), docs.commands());
+    EXPECT_EQ(invkMethod.docs().description(), docs.description());
+    EXPECT_EQ(invkMethod.docs().brief(), docs.brief());
+    EXPECT_EQ(invkMethod.docs().commands(), docs.commands());
 }
 }} // namespace busrpc::test

@@ -45,7 +45,7 @@ TEST_F(ClassEntityTest, addMethod_Stores_Added_Method)
 
     EXPECT_TRUE(method = cls_->addMethod("method"));
     ASSERT_NE(cls_->methods().find("method"), cls_->methods().end());
-    EXPECT_EQ(cls_->methods().find("method")->second, method);
+    EXPECT_EQ(*(cls_->methods().find("method")), method);
     EXPECT_EQ(cls_->methods().size(), 1);
 }
 

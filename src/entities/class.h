@@ -5,9 +5,7 @@
 #include "entities/namespace.h"
 #include "entities/struct.h"
 
-#include <map>
 #include <string>
-#include <type_traits>
 
 /// \file class.h Class entity.
 
@@ -39,7 +37,7 @@ public:
     bool isStatic() const noexcept { return objectId() == nullptr; }
 
     /// Class methods.
-    const std::map<std::string, const Method*>& methods() const noexcept { return methods_; }
+    const EntityContainer<Method>& methods() const noexcept { return methods_; }
 
     /// Add method.
     /// \throws name_conflict_error if nested entity with the same name already exists
@@ -55,6 +53,6 @@ private:
 
     const Struct* descriptor_ = nullptr;
     const Struct* objectId_ = nullptr;
-    std::map<std::string, const Method*> methods_;
+    EntityContainer<Method> methods_;
 };
 } // namespace busrpc

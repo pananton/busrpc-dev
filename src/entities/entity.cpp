@@ -56,6 +56,7 @@ Entity::Entity(CompositeEntity* parent, EntityTypeId type, const std::string& na
     parent_(parent),
     type_(type),
     name_(name),
+    dname_{},
     dir_{},
     docs_(std::move(docs))
 {
@@ -64,6 +65,7 @@ Entity::Entity(CompositeEntity* parent, EntityTypeId type, const std::string& na
     }
 
     if (parent_) {
+        dname_ = parent->dname() + ".";
         dir_ = parent_->dir();
 
         switch (type_) {
@@ -76,20 +78,8 @@ Entity::Entity(CompositeEntity* parent, EntityTypeId type, const std::string& na
         default: dir_ /= name_;
         }
     }
-}
 
-DistinguishedEntity::DistinguishedEntity(CompositeEntity* parent,
-                                         EntityTypeId type,
-                                         const std::string& name,
-                                         EntityDocs docs):
-    Entity(parent, type, name, std::move(docs)),
-    dname_{}
-{
-    if (parent) {
-        dname_ = parent->dname() + ".";
-    }
-
-    dname_.append(this->name());
+    dname_.append(name_);
 }
 
 Struct* GeneralCompositeEntity::addStruct(const std::string& name,
@@ -98,14 +88,14 @@ Struct* GeneralCompositeEntity::addStruct(const std::string& name,
                                           EntityDocs docs)
 {
     auto ptr = addNestedEntity<Struct>(name, filename, flags, std::move(docs));
-    structs_[ptr->name()] = ptr;
+    structs_.insert(ptr);
     return ptr;
 }
 
 Enum* GeneralCompositeEntity::addEnum(const std::string& name, const std::string& filename, EntityDocs docs)
 {
     auto ptr = addNestedEntity<Enum>(name, filename, std::move(docs));
-    enums_[ptr->name()] = ptr;
+    enums_.insert(ptr);
     return ptr;
 }
 } // namespace busrpc

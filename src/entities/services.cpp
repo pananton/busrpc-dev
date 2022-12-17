@@ -23,7 +23,7 @@ Project* Services::parent() noexcept
 Service* Services::addService(const std::string& name)
 {
     Service* service = addNestedEntity<Service>(name);
-    services_[service->name()] = service;
+    services_.insert(service);
     return service;
 }
 } // namespace busrpc

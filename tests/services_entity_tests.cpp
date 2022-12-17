@@ -35,7 +35,7 @@ TEST_F(ServicesEntityTest, addServices_Stores_Added_Services)
 
     EXPECT_TRUE(service = services_->addService("service"));
     ASSERT_NE(services_->services().find("service"), services_->services().end());
-    EXPECT_EQ(services_->services().find("service")->second, service);
+    EXPECT_EQ(*(services_->services().find("service")), service);
     EXPECT_EQ(services_->services().size(), 1);
 }
 }} // namespace busrpc::test

@@ -23,7 +23,7 @@ Namespace* Class::parent() noexcept
 Method* Class::addMethod(const std::string& name)
 {
     Method* method = addNestedEntity<Method>(name);
-    methods_[method->name()] = method;
+    methods_.insert(method);
     return method;
 }
 

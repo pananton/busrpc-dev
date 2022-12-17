@@ -4,7 +4,6 @@
 #include "entities/project.h"
 #include "entities/service.h"
 
-#include <map>
 #include <string>
 
 /// \file services.h Project services entity.
@@ -27,7 +26,7 @@ public:
     Project* parent() noexcept;
 
     /// Project services.
-    const std::map<std::string, const Service*>& services() const noexcept { return services_; }
+    const EntityContainer<Service>& services() const noexcept { return services_; }
 
     /// Add service.
     /// \throws name_conflict_error if nested entity with the same name already exists
@@ -35,11 +34,11 @@ public:
 
 protected:
     /// Create services entity.
-    Services(CompositeEntity* project);
+    explicit Services(CompositeEntity* project);
 
 private:
     friend class CompositeEntity;
 
-    std::map<std::string, const Service*> services_;
+    EntityContainer<Service> services_;
 };
 } // namespace busrpc

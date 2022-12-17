@@ -15,13 +15,6 @@ public:
     { }
 };
 
-class TestDistinguishedEntity: public DistinguishedEntity {
-public:
-    TestDistinguishedEntity(CompositeEntity* parent, EntityTypeId type, const std::string& name):
-        DistinguishedEntity(parent, type, name, {})
-    { }
-};
-
 class TestCompositeEntity: public CompositeEntity {
 public:
     TestCompositeEntity(CompositeEntity* parent, EntityTypeId type, const std::string& name):
@@ -96,6 +89,7 @@ TEST(CommonEntityTest, Entity_Ctor_Correctly_Initializes_Object)
 
     EXPECT_EQ(entity.type(), EntityTypeId::Struct);
     EXPECT_EQ(entity.name(), entityName);
+    EXPECT_EQ(entity.dname(), entity.name());
     EXPECT_TRUE(entity.dir().empty());
     EXPECT_TRUE(entity.docs().description().empty());
     EXPECT_TRUE(entity.docs().brief().empty());
@@ -110,6 +104,7 @@ TEST(CommonEntityTest, Entity_Ctor_Correctly_Initializes_Parent)
         TestCompositeEntity parent(nullptr, EntityTypeId::Project, "project");
         TestEntity entity(&parent, EntityTypeId::Api, "api");
 
+        EXPECT_EQ(entity.dname(), parent.dname() + "." + entity.name());
         EXPECT_EQ(entity.dir(), "api");
         EXPECT_EQ(entity.parent(), &parent);
         EXPECT_EQ(static_cast<const Entity*>(&entity)->parent(), &parent);
@@ -130,6 +125,7 @@ TEST(CommonEntityTest, Entity_Ctor_Correctly_Initializes_Parent)
         for (auto id: ids) {
             TestEntity entity(&parent, id, "entity");
 
+            EXPECT_EQ(entity.dname(), parent.dname() + "." + entity.name());
             EXPECT_EQ(entity.dir(), "api");
         }
     }
@@ -150,20 +146,17 @@ TEST(CommonEntityTest, Entity_Ctor_Throws_If_Entity_Name_Is_Invalid)
     EXPECT_ENTITY_EXCEPTION(TestEntity(nullptr, EntityTypeId::Struct, ""), EntityTypeId::Struct, "");
 }
 
-TEST(CommonEntityTest, Distinguished_Entity_Ctor_Correctly_Initializes_Dname)
+TEST(ComponentEntityTest, OrderEntitiesByNameAsc_Returns_Correct_Result)
 {
-    {
-        TestDistinguishedEntity entity(nullptr, EntityTypeId::Project, "project");
+    TestEntity e1(nullptr, EntityTypeId::Class, "class1");
+    TestEntity e2(nullptr, EntityTypeId::Class, "class2");
 
-        EXPECT_EQ(entity.dname(), "project");
-    }
-
-    {
-        TestCompositeEntity parent(nullptr, EntityTypeId::Project, "project");
-        TestDistinguishedEntity entity(&parent, EntityTypeId::Api, "api");
-
-        EXPECT_EQ(entity.dname(), "project.api");
-    }
+    EXPECT_TRUE(OrderEntitiesByNameAsc()(&e1, &e2));
+    EXPECT_FALSE(OrderEntitiesByNameAsc()(&e2, &e1));
+    EXPECT_TRUE(OrderEntitiesByNameAsc()(&e1, "class2"));
+    EXPECT_FALSE(OrderEntitiesByNameAsc()(&e2, "class1"));
+    EXPECT_TRUE(OrderEntitiesByNameAsc()("class1", &e2));
+    EXPECT_FALSE(OrderEntitiesByNameAsc()("class2", &e1));
 }
 
 TEST(CommonEntityTest, Composite_Entity_Stores_Added_Nested_Entities)
@@ -174,14 +167,14 @@ TEST(CommonEntityTest, Composite_Entity_Stores_Added_Nested_Entities)
     EXPECT_TRUE(entity = parent.addNestedEntity<TestEntity>(EntityTypeId::Api, "api"));
     ASSERT_EQ(parent.nested().size(), 1);
     ASSERT_NE(parent.nested().find("api"), parent.nested().end());
-    EXPECT_EQ(parent.nested().find("api")->second, entity);
+    EXPECT_EQ(*(parent.nested().find("api")), entity);
 }
 
 TEST(CommonEntityTest, Composite_Entity_Throws_Name_Conflict_Error_If_Added_Entity_Has_The_Same_Name_As_Existing)
 {
     TestCompositeEntity entity(nullptr, EntityTypeId::Project, "project");
     EXPECT_TRUE(entity.addNestedEntity<TestEntity>(EntityTypeId::Api, "api"));
-    EXPECT_NAME_CONFLICT_EXCEPTION(entity.addNestedEntity<TestDistinguishedEntity>(EntityTypeId::Services, "api"),
+    EXPECT_NAME_CONFLICT_EXCEPTION(entity.addNestedEntity<TestEntity>(EntityTypeId::Services, "api"),
                                    EntityTypeId::Project,
                                    entity.dname(),
                                    "api");
@@ -247,7 +240,7 @@ TEST(CommonEntityTest, General_Composite_Entity_Stores_Added_Structs)
     EXPECT_TRUE(entity = api->addStruct("Struct", "file.proto"));
     EXPECT_EQ(api->structs().size(), 1);
     ASSERT_NE(api->structs().find("Struct"), api->structs().end());
-    EXPECT_EQ(api->structs().find("Struct")->second, entity);
+    EXPECT_EQ(*(api->structs().find("Struct")), entity);
 }
 
 TEST(CommonEntityTest, General_Composite_Entity_Stores_Added_Enums)
@@ -259,7 +252,7 @@ TEST(CommonEntityTest, General_Composite_Entity_Stores_Added_Enums)
     EXPECT_TRUE(entity = api->addEnum("enum", "file.proto"));
     EXPECT_EQ(api->enums().size(), 1);
     ASSERT_NE(api->enums().find("enum"), api->enums().end());
-    EXPECT_EQ(api->enums().find("enum")->second, entity);
+    EXPECT_EQ(*(api->enums().find("enum")), entity);
 }
 
 TEST(CommonEntityTest, Struct_Type_Id_Is_Mapped_To_Predefined_Struct_Name_If_It_Exists)

@@ -84,10 +84,6 @@ set(sources
     src/entities/enum.cpp
     src/entities/field.h
     src/entities/field.cpp
-    src/entities/implemented_method.h
-    src/entities/implemented_method.cpp
-    src/entities/invoked_method.h
-    src/entities/invoked_method.cpp
     src/entities/method.h
     src/entities/method.cpp
     src/entities/namespace.h

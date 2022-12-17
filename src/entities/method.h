@@ -4,7 +4,6 @@
 #include "entities/entity.h"
 #include "entities/struct.h"
 
-#include <map>
 #include <string>
 
 /// \file method.h Method entity.

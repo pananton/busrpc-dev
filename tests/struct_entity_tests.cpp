@@ -73,7 +73,7 @@ TEST_F(StructEntityTest, addScalarField_Correctly_Initializes_And_Stores_Added_F
                                                    "1001",
                                                    {docs_.description()}));
     ASSERT_NE(structure_->fields().find("field"), structure_->fields().end());
-    EXPECT_EQ(structure_->fields().find("field")->second, field);
+    EXPECT_EQ(*(structure_->fields().find("field")), field);
     EXPECT_EQ(structure_->fields().size(), 1);
 
     EXPECT_EQ(field->type(), EntityTypeId::Field);
@@ -105,7 +105,7 @@ TEST_F(StructEntityTest, addStructField_Correctly_Initializes_And_Stores_Added_F
     ASSERT_TRUE(field = structure_->addStructField(
                     "field", 13, "MyStruct", FieldFlags::None, "oneofName", {docs_.description()}));
     ASSERT_NE(structure_->fields().find("field"), structure_->fields().end());
-    EXPECT_EQ(structure_->fields().find("field")->second, field);
+    EXPECT_EQ(*(structure_->fields().find("field")), field);
     EXPECT_EQ(structure_->fields().size(), 1);
 
     EXPECT_EQ(field->type(), EntityTypeId::Field);
@@ -137,7 +137,7 @@ TEST_F(StructEntityTest, addEnumField_Correctly_Initializes_And_Stores_Added_Fie
     ASSERT_TRUE(field =
                     structure_->addEnumField("field", 13, "MyEnum", FieldFlags::Repeated, "", {docs_.description()}));
     ASSERT_NE(structure_->fields().find("field"), structure_->fields().end());
-    EXPECT_EQ(structure_->fields().find("field")->second, field);
+    EXPECT_EQ(*(structure_->fields().find("field")), field);
     EXPECT_EQ(structure_->fields().size(), 1);
 
     EXPECT_EQ(field->type(), EntityTypeId::Field);
@@ -168,7 +168,7 @@ TEST_F(StructEntityTest, addMapField_Correctly_Initializes_And_Stores_Added_Fiel
 
     ASSERT_TRUE(field = structure_->addMapField("field", 13, FieldTypeId::Fixed32, FieldTypeId::String));
     ASSERT_NE(structure_->fields().find("field"), structure_->fields().end());
-    EXPECT_EQ(structure_->fields().find("field")->second, field);
+    EXPECT_EQ(*(structure_->fields().find("field")), field);
     EXPECT_EQ(structure_->fields().size(), 1);
 
     EXPECT_EQ(field->type(), EntityTypeId::Field);

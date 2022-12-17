@@ -24,11 +24,10 @@ protected:
         method1_ = cls1_->addMethod("method1");
         method2_ = cls1_->addMethod("method2");
         enum1_ = method1_->addEnum("Enum1", "file1.proto");
-        enum1_->addConstant("constant1", 1);
-        enum1_->addConstant("constant2", 2);
+        constant1_ = enum1_->addConstant("constant1", 1);
 
         struct1_ = ns2_->addStruct("Struct1", "file2.proto");
-        struct1_->addScalarField("field1", 1, FieldTypeId::Bool);
+        field1_ = struct1_->addScalarField("field1", 1, FieldTypeId::Bool);
         nestedStruct1_ = struct1_->addStruct("NestedStruct1");
         nestedStruct1_->addScalarField("field1", 1, FieldTypeId::Bool);
         nestedEnum1_ = struct1_->addEnum("NestedEnum1");
@@ -51,8 +50,10 @@ protected:
     Method* method1_ = nullptr;
     Method* method2_ = nullptr;
     Struct* struct1_ = nullptr;
+    Field* field1_ = nullptr;
     Struct* nestedStruct1_ = nullptr;
     Enum* enum1_ = nullptr;
+    Constant* constant1_ = nullptr;
     Enum* nestedEnum1_ = nullptr;
 
     // services types
@@ -113,7 +114,9 @@ TEST_F(ProjectEntityTest, find_Returns_Correct_Entity_If_It_Exists)
     EXPECT_EQ(project_->find(apiPrefix + "ns1.cls1.method1"), method1_);
     EXPECT_EQ(project_->find(apiPrefix + "ns1.cls1.method2"), method2_);
     EXPECT_EQ(project_->find(apiPrefix + "ns1.cls1.method1.Enum1"), enum1_);
+    EXPECT_EQ(project_->find(apiPrefix + "ns1.cls1.method1.Enum1.constant1"), constant1_);
     EXPECT_EQ(project_->find(apiPrefix + "ns2.Struct1"), struct1_);
+    EXPECT_EQ(project_->find(apiPrefix + "ns2.Struct1.field1"), field1_);
     EXPECT_EQ(project_->find(apiPrefix + "ns2.Struct1.NestedStruct1"), nestedStruct1_);
     EXPECT_EQ(project_->find(apiPrefix + "ns2.Struct1.NestedEnum1"), nestedEnum1_);
 
@@ -138,6 +141,9 @@ TEST_F(ProjectEntityTest, find_Returns_Nullptr_If_Dname_Is_Not_Found)
     EXPECT_FALSE(project_->find(std::string(Api_Entity_Name) + ".ns1.cls1.method1.unknown"));
     EXPECT_FALSE(project_->find(std::string(Api_Entity_Name) + ".ns1.cls1.method1.Enum1.unknown"));
     EXPECT_FALSE(project_->find(std::string(Api_Entity_Name) + ".ns2.Struct1.unknown"));
+    EXPECT_FALSE(project_->find(std::string(Api_Entity_Name) + ".ns2.Struct1.unknown"));
+    EXPECT_FALSE(project_->find(std::string(Api_Entity_Name) + ".ns2.Struct1.NestedStruct1.unknown"));
+    EXPECT_FALSE(project_->find(std::string(Api_Entity_Name) + ".ns2.Struct1.NestedEnum1.unknown"));
 }
 
 TEST_F(ProjectEntityTest, Entity_Directory_Is_Updated_When_New_Entity_Is_Added)
@@ -147,16 +153,5 @@ TEST_F(ProjectEntityTest, Entity_Directory_Is_Updated_When_New_Entity_Is_Added)
     EXPECT_FALSE(project_->find(std::string(Api_Entity_Name) + ".ns3"));
     EXPECT_TRUE(ns3 = api_->addNamespace("ns3"));
     EXPECT_EQ(project_->find(std::string(Api_Entity_Name) + ".ns3"), ns3);
-}
-
-TEST_F(ProjectEntityTest, Non_Distinguished_Entities_Are_Not_Added_To_Entity_Directory)
-{
-    std::string enum1Dname = std::string(Api_Entity_Name) + ".ns1.cls1.method1.Enum1";
-    std::string struct1Dname = std::string(Api_Entity_Name) + ".ns2.Struct1";
-
-    EXPECT_NE(dynamic_cast<const Enum*>(project_->find(enum1Dname))->constants().count("constant1"), 0);
-    EXPECT_FALSE(project_->find(enum1Dname + ".constant1"));
-    EXPECT_NE(dynamic_cast<const Struct*>(project_->find(struct1Dname))->fields().count("field1"), 0);
-    EXPECT_FALSE(project_->find(struct1Dname + ".field1"));
 }
 }} // namespace busrpc::test

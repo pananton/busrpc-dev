@@ -9,6 +9,7 @@
 #include <map>
 #include <memory>
 #include <queue>
+#include <set>
 #include <string>
 #include <type_traits>
 #include <vector>
@@ -76,6 +77,15 @@ public:
     /// Entity name (non-unique).
     const std::string& name() const noexcept { return name_; }
 
+    /// Entity distinguished name (uniquely identifies the entity).
+    /// \note Distinguished name consists of the dot-separated names of entity's parents and \ref name of the entity
+    ///       itself. Parents are included in the distinguished name as they recede from the root of the entity tree
+    ///       (i.e., \ref Project entity), for example:
+    ///           <tt>busrpc.api.namespace.class.method.Struct.NestedStruct.NestedEnum.NestedEnumConstant</tt>
+    /// \note Distinguished names of entities that represent protobuf types (\ref Struct  representing a \c message
+    ///       and \ref Enum representing an \c enum) match fully-qualified names of a corresponding protobuf types.
+    const std::string& dname() const noexcept { return dname_; }
+
     /// Directory where entity is defined.
     const std::filesystem::path& dir() const noexcept { return dir_; }
 
@@ -87,7 +97,7 @@ public:
 
 protected:
     /// Create entity.
-    Entity(CompositeEntity* parent, EntityTypeId type, const std::string& name, EntityDocs docs = {});
+    Entity(CompositeEntity* parent, EntityTypeId type, const std::string& name, EntityDocs docs);
 
     /// Set entity documentation.
     void setDocumentation(EntityDocs docs) noexcept { docs_ = std::move(docs); }
@@ -96,6 +106,7 @@ private:
     CompositeEntity* parent_;
     EntityTypeId type_;
     std::string name_;
+    std::string dname_;
     std::filesystem::path dir_;
     EntityDocs docs_;
 
@@ -109,33 +120,6 @@ private:
 template<typename T>
 concept EntityConcept = std::is_base_of_v<Entity, T>;
 
-/// Entity that has unique distinguished name.
-class DistinguishedEntity: public Entity {
-public:
-    /// Entity distinguished name (uniquely identifies the entity).
-    /// \note Distinguished name consists of the dot-separated names of entity's parents and \ref name of the entity
-    ///       itself. Parents are included in the distinguished name as they recede from the root of the entity tree
-    ///       (i.e., \ref Project entity), for example:
-    ///           <tt>busrpc.api.namespace.class.method.Struct.NestedStruct.NestedEnum.NestedEnumConstant</tt>
-    /// \note Distinguished names of entities that represent protobuf types (\ref Struct  representing a \c message
-    /// and
-    ///       \ref Enum representing an \c enum) match fully-qualified names of a corresponding protobuf types.
-    const std::string& dname() const noexcept { return dname_; }
-
-protected:
-    /// Create distinguished entity.
-    DistinguishedEntity(CompositeEntity* parent, EntityTypeId type, const std::string& name, EntityDocs docs = {});
-
-private:
-    std::string dname_;
-};
-
-/// Distinguished entity concept.
-template<typename T>
-concept DistinguishedEntityConcept = std::is_base_of_v<DistinguishedEntity, T>;
-
-class CompositeEntity;
-
 /// Composite entity concept.
 template<typename T>
 concept CompositeEntityConcept = std::is_base_of_v<CompositeEntity, T>;
@@ -144,11 +128,33 @@ concept CompositeEntityConcept = std::is_base_of_v<CompositeEntity, T>;
 template<typename T>
 concept SimpleEntityConcept = std::is_base_of_v<Entity, T> && !std::is_base_of_v<CompositeEntity, T>;
 
+/// Descendant order of entity names.
+struct OrderEntitiesByNameAsc {
+    using ComparedType = const Entity*;
+    using is_transparent = void;
+
+    /// Return \c true if name of the entity pointed by \a lhs is less than name of the entity pointed by \a rhs.
+    bool operator()(const ComparedType& lhs, const ComparedType& rhs) const noexcept
+    {
+        return lhs->name() < rhs->name();
+    }
+
+    /// Return \c true if name of the entity pointed by \a lhs is less than \a rhs.
+    bool operator()(const ComparedType& lhs, std::string_view rhs) const noexcept { return lhs->name() < rhs; }
+
+    /// Return \c true if \a lhs is less than name of the entity pointed by \a rhs.
+    bool operator()(std::string_view lhs, const ComparedType& rhs) const noexcept { return lhs < rhs->name(); }
+};
+
+/// Container for storing pointers to entities in the ascending order of entity names.
+template<typename TEntity>
+using EntityContainer = std::set<const TEntity*, OrderEntitiesByNameAsc>;
+
 /// Entity that has nested entities.
-class CompositeEntity: public DistinguishedEntity {
+class CompositeEntity: public Entity {
 public:
-    /// Immideately nested entites ordered by name.
-    const std::map<std::string, const Entity*>& nested() const noexcept { return nested_; }
+    /// Immideately nested entites.
+    const EntityContainer<Entity>& nested() const noexcept { return nested_; }
 
 protected:
     /// Callback invoked whenever nested entity is added.
@@ -158,7 +164,7 @@ protected:
 
     /// Create composite entity.
     CompositeEntity(CompositeEntity* parent, EntityTypeId type, const std::string& name, EntityDocs docs = {}):
-        DistinguishedEntity(parent, type, name, std::move(docs)),
+        Entity(parent, type, name, std::move(docs)),
         storage_{},
         nested_{},
         onNestedEntityAdded_(parent ? parent->onNestedEntityAdded_ : NestedEntityAddedCallback{})
@@ -172,7 +178,7 @@ protected:
     TEntity* addNestedEntity(TArgs&&... args)
     {
         std::shared_ptr<TEntity> entityPtr(new TEntity(this, std::forward<TArgs>(args)...));
-        auto alreadyExists = !nested_.emplace(entityPtr->name(), entityPtr.get()).second;
+        auto alreadyExists = !nested_.insert(entityPtr.get()).second;
 
         if (!alreadyExists) {
             storage_.push(entityPtr);
@@ -208,23 +214,8 @@ protected:
     }
 
 private:
-    template<EntityConcept TEntity, typename... TArgs>
-    TEntity* addNestedEntityImpl(TArgs&&... args)
-    {
-        std::shared_ptr<TEntity> entityPtr(new TEntity(this, std::forward<TArgs>(args)...));
-        auto alreadyExists = !nested_.emplace(entityPtr->name(), entityPtr.get()).second;
-
-        if (!alreadyExists) {
-            storage_.push(entityPtr);
-        } else {
-            throw name_conflict_error(type(), dname(), entityPtr->name());
-        }
-
-        return entityPtr.get();
-    }
-
-    std::map<std::string, const Entity*> nested_;
     std::queue<std::shared_ptr<Entity>> storage_;
+    EntityContainer<Entity> nested_;
     NestedEntityAddedCallback onNestedEntityAdded_;
 };
 
@@ -232,10 +223,10 @@ private:
 class GeneralCompositeEntity: public CompositeEntity {
 public:
     /// Immediately nested structures ordered by name.
-    const std::map<std::string, const Struct*>& structs() const noexcept { return structs_; }
+    const EntityContainer<Struct>& structs() const noexcept { return structs_; }
 
     /// Immediately nested enumerations ordered by name.
-    const std::map<std::string, const Enum*>& enums() const noexcept { return enums_; }
+    const EntityContainer<Enum>& enums() const noexcept { return enums_; }
 
 protected:
     /// Create general composite entity.
@@ -265,7 +256,7 @@ protected:
     Enum* addEnum(const std::string& name, const std::string& filename, EntityDocs docs = {});
 
 private:
-    std::map<std::string, const Struct*> structs_ = {};
-    std::map<std::string, const Enum*> enums_ = {};
+    EntityContainer<Struct> structs_;
+    EntityContainer<Enum> enums_;
 };
 } // namespace busrpc

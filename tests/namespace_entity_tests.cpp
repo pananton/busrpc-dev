@@ -42,7 +42,7 @@ TEST_F(NamespaceEntityTest, addClass_Stores_Added_Class)
 
     EXPECT_TRUE(cls = ns_->addClass("class"));
     ASSERT_NE(ns_->classes().find("class"), ns_->classes().end());
-    EXPECT_EQ(ns_->classes().find("class")->second, cls);
+    EXPECT_EQ(*(ns_->classes().find("class")), cls);
     EXPECT_EQ(ns_->classes().size(), 1);
 }
 

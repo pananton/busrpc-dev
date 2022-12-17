@@ -6,7 +6,6 @@
 #include "entities/project.h"
 #include "entities/struct.h"
 
-#include <map>
 #include <string>
 
 /// \file api.h Project API entity.
@@ -42,7 +41,7 @@ public:
     const Enum* errc() const noexcept { return errc_; }
 
     /// API namespaces.
-    const std::map<std::string, const Namespace*>& namespaces() const noexcept { return namespaces_; }
+    const EntityContainer<Namespace>& namespaces() const noexcept { return namespaces_; }
 
     /// Add namespace.
     /// \throws name_conflict_error if nested entity with the same name already exists
@@ -50,7 +49,7 @@ public:
 
 protected:
     /// Create API entity.
-    Api(CompositeEntity* project);
+    explicit Api(CompositeEntity* project);
 
 private:
     friend class CompositeEntity;
@@ -60,6 +59,6 @@ private:
     const Struct* resultMessage_ = nullptr;
     const Struct* exception_ = nullptr;
     const Enum* errc_ = nullptr;
-    std::map<std::string, const Namespace*> namespaces_;
+    EntityContainer<Namespace> namespaces_;
 };
 } // namespace busrpc

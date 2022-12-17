@@ -4,7 +4,6 @@
 #include "entities/entity.h"
 
 #include <filesystem>
-#include <map>
 #include <string>
 
 /// \file enum.h Enumeration entity.
@@ -26,7 +25,7 @@ public:
     const std::filesystem::path& file() const noexcept { return file_; }
 
     /// Enumeration constants ordered by their names.
-    const std::map<std::string, const Constant*>& constants() const noexcept { return constants_; }
+    const EntityContainer<Constant>& constants() const noexcept { return constants_; }
 
     /// Add enumeration constant.
     /// \throws name_conflict_error if constant with the same name is already added
@@ -34,13 +33,13 @@ public:
 
 protected:
     /// Create enumeration entity.
-    Enum(CompositeEntity* parent, const std::string& name, const std::string& filename, EntityDocs docs = {});
+    Enum(CompositeEntity* parent, const std::string& name, const std::string& filename, EntityDocs docs);
 
 private:
     friend class CompositeEntity;
 
     std::string package_;
     std::filesystem::path file_;
-    std::map<std::string, const Constant*> constants_;
+    EntityContainer<Constant> constants_;
 };
 } // namespace busrpc

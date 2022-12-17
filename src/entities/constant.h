@@ -26,7 +26,7 @@ public:
 
 protected:
     /// Create enumeration constant entity.
-    Constant(CompositeEntity* parent, const std::string& name, int32_t value, EntityDocs docs = {});
+    Constant(CompositeEntity* parent, const std::string& name, int32_t value, EntityDocs docs);
 
 private:
     friend class CompositeEntity;

@@ -35,7 +35,7 @@ TEST_F(ApiEntityTest, addNamespace_Stores_Added_Namespace)
 
     EXPECT_TRUE(ns = api_->addNamespace("namespace"));
     ASSERT_NE(api_->namespaces().find("namespace"), api_->namespaces().end());
-    ASSERT_EQ(api_->namespaces().find("namespace")->second, ns);
+    ASSERT_EQ(*(api_->namespaces().find("namespace")), ns);
 }
 
 TEST_F(ApiEntityTest, Adding_CallMessage_Struct_Sets_Api_Call_Message_Type)

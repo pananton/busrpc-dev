@@ -5,7 +5,6 @@
 #include "entities/entity.h"
 #include "entities/struct.h"
 
-#include <map>
 #include <string>
 
 /// \file namespace.h Namespace entity.
@@ -31,7 +30,7 @@ public:
     const Struct* descriptor() const noexcept { return descriptor_; }
 
     /// Namespace classes.
-    const std::map<std::string, const Class*>& classes() const noexcept { return classes_; }
+    const EntityContainer<Class>& classes() const noexcept { return classes_; }
 
     /// Add class.
     /// \throws name_conflict_error if nested entity with the same name already exists
@@ -46,6 +45,6 @@ private:
     void onNestedEntityAdded(Entity* entity);
 
     const Struct* descriptor_ = nullptr;
-    std::map<std::string, const Class*> classes_;
+    EntityContainer<Class> classes_;
 };
 } // namespace busrpc

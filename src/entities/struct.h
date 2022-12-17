@@ -5,8 +5,8 @@
 #include "entities/field.h"
 #include "types.h"
 
+#include <cstdint>
 #include <filesystem>
-#include <map>
 #include <string>
 
 /// \file struct.h Structure entity.
@@ -39,7 +39,7 @@ public:
     bool isHashed() const noexcept { return CheckAll(flags_, StructFlags::Hashed); }
 
     /// Structure fields ordered by name.
-    const std::map<std::string, const Field*>& fields() const noexcept { return fields_; }
+    const EntityContainer<Field>& fields() const noexcept { return fields_; }
 
     /// Add field with [scalar](https://developers.google.com/protocol-buffers/docs/proto3#scalar) type.
     /// \throws name_conflict_error if field with the same name is already added
@@ -100,7 +100,7 @@ protected:
            const std::string& name,
            const std::string& filename,
            StructFlags flags,
-           EntityDocs docs = {});
+           EntityDocs docs);
 
 private:
     friend class CompositeEntity;
@@ -110,6 +110,6 @@ private:
     std::string package_;
     std::filesystem::path file_;
     StructFlags flags_ = StructFlags::None;
-    std::map<std::string, const Field*> fields_;
+    EntityContainer<Field> fields_;
 };
 } // namespace busrpc

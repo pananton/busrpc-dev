@@ -24,7 +24,7 @@ Project* Api::parent() noexcept
 Namespace* Api::addNamespace(const std::string& name)
 {
     Namespace* ns = addNestedEntity<Namespace>(name);
-    namespaces_[ns->name()] = ns;
+    namespaces_.insert(ns);
     return ns;
 }
 

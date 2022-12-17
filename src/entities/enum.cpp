@@ -37,7 +37,7 @@ Enum::Enum(CompositeEntity* parent,
 Constant* Enum::addConstant(const std::string& name, int32_t value, EntityDocs docs)
 {
     Constant* constant = addNestedEntity<Constant>(name, value, std::move(docs));
-    constants_[constant->name()] = constant;
+    constants_.insert(constant);
     return constant;
 }
 } // namespace busrpc

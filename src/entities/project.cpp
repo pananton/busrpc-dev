@@ -50,11 +50,7 @@ const Entity* Project::find(const std::string& dname) const noexcept
 
 void Project::onNestedEntityAdded(Entity* entity)
 {
-    auto distinguishedEntity = dynamic_cast<DistinguishedEntity*>(entity);
-
-    if (distinguishedEntity) {
-        auto isAdded = entityDirectory_.emplace(distinguishedEntity->dname(), distinguishedEntity).second;
-        assert(isAdded);
-    }
+    auto isAdded = entityDirectory_.emplace(entity->dname(), entity).second;
+    assert(isAdded);
 }
 } // namespace busrpc

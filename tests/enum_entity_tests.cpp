@@ -46,7 +46,7 @@ TEST_F(EnumEntityTest, addConstant_Correctly_Initializes_And_Stores_Added_Consta
 
     ASSERT_TRUE(constant = enum_->addConstant("constant", 13, {docs_.description()}));
     ASSERT_NE(enum_->constants().find("constant"), enum_->constants().end());
-    ASSERT_EQ(enum_->constants().find("constant")->second, constant);
+    ASSERT_EQ(*(enum_->constants().find("constant")), constant);
 
     EXPECT_EQ(constant->type(), EntityTypeId::Constant);
     EXPECT_EQ(constant->name(), "constant");

@@ -115,7 +115,7 @@ protected:
              FieldTypeId keyType,
              FieldTypeId valueType,
              const std::string& valueTypeName,
-             EntityDocs docs = {});
+             EntityDocs docs);
 
 private:
     friend class CompositeEntity;

@@ -54,7 +54,7 @@ Field* Struct::addScalarField(const std::string& name,
 {
     checkFieldNumberIsFree(name, number);
     Field* field = addNestedEntity<Field>(name, number, type, "", flags, oneofName, defaultValue, std::move(docs));
-    fields_[field->name()] = field;
+    fields_.insert(field);
     return field;
 }
 
@@ -68,7 +68,7 @@ Field* Struct::addStructField(const std::string& name,
     checkFieldNumberIsFree(name, number);
     Field* field =
         addNestedEntity<Field>(name, number, FieldTypeId::Message, typeName, flags, oneofName, "", std::move(docs));
-    fields_[field->name()] = field;
+    fields_.insert(field);
     return field;
 }
 
@@ -82,7 +82,7 @@ Field* Struct::addEnumField(const std::string& name,
     checkFieldNumberIsFree(name, number);
     Field* field =
         addNestedEntity<Field>(name, number, FieldTypeId::Enum, typeName, flags, oneofName, "", std::move(docs));
-    fields_[field->name()] = field;
+    fields_.insert(field);
     return field;
 }
 
@@ -95,7 +95,7 @@ MapField* Struct::addMapField(const std::string& name,
 {
     checkFieldNumberIsFree(name, number);
     MapField* field = addNestedEntity<MapField>(name, number, keyType, valueType, valueTypeName, std::move(docs));
-    fields_[field->name()] = field;
+    fields_.insert(field);
     return field;
 }
 
@@ -111,8 +111,8 @@ Enum* Struct::addEnum(const std::string& name, EntityDocs docs)
 
 void Struct::checkFieldNumberIsFree(const std::string& fieldName, int32_t fieldNumber) const
 {
-    auto result = std::find_if(fields_.begin(), fields_.end(), [fieldNumber](const auto& value) {
-        return value.second->number() == fieldNumber;
+    auto result = std::find_if(fields_.begin(), fields_.end(), [fieldNumber](const auto& field) {
+        return field->number() == fieldNumber;
     });
 
     if (result != fields_.end()) {

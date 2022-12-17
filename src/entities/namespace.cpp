@@ -24,7 +24,7 @@ Api* Namespace::parent() noexcept
 Class* Namespace::addClass(const std::string& name)
 {
     Class* cls = addNestedEntity<Class>(name);
-    classes_[cls->name()] = cls;
+    classes_.insert(cls);
     return cls;
 }
 
