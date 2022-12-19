@@ -1,5 +1,5 @@
 #include "commands/imports/imports_command.h"
-#include "commands/error_collector.h"
+#include "error_collector.h"
 #include "utils.h"
 
 #include <google/protobuf/compiler/importer.h>
@@ -71,7 +71,7 @@ void FillImportsRecursively(const protobuf::FileDescriptor* desc, std::set<std::
 
 std::error_code ImportsCommand::tryExecuteImpl(std::ostream& out, std::ostream& err) const
 {
-    ErrorCollector ecol(imports_error_category(), ImportsErrc::Protobuf_Parsing_Failed, err);
+    ErrorCollector ecol(ImportsErrc::Protobuf_Parsing_Failed, SeverityByErrorCodeValue);
     std::set<std::string> imports;
     std::set<std::string> ignored;
     std::filesystem::path projectPath;
@@ -81,8 +81,9 @@ std::error_code ImportsCommand::tryExecuteImpl(std::ostream& out, std::ostream& 
     } catch (const std::filesystem::filesystem_error&) { }
 
     if (projectPath.empty()) {
-        ecol.add(ImportsErrc::Project_Dir_Does_Not_Exist, "Project directory '" + args().projectDir() + "' does not exist");
-        return ecol.result();
+        ecol.add(ImportsErrc::Project_Dir_Does_Not_Exist, std::make_pair("projectDir", args().projectDir()));
+        err << ecol;
+        return ecol.majorError()->code;
     }
 
     protobuf::compiler::DiskSourceTree sourceTree;
@@ -94,10 +95,10 @@ std::error_code ImportsCommand::tryExecuteImpl(std::ostream& out, std::ostream& 
 
         try {
             if (!InitRelativePathToExistingFile(filePath, file, projectPath)) {
-                ecol.add(ImportsErrc::File_Not_Found, "File '" + file + "' is not found");
+                ecol.add(ImportsErrc::File_Not_Found, std::make_pair("file", file));
             }
         } catch (const std::filesystem::filesystem_error&) {
-            ecol.add(ImportsErrc::File_Read_Failed, "Failed to access file '" + file + "'");
+            ecol.add(ImportsErrc::File_Read_Failed, std::make_pair("file", file));
         }
 
         if (!filePath.empty()) {
@@ -115,7 +116,12 @@ std::error_code ImportsCommand::tryExecuteImpl(std::ostream& out, std::ostream& 
         }
     }
 
-    return ecol.result();
+    if (!ecol) {
+        return std::error_code(0, imports_error_category());
+    } else {
+        err << ecol;
+        return ecol.majorError()->code;
+    }
 }
 
 const std::error_category& imports_error_category()

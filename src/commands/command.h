@@ -17,13 +17,12 @@ namespace busrpc {
 /// Command error.
 /// \note This \c enum is registered as an \c std::error_condition. It provides command-independent logical conditions
 ///       to compare with command-specific detailed \c std::error_code.
-/// \note Many commands do not fail fast. When error is encountered, they output diagnostic information to the error
-///       stream and continue processing. That means several errors may be encountered during a single invocation of
-///       the command and all of them may have distinct error codes, so implementation needs to decide which code to
-///       use as the command result. The main idea used by the busrpc development tool is that errors caused by user
-///       (for example, specifying invalid arguments for the command) should be signalled before various system
-///       errors. This is achieved by assigning higher values for user-caused error codes and then returning error
-///       code with the highest value as the command result.
+/// \note Some commands do not fail fast. When error is encountered, they remember it and continue processing. That
+///       means several errors may be encountered during a single invocation of the command and all of them may have
+///       distinct error codes. Implementation needs to decide, which code to use as the command result. The main
+///       idea used by the commands is that errors caused by user (for example, specifying invalid arguments for the
+///       command) should be signalled before various system errors. This is achieved by assigning higher values for
+///       user-caused error codes and then ordering error codes by value (greater value means higher severity).
 enum class CommandError {
     /// Internal error.
     Internal = 1,

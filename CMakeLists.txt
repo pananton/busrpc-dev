@@ -54,14 +54,14 @@ configure_file(src/configure.h.in "${CMAKE_CURRENT_BINARY_DIR}/src/configure.h")
 set(sources
     src/app.h
     src/app.cpp
+    src/error_collector.h
+    src/error_collector.cpp
     src/exception.h
     src/types.h
     src/utils.h
     src/utils.cpp
     src/commands/command.h
     src/commands/command.cpp
-    src/commands/error_collector.h
-    src/commands/error_collector.cpp
     src/commands/check/check_command.h
     src/commands/check/check_command.cpp
     src/commands/gendoc/gendoc_command.h
