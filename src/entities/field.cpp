@@ -128,7 +128,7 @@ bool Field::checkFlagsAreNotMutuallyExcelusive() const noexcept
 
 bool Field::checkFlagsDoNotConflictWithOneof() const noexcept
 {
-    return oneofName_.empty() || !CheckAll(flags_, FieldFlags::Repeated);
+    return oneofName_.empty() || !CheckAny(flags_, FieldFlags::Repeated | FieldFlags::Optional);
 }
 
 bool Field::checkTypeDoesNotConflictWithOneof() const noexcept

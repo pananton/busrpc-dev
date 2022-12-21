@@ -1,7 +1,7 @@
 #include "app.h"
-#include "utils.h"
 #include "commands/help/help_command.h"
 #include "commands/imports/imports_command.h"
+#include "utils.h"
 #include "utils/common.h"
 #include "utils/file_utils.h"
 
@@ -31,22 +31,25 @@ TEST(ImportsCommandTest, Description_For_Unknown_Command_Error_Code_Is_Not_Empty
 
 TEST(ImportsCommandTest, Description_For_Unknown_Command_Error_Code_Differs_From_Known_Error_Codes_Descriptions)
 {
-    EXPECT_NE(imports_error_category().message(static_cast<int>(ImportsErrc::File_Read_Failed)),
+    using enum ImportsErrc;
+
+    EXPECT_NE(imports_error_category().message(static_cast<int>(File_Read_Failed)),
               imports_error_category().message(0));
-    EXPECT_NE(imports_error_category().message(static_cast<int>(ImportsErrc::Protobuf_Parsing_Failed)),
+    EXPECT_NE(imports_error_category().message(static_cast<int>(Protobuf_Parsing_Failed)),
               imports_error_category().message(0));
-    EXPECT_NE(imports_error_category().message(static_cast<int>(ImportsErrc::File_Not_Found)),
-              imports_error_category().message(0));
-    EXPECT_NE(imports_error_category().message(static_cast<int>(ImportsErrc::Project_Dir_Does_Not_Exist)),
+    EXPECT_NE(imports_error_category().message(static_cast<int>(File_Not_Found)), imports_error_category().message(0));
+    EXPECT_NE(imports_error_category().message(static_cast<int>(Project_Dir_Does_Not_Exist)),
               imports_error_category().message(0));
 }
 
 TEST(ImportsCommandTest, Error_Codes_Are_Mapped_To_Appropriate_Error_Conditions)
 {
-    EXPECT_EQ(std::error_code(ImportsErrc::File_Read_Failed), CommandError::File_Operation_Failed);
-    EXPECT_EQ(std::error_code(ImportsErrc::Protobuf_Parsing_Failed), CommandError::Protobuf_Parsing_Failed);
-    EXPECT_EQ(std::error_code(ImportsErrc::File_Not_Found), CommandError::Invalid_Argument);
-    EXPECT_EQ(std::error_code(ImportsErrc::Project_Dir_Does_Not_Exist), CommandError::Invalid_Argument);
+    using enum ImportsErrc;
+
+    EXPECT_EQ(std::error_code(File_Read_Failed), CommandError::File_Operation_Failed);
+    EXPECT_EQ(std::error_code(Protobuf_Parsing_Failed), CommandError::Protobuf_Parsing_Failed);
+    EXPECT_EQ(std::error_code(File_Not_Found), CommandError::Invalid_Argument);
+    EXPECT_EQ(std::error_code(Project_Dir_Does_Not_Exist), CommandError::Invalid_Argument);
 }
 
 TEST(ImportsCommandTest, Help_Is_Defined_For_The_Command)

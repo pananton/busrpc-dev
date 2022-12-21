@@ -54,6 +54,7 @@ configure_file(src/configure.h.in "${CMAKE_CURRENT_BINARY_DIR}/src/configure.h")
 set(sources
     src/app.h
     src/app.cpp
+    src/constants.h
     src/error_collector.h
     src/error_collector.cpp
     src/exception.h

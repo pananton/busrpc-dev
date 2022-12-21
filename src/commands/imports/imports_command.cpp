@@ -19,22 +19,26 @@ public:
 
     std::string message(int code) const override
     {
+        using enum ImportsErrc;
+
         switch (static_cast<ImportsErrc>(code)) {
-        case ImportsErrc::File_Read_Failed: return "Failed to read file";
-        case ImportsErrc::Protobuf_Parsing_Failed: return "Protobuf parsing error";
-        case ImportsErrc::File_Not_Found: return "File not found";
-        case ImportsErrc::Project_Dir_Does_Not_Exist: return "Busrpc project directory does not exist";
+        case File_Read_Failed: return "Failed to read file";
+        case Protobuf_Parsing_Failed: return "Protobuf parsing error";
+        case File_Not_Found: return "File not found";
+        case Project_Dir_Does_Not_Exist: return "Busrpc project directory does not exist";
         default: return "Unknown error";
         }
     }
 
     bool equivalent(int code, const std::error_condition& condition) const noexcept override
     {
+        using enum ImportsErrc;
+
         switch (static_cast<ImportsErrc>(code)) {
-        case ImportsErrc::File_Read_Failed: return condition == CommandError::File_Operation_Failed;
-        case ImportsErrc::Protobuf_Parsing_Failed: return condition == CommandError::Protobuf_Parsing_Failed;
-        case ImportsErrc::File_Not_Found: return condition == CommandError::Invalid_Argument;
-        case ImportsErrc::Project_Dir_Does_Not_Exist: return condition == CommandError::Invalid_Argument;
+        case File_Read_Failed: return condition == CommandError::File_Operation_Failed;
+        case Protobuf_Parsing_Failed: return condition == CommandError::Protobuf_Parsing_Failed;
+        case File_Not_Found: return condition == CommandError::Invalid_Argument;
+        case Project_Dir_Does_Not_Exist: return condition == CommandError::Invalid_Argument;
         default: return false;
         }
     }
@@ -72,6 +76,8 @@ void FillImportsRecursively(const protobuf::FileDescriptor* desc, std::set<std::
 std::error_code ImportsCommand::tryExecuteImpl(std::ostream& out, std::ostream& err) const
 {
     ErrorCollector ecol(ImportsErrc::Protobuf_Parsing_Failed, SeverityByErrorCodeValue);
+    ErrorCollectorGuard ecolGuard(ecol, err);
+
     std::set<std::string> imports;
     std::set<std::string> ignored;
     std::filesystem::path projectPath;
@@ -82,7 +88,6 @@ std::error_code ImportsCommand::tryExecuteImpl(std::ostream& out, std::ostream& 
 
     if (projectPath.empty()) {
         ecol.add(ImportsErrc::Project_Dir_Does_Not_Exist, std::make_pair("projectDir", args().projectDir()));
-        err << ecol;
         return ecol.majorError()->code;
     }
 
@@ -116,12 +121,7 @@ std::error_code ImportsCommand::tryExecuteImpl(std::ostream& out, std::ostream& 
         }
     }
 
-    if (!ecol) {
-        return std::error_code(0, imports_error_category());
-    } else {
-        err << ecol;
-        return ecol.majorError()->code;
-    }
+    return !ecol ? std::error_code(0, imports_error_category()) : ecol.majorError()->code;
 }
 
 const std::error_category& imports_error_category()

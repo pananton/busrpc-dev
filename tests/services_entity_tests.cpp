@@ -26,7 +26,7 @@ TEST_F(ServicesEntityTest, Services_Entity_Is_Correctly_Initialized_When_Created
     EXPECT_EQ(services_->parent(), project_.get());
     EXPECT_EQ(static_cast<const Services*>(services_)->parent(), project_.get());
     ASSERT_EQ(services_->docs().description().size(), 1);
-    EXPECT_EQ(services_->docs().description()[0], Services_Entity_Comment);
+    EXPECT_EQ(services_->docs().description()[0], Services_Entity_Description);
 }
 
 TEST_F(ServicesEntityTest, addServices_Stores_Added_Services)

@@ -50,6 +50,106 @@ TEST_F(StructEntityTest, Struct_Entity_Is_Correctly_Initialized_When_Created_By_
     EXPECT_EQ(structure_->docs().commands(), docs_.commands());
 }
 
+TEST_F(StructEntityTest, Object_Id_Struct_Has_Default_Description)
+{
+    Project project;
+    auto cls = project.addApi()->addNamespace("namespace")->addClass("class");
+    auto desc = cls->addStruct(GetPredefinedStructName(StructTypeId::Class_Desc), Class_Desc_File);
+    auto oid = desc->addStruct(GetPredefinedStructName(StructTypeId::Object_Id));
+
+    EXPECT_FALSE(oid->docs().description().empty());
+    EXPECT_FALSE(oid->docs().brief().empty());
+}
+
+TEST_F(StructEntityTest, Method_Params_Struct_Has_Default_Description)
+{
+    Project project;
+    auto method = project.addApi()->addNamespace("namespace")->addClass("class")->addMethod("method");
+    auto desc = method->addStruct(GetPredefinedStructName(StructTypeId::Method_Desc), Method_Desc_File);
+    auto params = desc->addStruct(GetPredefinedStructName(StructTypeId::Method_Params));
+
+    EXPECT_FALSE(params->docs().description().empty());
+    EXPECT_FALSE(params->docs().brief().empty());
+}
+
+TEST_F(StructEntityTest, Method_Retval_Struct_Has_Default_Description)
+{
+    Project project;
+    auto method = project.addApi()->addNamespace("namespace")->addClass("class")->addMethod("method");
+    auto desc = method->addStruct(GetPredefinedStructName(StructTypeId::Method_Desc), Method_Desc_File);
+    auto retval = desc->addStruct(GetPredefinedStructName(StructTypeId::Method_Retval));
+
+    EXPECT_FALSE(retval->docs().description().empty());
+    EXPECT_FALSE(retval->docs().brief().empty());
+}
+
+TEST_F(StructEntityTest, Service_Config_Struct_Has_Default_Description)
+{
+    Project project;
+    auto service = project.addServices()->addService("service");
+    auto desc = service->addStruct(GetPredefinedStructName(StructTypeId::Service_Desc), Service_Desc_File);
+    auto config = desc->addStruct(GetPredefinedStructName(StructTypeId::Service_Config));
+
+    EXPECT_FALSE(config->docs().description().empty());
+    EXPECT_FALSE(config->docs().brief().empty());
+}
+
+TEST_F(StructEntityTest, Service_Implements_Struct_Has_Default_Description)
+{
+    Project project;
+    auto service = project.addServices()->addService("service");
+    auto desc = service->addStruct(GetPredefinedStructName(StructTypeId::Service_Desc), Service_Desc_File);
+    auto implements = desc->addStruct(GetPredefinedStructName(StructTypeId::Service_Implements));
+
+    EXPECT_FALSE(implements->docs().description().empty());
+    EXPECT_FALSE(implements->docs().brief().empty());
+}
+
+TEST_F(StructEntityTest, Service_Invokes_Struct_Has_Default_Description)
+{
+    Project project;
+    auto service = project.addServices()->addService("service");
+    auto desc = service->addStruct(GetPredefinedStructName(StructTypeId::Service_Desc), Service_Desc_File);
+    auto invokes = desc->addStruct(GetPredefinedStructName(StructTypeId::Service_Invokes));
+
+    EXPECT_FALSE(invokes->docs().description().empty());
+    EXPECT_FALSE(invokes->docs().brief().empty());
+}
+
+TEST_F(StructEntityTest, Default_Struct_Description_Does_Not_Overwrite_Explicitly_Set_Description)
+{
+    Project project;
+    auto service = project.addServices()->addService("service");
+    auto desc = service->addStruct(GetPredefinedStructName(StructTypeId::Service_Desc), Service_Desc_File);
+    auto implements = desc->addStruct(GetPredefinedStructName(StructTypeId::Service_Implements),
+                                      StructFlags::None,
+                                      EntityDocs({"Text."}, {{"cmd", {"value"}}}));
+
+    ASSERT_EQ(implements->docs().description().size(), 1);
+    EXPECT_EQ(implements->docs().description()[0], "Text.");
+    EXPECT_FALSE(implements->docs().brief().empty());
+    EXPECT_EQ(implements->docs().commands().size(), 1);
+    ASSERT_NE(implements->docs().commands().find("cmd"), implements->docs().commands().end());
+    EXPECT_EQ(implements->docs().commands().find("cmd")->second, std::vector<std::string>{"value"});
+}
+
+TEST_F(StructEntityTest, Default_Struct_Description_Is_Merged_With_Explicitly_Set_Doc_Commands)
+{
+    Project project;
+    auto service = project.addServices()->addService("service");
+    auto desc = service->addStruct(GetPredefinedStructName(StructTypeId::Service_Desc), Service_Desc_File);
+    auto implements = desc->addStruct(GetPredefinedStructName(StructTypeId::Service_Implements),
+                                      StructFlags::None,
+                                      EntityDocs({}, {{"cmd", {"value"}}}));
+
+    EXPECT_FALSE(implements->docs().description().empty());
+    EXPECT_FALSE(implements->docs().brief().empty());
+    EXPECT_EQ(implements->docs().commands().size(), 1);
+    ASSERT_NE(implements->docs().commands().find("cmd"), implements->docs().commands().end());
+    ASSERT_EQ(implements->docs().commands().find("cmd")->second.size(), 1);
+    EXPECT_EQ(implements->docs().commands().find("cmd")->second.back(), "value");
+}
+
 TEST_F(StructEntityTest, Nested_Structs_And_Enums_Share_Parent_Struct_Package_And_File)
 {
     auto nestedStruct = structure_->addStruct("NestedStruct");
@@ -68,7 +168,7 @@ TEST_F(StructEntityTest, addScalarField_Correctly_Initializes_And_Stores_Added_F
     ASSERT_TRUE(field = structure_->addScalarField("field",
                                                    13,
                                                    FieldTypeId::Int32,
-                                                   FieldFlags::Optional | FieldFlags::Observable | FieldFlags::Hashed,
+                                                   FieldFlags::Observable | FieldFlags::Hashed,
                                                    "oneofName",
                                                    "1001",
                                                    {docs_.description()}));
@@ -85,8 +185,8 @@ TEST_F(StructEntityTest, addScalarField_Correctly_Initializes_And_Stores_Added_F
     EXPECT_EQ(field->number(), 13);
     EXPECT_EQ(field->fieldType(), FieldTypeId::Int32);
     EXPECT_EQ(field->fieldTypeName(), GetFieldTypeIdStr(field->fieldType()));
-    EXPECT_EQ(field->flags(), FieldFlags::Optional | FieldFlags::Observable | FieldFlags::Hashed);
-    EXPECT_TRUE(field->isOptional());
+    EXPECT_EQ(field->flags(), FieldFlags::Observable | FieldFlags::Hashed);
+    EXPECT_FALSE(field->isOptional());
     EXPECT_FALSE(field->isRepeated());
     EXPECT_TRUE(field->isObservable());
     EXPECT_TRUE(field->isHashed());
@@ -227,6 +327,10 @@ TEST_F(StructEntityTest, Adding_Field_Throws_Entity_Error_If_Field_Flags_Conflic
 {
     EXPECT_ENTITY_EXCEPTION(
         structure_->addScalarField("field", 1, FieldTypeId::Bool, FieldFlags::Repeated, "oneofName"),
+        EntityTypeId::Struct,
+        structure_->dname());
+    EXPECT_ENTITY_EXCEPTION(
+        structure_->addScalarField("field", 1, FieldTypeId::Bool, FieldFlags::Optional, "oneofName"),
         EntityTypeId::Struct,
         structure_->dname());
 }

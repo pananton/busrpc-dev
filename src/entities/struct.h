@@ -104,6 +104,7 @@ protected:
 
 private:
     friend class CompositeEntity;
+    void setDefaultDescription();
     void checkFieldNumberIsFree(const std::string& fieldName, int32_t fieldNumber) const;
 
     StructTypeId structType_;

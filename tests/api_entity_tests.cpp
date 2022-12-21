@@ -26,7 +26,7 @@ TEST_F(ApiEntityTest, Api_Entity_Is_Correctly_Initialized_When_Created_By_Projec
     EXPECT_EQ(api_->parent(), project_.get());
     EXPECT_EQ(static_cast<const Api*>(api_)->parent(), project_.get());
     ASSERT_EQ(api_->docs().description().size(), 1);
-    EXPECT_EQ(api_->docs().description()[0], Api_Entity_Comment);
+    EXPECT_EQ(api_->docs().description()[0], Api_Entity_Description);
 }
 
 TEST_F(ApiEntityTest, addNamespace_Stores_Added_Namespace)
@@ -66,7 +66,7 @@ TEST_F(ApiEntityTest, Adding_Errc_Enum_Sets_Api_Error_Code_Type)
 {
     Enum* errc = nullptr;
 
-    EXPECT_TRUE(errc = api_->addEnum(Errc_Enumeration_Name, "file.proto"));
+    EXPECT_TRUE(errc = api_->addEnum(Errc_Enum_Name, "file.proto"));
     EXPECT_EQ(errc, api_->errc());
 }
 }} // namespace busrpc::test

@@ -26,6 +26,10 @@ Struct::Struct(CompositeEntity* parent,
                             ? std::optional<StructTypeId>(static_cast<const Struct*>(this->parent())->structType())
                             : std::nullopt);
 
+    if (this->docs().brief().empty()) {
+        setDefaultDescription();
+    }
+
     if (this->parent()->type() == EntityTypeId::Struct) {
         package_ = static_cast<Struct*>(this->parent())->package();
         file_ = static_cast<Struct*>(this->parent())->file();
@@ -109,11 +113,32 @@ Enum* Struct::addEnum(const std::string& name, EntityDocs docs)
     return GeneralCompositeEntity::addEnum(name, "", std::move(docs));
 }
 
+void Struct::setDefaultDescription()
+{
+    using enum StructTypeId;
+
+    std::vector<std::string> defaultDescription;
+
+    switch (structType_) {
+    case Object_Id: defaultDescription.emplace_back(Default_ObjectId_Description); break;
+    case Method_Params: defaultDescription.emplace_back(Default_Params_Description); break;
+    case Method_Retval: defaultDescription.emplace_back(Default_Retval_Description); break;
+    case Static_Marker: defaultDescription.emplace_back(Default_Static_Description); break;
+    case Service_Config: defaultDescription.emplace_back(Default_Config_Description); break;
+    case Service_Implements: defaultDescription.emplace_back(Default_Implements_Description); break;
+    case Service_Invokes: defaultDescription.emplace_back(Default_Invokes_Description); break;
+    default: break;
+    }
+
+    if (!defaultDescription.empty()) {
+        setDocumentation({std::move(defaultDescription), docs().commands()});
+    }
+}
+
 void Struct::checkFieldNumberIsFree(const std::string& fieldName, int32_t fieldNumber) const
 {
-    auto result = std::find_if(fields_.begin(), fields_.end(), [fieldNumber](const auto& field) {
-        return field->number() == fieldNumber;
-    });
+    auto result = std::find_if(
+        fields_.begin(), fields_.end(), [fieldNumber](const auto& field) { return field->number() == fieldNumber; });
 
     if (result != fields_.end()) {
         throw name_conflict_error(EntityTypeId::Struct, dname(), fieldName);

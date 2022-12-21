@@ -6,6 +6,7 @@
 #include <sstream>
 #include <string>
 #include <system_error>
+#include <vector>
 
 // \file error_collector.h Class for collecting multiple errors.
 
@@ -35,21 +36,25 @@ public:
     /// Create error collector.
     /// \note Function \a orderFunc is invoked for two error codes to determine which one should be considered more
     ///       severe. It is used to calculate the most severe error code which is returned by \ref majorError method.
+    /// \note Parameter \a ignoredCategories determines error code categories to be ignored by the collector.
     /// \note This constructor assumes that protobuf errors will not be collected and does not initialize protobuf
     ///       error collector.
-    explicit ErrorCollector(SeverityOrder orderFunc = {});
+    explicit ErrorCollector(SeverityOrder orderFunc = {},
+                            std::vector<const std::error_category*> ignoredCategories = {});
 
     /// Create error collector for the error \a category.
     /// \note Function \a orderFunc is invoked for two error codes to determine which one should be considered more
     ///       severe. It is used to calculate the most severe error code which is returned by \ref majorError method.
+    /// \note Parameter \a ignoredCategories determines error code categories to be ignored by the collector.
     /// \note This constructor assumes that protobuf errors will be collected with \a protobufErrorCode and
     ///       initializes protobuf error collector.
-    ErrorCollector(std::error_code protobufErrorCode, SeverityOrder orderFunc = {});
+    ErrorCollector(std::error_code protobufErrorCode,
+                   SeverityOrder orderFunc = {},
+                   std::vector<const std::error_category*> ignoredCategories = {});
 
     /// Add \a ec to the stored errors and append all \a specifiers to the added error description.
     /// \tparam TSpecifiers Specifier types.
-    /// \warning If \a ec does not indicate an error, or it's category does not match the one specified in the
-    ///          constructor, then added error code is completely ignored.
+    /// \note If \a ec does not indicate an error or it's category is ignored, method does nothing.
     /// \note Specifiers are used to provide custom information about the error. To be used as a specifier,
     ///       type should support <tt>ostream& operator\<\<</tt>. Additionally, this method also accepts
     ///       \c std::pair as specifier type, which is converted to string <tt>\<first>=\<second></tt> when
@@ -57,7 +62,7 @@ public:
     template<typename... TSpecifiers>
     void add(std::error_code ec, const TSpecifiers&... specifiers) noexcept
     {
-        if (!ec) {
+        if (!ec || isIgnored(&ec.category())) {
             return;
         }
 
@@ -93,6 +98,9 @@ public:
     /// Return all errors in the order they were added to the collector.
     const std::vector<ErrorInfo>& errors() const noexcept { return errors_; }
 
+    /// Search for the first error with the specified \a ec.
+    std::optional<ErrorInfo> find(std::error_code ec);
+
     /// Return \c true if collector contains error(s).
     explicit operator bool() const noexcept { return static_cast<bool>(majorError_); }
 
@@ -103,7 +111,10 @@ public:
     }
 
 private:
-    ErrorCollector(std::error_code* protobufErrorCode, SeverityOrder orderFunc);
+    ErrorCollector(std::error_code* protobufErrorCode,
+                   SeverityOrder orderFunc,
+                   std::vector<const std::error_category*> ignoredCategories);
+    bool isIgnored(const std::error_category* category) const noexcept;
 
     template<typename TArg, typename... TArgs>
     static void OutputSpecifiers(std::ostream& out, const TArg& arg, const TArgs&... args);
@@ -114,10 +125,34 @@ private:
     static void OutputSpecifiers(std::ostream&) { }
 
     SeverityOrder orderFunc_;
+    std::vector<const std::error_category*> ignoredCategories_;
     std::shared_ptr<google::protobuf::compiler::MultiFileErrorCollector> protobufCollector_;
 
     std::optional<ErrorInfo> majorError_;
     std::vector<ErrorInfo> errors_;
+};
+
+/// Output all error to the \a out stream.
+std::ostream& operator<<(std::ostream& out, const ErrorCollector& collector);
+
+/// Error collector guard, which provides guarantees that collected error information will be outputted.
+class ErrorCollectorGuard {
+public:
+    /// Create guard.
+    /// \warning Both \a collector and \a err should not be destroyed until guard is destroyed.
+    ErrorCollectorGuard(const ErrorCollector& collector, std::ostream& err): ecol_(collector), err_(err) { }
+
+    /// Destroy guard and output collected errors to specified error stream.
+    ~ErrorCollectorGuard() { err_ << ecol_; }
+
+    ErrorCollectorGuard(const ErrorCollectorGuard&) = delete;
+    ErrorCollectorGuard(ErrorCollectorGuard&&) = delete;
+    ErrorCollectorGuard& operator=(const ErrorCollectorGuard&) = delete;
+    ErrorCollectorGuard& operator=(ErrorCollectorGuard&&) = delete;
+
+private:
+    const ErrorCollector& ecol_;
+    std::ostream& err_;
 };
 
 template<typename TArg, typename... TArgs>
@@ -143,7 +178,4 @@ void ErrorCollector::OutputSpecifiers(std::ostream& out, const std::pair<T, U>& 
 
     OutputSpecifiers(out, args...);
 }
-
-/// Output all error to the \a out stream.
-std::ostream& operator<<(std::ostream& out, const ErrorCollector& collector);
 } // namespace busrpc

@@ -5,8 +5,45 @@
 
 namespace busrpc {
 
-EntityDocs::EntityDocs(std::vector<std::string> description, std::map<std::string, std::vector<std::string>> commands):
-    description_(std::move(description)),
+namespace {
+
+std::vector<std::string> TrimEmptyLines(const std::vector<std::string>& description)
+{
+    std::vector<std::string> result;
+    bool descriptionStarted = false;
+
+    for (const auto& line: description) {
+        if (!descriptionStarted) {
+            auto trimmedLine = TrimString(line);
+
+            if (!trimmedLine.empty()) {
+                descriptionStarted = true;
+            } else {
+                continue;
+            }
+        }
+
+        result.push_back(line);
+    }
+
+    size_t removeFromEndCount = 0;
+
+    for (auto it = result.rbegin(); it != result.rend(); ++it) {
+        if (TrimString(*it).empty()) {
+            ++removeFromEndCount;
+        } else {
+            break;
+        }
+    }
+
+    result.erase(result.end() - removeFromEndCount, result.end());
+    return result;
+}
+} // namespace
+
+EntityDocs::EntityDocs(const std::vector<std::string>& description,
+                       std::map<std::string, std::vector<std::string>> commands):
+    description_(TrimEmptyLines(description)),
     brief_{},
     commands_(std::move(commands))
 {
@@ -15,7 +52,11 @@ EntityDocs::EntityDocs(std::vector<std::string> description, std::map<std::strin
     }
 
     for (auto it = commands_.begin(); it != commands_.end(); ++it) {
-        if (it->second.empty()) {
+        if (!it->second.empty()) {
+            for (auto& value: it->second) {
+                value = TrimString(value);
+            }
+        } else {
             it->second.emplace_back("");
         }
     }
@@ -46,6 +87,8 @@ EntityDocs::EntityDocs(const std::string& blockComment)
             it->second.emplace_back(nameEndPos != std::string::npos ? TrimString(line.substr(nameEndPos)) : "");
         }
     }
+
+    description_ = TrimEmptyLines(description_);
 
     if (!description_.empty()) {
         brief_ = description_.front();

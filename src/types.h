@@ -1,10 +1,11 @@
 #pragma once
 
+#include "constants.h"
+
 #include <optional>
 #include <string_view>
 #include <type_traits>
 
-/// \namespace doc_cmd Names of the supported documentation commands.
 /// \file types.h Common types.
 
 /// Creates neccessary overloads in order to use enum values as binary flags.
@@ -128,24 +129,6 @@ enum class EntityTypeId {
     Invoked_Method = 13      ///< Method invoked by the service.
 };
 
-/// Predefined \ref Project entity name.
-constexpr const char* Project_Entity_Name = "busrpc";
-
-/// Predefined \ref Project comment block.
-constexpr const char* Project_Entity_Comment = "Busrpc project";
-
-/// Predefined \ref Api entity name.
-constexpr const char* Api_Entity_Name = "api";
-
-/// Predefined \ref Api comment block.
-constexpr const char* Api_Entity_Comment = "Busrpc project API";
-
-/// Predefined \ref Services entity name.
-constexpr const char* Services_Entity_Name = "services";
-
-/// Predefined \ref Services comment block.
-constexpr const char* Services_Entity_Comment = "Busrpc project services";
-
 /// Get string representation of the entity type identifier.
 /// \note \c nullptr is returned if \a id is unknown.
 constexpr const char* GetEntityTypeIdStr(EntityTypeId id)
@@ -208,9 +191,6 @@ enum class StructTypeId {
 /// Structure entity flags.
 enum class StructFlags { None = 0, Hashed = 1, All = 0x1 };
 DEFINE_BITWISE_ENUM(StructFlags);
-
-/// Predefined name for busrpc API error code enumeration.
-constexpr const char* Errc_Enumeration_Name = "Errc";
 
 /// Get predefined name of a structure.
 /// \note Return \c nullptr if structure does not have a predefined name.
@@ -393,22 +373,6 @@ enum class FieldTypeId {
 enum class FieldFlags { None = 0, Optional = 1, Repeated = 2, Observable = 4, Hashed = 8, All = 0xf };
 DEFINE_BITWISE_ENUM(FieldFlags);
 
-/// Minimum allowed field number.
-/// \note See [here](https://developers.google.com/protocol-buffers/docs/proto3#assigning_field_numbers)).
-constexpr int32_t Min_Field_Number = 1;
-
-/// Maximum allowed field number.
-/// \note See [here](https://developers.google.com/protocol-buffers/docs/proto3#assigning_field_numbers)).
-constexpr int32_t Max_Field_Number = 536870911;
-
-/// Start of the reserved field number range.
-/// \note See [here](https://developers.google.com/protocol-buffers/docs/proto3#assigning_field_numbers)).
-constexpr int32_t Reserved_Field_Number_Range_Start = 19000;
-
-/// End of the reserved field number range.
-/// \note See [here](https://developers.google.com/protocol-buffers/docs/proto3#assigning_field_numbers)).
-constexpr int32_t Reserved_Field_Number_Range_End = 19999;
-
 /// Returns \c true if field type is a protobuf scalar type.
 /// \note See [here](https://developers.google.com/protocol-buffers/docs/proto3#scalar) for protobuf scalar type
 ///       definition.
@@ -464,18 +428,4 @@ constexpr const char* GetFieldTypeIdStr(FieldTypeId id)
     default: return nullptr;
     }
 }
-
-namespace doc_cmd {
-/// Service author.
-inline constexpr const char* Service_Author = "author";
-
-/// Service contact email.
-inline constexpr const char* Service_Email = "email";
-
-/// Service sources/documentation URL.
-inline constexpr const char* Service_Url = "url";
-
-/// Value of the object identifier or some observable parameter accepted by the implementor.
-inline constexpr const char* Accepted_Value = "accept";
-} // namespace doc_cmd
 } // namespace busrpc
