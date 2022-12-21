@@ -1441,4 +1441,79 @@ TEST(ProjectCheckTest, Unknown_Doc_Command_Doc_Error_If_Enum_Constant_Documentat
 
     EXPECT_TRUE(ecol.find(DocErrc::Unknown_Doc_Command));
 }
+
+TEST(ProjectCheckTest, Default_Severity_Of_Errors_Is_SpecErrc_DocErrc_SpecWarn_StyleErrc)
+{
+    {
+        Project project;
+        auto api = project.addApi();
+        InitApi(api);
+
+        // non-conformat name (should be lowercase)
+        auto ns = api->addNamespace("Namespace");
+
+        // unexpected file (should be 'namespace.proto'), undocumented entity
+        auto desc = ns->addStruct(GetPredefinedStructName(StructTypeId::Namespace_Desc), "1.proto", StructFlags::None);
+
+        // unexpected nested type
+        desc->addStruct("MyStruct", StructFlags::None, EntityDocs("My structure."));
+
+        ErrorCollector ecol = project.check();
+
+        ASSERT_EQ(ecol.errors().size(), 4);
+        EXPECT_TRUE(ecol.find(SpecErrc::Missing_Descriptor));
+        EXPECT_TRUE(ecol.find(DocErrc::Undocumented_Entity));
+        EXPECT_TRUE(ecol.find(SpecWarn::Unexpected_Nested_Entity));
+        EXPECT_TRUE(ecol.find(StyleErrc::Invalid_Name_Format));
+        EXPECT_EQ(ecol.majorError()->code.category(), spec_error_category());
+    }
+
+    {
+        Project project;
+        auto api = project.addApi();
+        InitApi(api);
+
+        // non-conformat name (should be lowercase)
+        auto ns = api->addNamespace("Namespace");
+
+        // undocumented entity
+        auto desc = ns->addStruct(
+            GetPredefinedStructName(StructTypeId::Namespace_Desc), Namespace_Desc_File, StructFlags::None);
+
+        // unexpected nested type
+        desc->addStruct("MyStruct", StructFlags::None, EntityDocs("My structure."));
+
+        ErrorCollector ecol = project.check();
+
+        ASSERT_EQ(ecol.errors().size(), 3);
+        EXPECT_TRUE(ecol.find(DocErrc::Undocumented_Entity));
+        EXPECT_TRUE(ecol.find(SpecWarn::Unexpected_Nested_Entity));
+        EXPECT_TRUE(ecol.find(StyleErrc::Invalid_Name_Format));
+        EXPECT_EQ(ecol.majorError()->code.category(), doc_error_category());
+    }
+
+    {
+        Project project;
+        auto api = project.addApi();
+        InitApi(api);
+
+        // non-conformat name (should be lowercase)
+        auto ns = api->addNamespace("Namespace");
+
+        auto desc = ns->addStruct(GetPredefinedStructName(StructTypeId::Namespace_Desc),
+                                  Namespace_Desc_File,
+                                  StructFlags::None,
+                                  EntityDocs("Namespace."));
+
+        // unexpected nested type
+        desc->addStruct("MyStruct", StructFlags::None, EntityDocs("My structure."));
+
+        ErrorCollector ecol = project.check();
+
+        ASSERT_EQ(ecol.errors().size(), 2);
+        EXPECT_TRUE(ecol.find(SpecWarn::Unexpected_Nested_Entity));
+        EXPECT_TRUE(ecol.find(StyleErrc::Invalid_Name_Format));
+        EXPECT_EQ(ecol.majorError()->code.category(), spec_warn_category());
+    }
+}
 }} // namespace busrpc::test

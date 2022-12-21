@@ -120,7 +120,22 @@ const Entity* Project::find(const std::string& dname) const noexcept
 
 ErrorCollector Project::check() const noexcept
 {
-    ErrorCollector ecol;
+    SeverityOrder orderFunc = [](std::error_code lhs, std::error_code rhs) {
+        if (lhs.category() == rhs.category()) {
+            return true;
+        }
+
+        if (rhs.category() == spec_error_category() ||
+            (rhs.category() == doc_error_category() && lhs.category() != spec_error_category()) ||
+            (rhs.category() == spec_warn_category() && lhs.category() != spec_error_category() &&
+             lhs.category() != doc_error_category())) {
+            return true;
+        }
+
+        return false;
+    };
+
+    ErrorCollector ecol(std::move(orderFunc));
     check(ecol);
     return ecol;
 }

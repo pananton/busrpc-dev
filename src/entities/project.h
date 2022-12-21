@@ -98,6 +98,8 @@ public:
     Services* addServices();
 
     /// Check project for conformance with busrpc specification.
+    /// \note Uses default error collector, which assumes the following priorities of the error codes:
+    ///       <tt>SpecErrc > DocsErrc > SpecWarn > StyleErrc</tt>
     ErrorCollector check() const noexcept;
 
     /// Check project for conformance with busrpc specification.
