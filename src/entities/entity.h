@@ -66,8 +66,8 @@ public:
     Entity(const Entity&) = delete;
     Entity& operator=(const Entity&) = delete;
 
-    Entity(Entity&&) = default;
-    Entity& operator=(Entity&&) = default;
+    Entity(Entity&&) = delete;
+    Entity& operator=(Entity&&) = delete;
 
     /// Parent entity.
     /// \note \c nullptr for \ref Project entity.

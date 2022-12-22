@@ -70,7 +70,8 @@ public:
         OutputSpecifiers(out, specifiers...);
         std::string specifiersStr = out.str();
 
-        std::string description = ec.message();
+        std::string description =
+            "[" + std::string(ec.category().name() ? ec.category().name() : "") + "] " + ec.message();
 
         if (!specifiersStr.empty()) {
             description.append(": ");

@@ -8,8 +8,7 @@ class MethodEntityTest: public ::testing::Test {
 protected:
     void SetUp() override
     {
-        project_ = std::make_shared<Project>();
-        auto api = project_->addApi();
+        auto api = project_.addApi();
         auto ns = api->addNamespace("namespace");
         auto cls = ns->addClass("class");
 
@@ -18,7 +17,7 @@ protected:
     }
 
 protected:
-    std::shared_ptr<Project> project_;
+    Project project_;
     const Class* cls_ = nullptr;
     Method* method_ = nullptr;
 };

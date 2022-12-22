@@ -86,6 +86,100 @@ TEST(UtilsTest, TrimString_Correctly_Handles_String_With_Whitespaces)
     EXPECT_EQ(TrimString("\tabc \t def \t "), "abc \t def");
 }
 
+TEST(UtilsTest, IsLowercaseWithUnderscores_Returns_False_If_String_Starts_With_Digit)
+{
+    EXPECT_FALSE(IsLowercaseWithUnderscores("0"));
+    EXPECT_FALSE(IsLowercaseWithUnderscores("0abc"));
+}
+
+TEST(UtilsTest, IsLowercaseWithUnderscores_Returns_False_If_String_Contains_Uppercase_Letters)
+{
+    EXPECT_FALSE(IsLowercaseWithUnderscores("A"));
+    EXPECT_FALSE(IsLowercaseWithUnderscores("aBc"));
+    EXPECT_FALSE(IsLowercaseWithUnderscores("abC"));
+}
+
+TEST(UtilsTest, IsLowercaseWithUnderscores_Returns_False_If_String_Contains_Non_Alphanumericals_Or_Underscores)
+{
+    EXPECT_FALSE(IsLowercaseWithUnderscores("!"));
+    EXPECT_FALSE(IsLowercaseWithUnderscores("ab!c"));
+    EXPECT_FALSE(IsLowercaseWithUnderscores("abc!"));
+}
+
+TEST(UtilsTest, IsLowercaseWithUnderscores_Returns_True_If_String_Contains_Only_Allowed_Characters)
+{
+    EXPECT_TRUE(IsLowercaseWithUnderscores("__abcdefghijklmnopqrstuvwxyz__0123456789__"));
+    EXPECT_TRUE(IsLowercaseWithUnderscores("___"));
+}
+
+TEST(UtilsTest, IsLowercaseWithUnderscores_Returns_True_For_Empty_String)
+{
+    EXPECT_TRUE(IsLowercaseWithUnderscores(""));
+}
+
+TEST(UtilsTest, IsUppercaseWithUnderscores_Returns_False_If_String_Starts_With_Digit)
+{
+    EXPECT_FALSE(IsUppercaseWithUnderscores("0"));
+    EXPECT_FALSE(IsUppercaseWithUnderscores("0abc"));
+}
+
+TEST(UtilsTest, IsUppercaseWithUnderscores_Returns_False_If_String_Contains_Lowercase_Letters)
+{
+    EXPECT_FALSE(IsUppercaseWithUnderscores("a"));
+    EXPECT_FALSE(IsUppercaseWithUnderscores("AbC"));
+    EXPECT_FALSE(IsUppercaseWithUnderscores("ABc"));
+}
+
+TEST(UtilsTest, IsUppercaseWithUnderscores_Returns_False_If_String_Contains_Non_Alphanumericals_Or_Underscores)
+{
+    EXPECT_FALSE(IsUppercaseWithUnderscores("!"));
+    EXPECT_FALSE(IsUppercaseWithUnderscores("AB!C"));
+    EXPECT_FALSE(IsUppercaseWithUnderscores("ABC!"));
+}
+
+TEST(UtilsTest, IsUppercaseWithUnderscores_Returns_True_If_String_Contains_Only_Allowed_Characters)
+{
+    EXPECT_TRUE(IsUppercaseWithUnderscores("__ABCDEFGHIJKLMNOPQRSTUVWXYZ__0123456789__"));
+    EXPECT_TRUE(IsUppercaseWithUnderscores("___"));
+}
+
+TEST(UtilsTest, IsUppercaseWithUnderscores_Returns_True_For_Empty_String)
+{
+    EXPECT_TRUE(IsUppercaseWithUnderscores(""));
+}
+
+TEST(UtilsTest, IsCamelCase_Returns_False_If_String_Starts_With_Digit_Or_Lowercase_Letter)
+{
+    EXPECT_FALSE(IsCamelCase("0"));
+    EXPECT_FALSE(IsCamelCase("a"));
+}
+
+TEST(UtilsTest, IsCamelCase_Returns_False_If_String_Contains_More_Than_One_Consecutive_Uppercase_Letters)
+{
+    EXPECT_FALSE(IsCamelCase("AB"));
+    EXPECT_FALSE(IsCamelCase("aBCd"));
+    EXPECT_FALSE(IsCamelCase("abCD"));
+}
+
+TEST(UtilsTest, IsCamelCase_Returns_False_If_String_Contains_Non_Alphanumericals)
+{
+    EXPECT_FALSE(IsCamelCase("_"));
+    EXPECT_FALSE(IsCamelCase("Abc_Def"));
+    EXPECT_FALSE(IsCamelCase("Abc_"));
+}
+
+TEST(UtilsTest, IsCamelCase_Returns_True_If_String_Contains_Only_Allowed_Characters)
+{
+    EXPECT_TRUE(IsCamelCase("AbcdefghiJklmnopqrstUvwxyZ0123456789"));
+    EXPECT_TRUE(IsCamelCase("Abc0def"));
+    EXPECT_TRUE(IsCamelCase("A0Def"));
+}
+
+TEST(UtilsTest, IsCamelCase_Returns_True_For_Empty_String)
+{
+    EXPECT_TRUE(IsCamelCase(""));
+}
+
 TEST(UtilsTest, InitCanonicalPathToExistingDirectory_Returns_False_If_Dir_Does_Not_Exist)
 {
     std::filesystem::path path;

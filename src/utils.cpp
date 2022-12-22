@@ -4,6 +4,29 @@
 
 namespace busrpc {
 
+namespace {
+
+bool islower(char c)
+{
+    return c >= 0x61 && c <= 0x7a;
+}
+
+bool isupper(char c)
+{
+    return c >= 0x41 && c <= 0x5a;
+}
+
+bool isdigit(char c)
+{
+    return c >= 0x30 && c <= 0x39;
+}
+
+bool isunder(char c)
+{
+    return c == 0x5f;
+}
+} // namespace
+
 std::vector<std::string> SplitString(const std::string& str, char delimiter, TokenCompressMode mode)
 {
     std::stringstream s(str);
@@ -24,6 +47,73 @@ std::string TrimString(const std::string& str)
     constexpr const char* whitespace = " \t";
     auto start = str.find_first_not_of(whitespace);
     return start != std::string::npos ? str.substr(start, (str.find_last_not_of(whitespace) - start) + 1) : "";
+}
+
+bool IsLowercaseWithUnderscores(std::string_view name)
+{
+    if (name.empty()) {
+        return true;
+    }
+
+    if (isdigit(name[0])) {
+        return false;
+    }
+
+    for (auto c: name) {
+        if (!islower(c) && !isdigit(c) && !isunder(c)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool IsUppercaseWithUnderscores(std::string_view name)
+{
+    if (name.empty()) {
+        return true;
+    }
+
+    if (isdigit(name[0])) {
+        return false;
+    }
+
+    for (auto c: name) {
+        if (!isupper(c) && !isdigit(c) && !isunder(c)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool IsCamelCase(std::string_view name)
+{
+    if (name.empty()) {
+        return true;
+    }
+
+    if (isdigit(name[0]) || !isupper(name[0])) {
+        return false;
+    }
+
+    bool prevCharIsUpper = false;
+
+    for (auto c: name) {
+        if (isupper(c)) {
+            if (prevCharIsUpper) {
+                return false;
+            } else {
+                prevCharIsUpper = true;
+            }
+        } else if (islower(c) || isdigit(c)) {
+            prevCharIsUpper = false;
+        } else {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 bool InitCanonicalPathToExistingDirectory(std::filesystem::path& path, const std::string& dir)

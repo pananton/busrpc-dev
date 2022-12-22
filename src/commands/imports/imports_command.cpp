@@ -87,7 +87,7 @@ std::error_code ImportsCommand::tryExecuteImpl(std::ostream& out, std::ostream& 
     } catch (const std::filesystem::filesystem_error&) { }
 
     if (projectPath.empty()) {
-        ecol.add(ImportsErrc::Project_Dir_Does_Not_Exist, std::make_pair("projectDir", args().projectDir()));
+        ecol.add(ImportsErrc::Project_Dir_Does_Not_Exist, std::make_pair("dir", args().projectDir()));
         return ecol.majorError()->code;
     }
 

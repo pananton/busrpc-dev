@@ -8,15 +8,13 @@ class NamespaceEntityTest: public ::testing::Test {
 protected:
     void SetUp() override
     {
-        project_ = std::make_shared<Project>();
-        auto api = project_->addApi();
-
+        auto api = project_.addApi();
         api_ = api;
         ns_ = api->addNamespace("namespace");
     }
 
 protected:
-    std::shared_ptr<Project> project_;
+    Project project_;
     const Api* api_ = nullptr;
     Namespace* ns_ = nullptr;
 };

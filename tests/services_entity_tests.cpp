@@ -8,12 +8,11 @@ class ServicesEntityTest: public ::testing::Test {
 protected:
     void SetUp() override
     {
-        project_ = std::make_shared<Project>();
-        services_ = project_->addServices();
+        services_ = project_.addServices();
     }
 
 protected:
-    std::shared_ptr<Project> project_;
+    Project project_;
     Services* services_ = nullptr;
 };
 
@@ -23,8 +22,8 @@ TEST_F(ServicesEntityTest, Services_Entity_Is_Correctly_Initialized_When_Created
     EXPECT_EQ(services_->name(), Services_Entity_Name);
     EXPECT_EQ(services_->dir(), std::filesystem::path(Services_Entity_Name));
     EXPECT_EQ(services_->dname(), std::string(Project_Entity_Name) + "." + Services_Entity_Name);
-    EXPECT_EQ(services_->parent(), project_.get());
-    EXPECT_EQ(static_cast<const Services*>(services_)->parent(), project_.get());
+    EXPECT_EQ(services_->parent(), &project_);
+    EXPECT_EQ(static_cast<const Services*>(services_)->parent(), &project_);
     ASSERT_EQ(services_->docs().description().size(), 1);
     EXPECT_EQ(services_->docs().description()[0], Services_Entity_Description);
 }

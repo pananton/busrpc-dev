@@ -8,16 +8,15 @@ class EnumEntityTest: public ::testing::Test {
 protected:
     void SetUp() override
     {
-        project_ = std::make_shared<Project>();
         docs_ = EntityDocs({"Brief description.", "Description"}, {{"cmd", {"cmd value"}}});
-        auto api = project_->addApi();
+        auto api = project_.addApi();
 
         api_ = api;
         enum_ = api->addEnum("Enum", "enum.proto", docs_);
     }
 
 protected:
-    std::shared_ptr<Project> project_;
+    Project project_;
     EntityDocs docs_;
     const Api* api_ = nullptr;
     Enum* enum_ = nullptr;

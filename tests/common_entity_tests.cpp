@@ -453,4 +453,43 @@ TEST(CommonEntityTest, IsScalarFieldType_Returns_False_For_Unknown_Type)
 {
     EXPECT_FALSE(IsScalarFieldType(static_cast<FieldTypeId>(0)));
 }
+
+TEST(CommonEntityTest, IsEncodableField_Returns_True_For_Non_Floating_Scalars_And_Enum)
+{
+    EXPECT_TRUE(IsEncodableField(FieldTypeId::Int32));
+    EXPECT_TRUE(IsEncodableField(FieldTypeId::String));
+    EXPECT_TRUE(IsEncodableField(FieldTypeId::Bytes));
+    EXPECT_TRUE(IsEncodableField(FieldTypeId::Enum));
+
+    EXPECT_TRUE(
+        IsEncodableField(FieldTypeId::Int32, FieldFlags::Optional | FieldFlags::Observable | FieldFlags::Hashed));
+    EXPECT_TRUE(
+        IsEncodableField(FieldTypeId::String, FieldFlags::Optional | FieldFlags::Observable | FieldFlags::Hashed));
+    EXPECT_TRUE(
+        IsEncodableField(FieldTypeId::Bytes, FieldFlags::Optional | FieldFlags::Observable | FieldFlags::Hashed));
+    EXPECT_TRUE(
+        IsEncodableField(FieldTypeId::Enum, FieldFlags::Optional | FieldFlags::Observable | FieldFlags::Hashed));
+}
+
+TEST(CommonEntityTest, IsEncodableField_Returns_False_For_Non_Scalar_Types_Except_Enum)
+{
+    EXPECT_FALSE(IsEncodableField(FieldTypeId::Map));
+    EXPECT_FALSE(IsEncodableField(FieldTypeId::Message));
+}
+
+TEST(CommonEntityTest, IsEncodableField_Returns_False_For_Floating_Point_Types)
+{
+    EXPECT_FALSE(IsEncodableField(FieldTypeId::Float));
+    EXPECT_FALSE(IsEncodableField(FieldTypeId::Double));
+}
+
+TEST(CommonEntityTest, IsEncodableField_Returns_False_For_Repeated_Types)
+{
+    EXPECT_FALSE(IsEncodableField(FieldTypeId::Int32, FieldFlags::Repeated));
+}
+
+TEST(CommonEntityTest, IsEncodableField_Returns_False_For_Types_Which_Are_Part_Of_Oneof)
+{
+    EXPECT_FALSE(IsEncodableField(FieldTypeId::Int32, FieldFlags::None, "oneofName"));
+}
 }} // namespace busrpc::test

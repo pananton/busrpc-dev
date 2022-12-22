@@ -9,10 +9,9 @@ class StructEntityTest: public ::testing::Test {
 protected:
     void SetUp() override
     {
-        project_ = std::make_shared<Project>();
         docs_ = EntityDocs({"Brief description.", "Description"}, {{"cmd", {"cmd value"}}});
 
-        auto api = project_->addApi();
+        auto api = project_.addApi();
         auto ns = api->addNamespace("namespace");
         auto cls = ns->addClass("class");
         auto method = cls->addMethod("method");
@@ -22,7 +21,7 @@ protected:
     }
 
 protected:
-    std::shared_ptr<Project> project_;
+    Project project_;
     EntityDocs docs_;
     const Method* method_ = nullptr;
     Struct* structure_ = nullptr;
@@ -372,5 +371,24 @@ TEST_F(StructEntityTest, Adding_Field_Throws_Name_Conflict_Error_If_Field_Number
                                    EntityTypeId::Struct,
                                    structure_->dname(),
                                    "field5");
+}
+
+TEST_F(StructEntityTest, Structure_Is_Encodable_If_All_Fields_Are_Encodable)
+{
+    structure_->addScalarField(
+        "field1", 1, FieldTypeId::Int32, FieldFlags::Optional | FieldFlags::Observable | FieldFlags::Hashed);
+    structure_->addEnumField("field2", 2, "MyEnum", FieldFlags::Optional | FieldFlags::Observable | FieldFlags::Hashed);
+
+    EXPECT_TRUE(structure_->isEncodable());
+}
+
+TEST_F(StructEntityTest, Structure_Is_Not_Encodable_If_Any_Field_Is_Not_Encodable)
+{
+    structure_->addScalarField(
+        "field1", 1, FieldTypeId::Int32, FieldFlags::Optional | FieldFlags::Observable | FieldFlags::Hashed);
+    structure_->addEnumField("field2", 2, "MyEnum", FieldFlags::Optional | FieldFlags::Observable | FieldFlags::Hashed);
+    structure_->addStructField("field3", 3, "MyStruct");
+
+    EXPECT_FALSE(structure_->isEncodable());
 }
 }} // namespace busrpc::test

@@ -13,15 +13,13 @@ class ServiceEntityTest: public ::testing::Test {
 protected:
     void SetUp() override
     {
-        project_ = std::make_shared<Project>();
-        auto services = project_->addServices();
-
+        auto services = project_.addServices();
         services_ = services;
         service_ = services->addService("service");
     }
 
 protected:
-    std::shared_ptr<Project> project_;
+    Project project_;
     const Services* services_ = nullptr;
     Service* service_ = nullptr;
 };
@@ -152,6 +150,36 @@ TEST_F(ServiceEntityTest, Implemented_Method_Documentation_Is_Correctly_Initiali
     EXPECT_EQ(implMethod.acceptedParams().size(), 2);
 }
 
+TEST_F(ServiceEntityTest, Adding_Field_To_Implements_Struct_Does_Not_Overwrite_Implemented_Method_If_It_Already_Exist)
+{
+    Struct* desc = nullptr;
+    Struct* impl = nullptr;
+    std::string methodName =
+        std::string(Project_Entity_Name) + "." + std::string(Api_Entity_Name) + ".namespace.class.method1";
+
+    ASSERT_TRUE(desc = service_->addStruct(GetPredefinedStructName(StructTypeId::Service_Desc), "service.proto"));
+    ASSERT_TRUE(impl = desc->addStruct(GetPredefinedStructName(StructTypeId::Service_Implements)));
+
+    EXPECT_TRUE(impl->addStructField("field1",
+                                     1,
+                                     methodName + "." + GetPredefinedStructName(StructTypeId::Method_Desc),
+                                     FieldFlags::None,
+                                     "",
+                                     EntityDocs("First.")));
+    ASSERT_NE(service_->implementedMethods().find(methodName), service_->implementedMethods().end());
+    EXPECT_EQ(service_->implementedMethods().find(methodName)->docs().brief(), "First.");
+
+    EXPECT_TRUE(impl->addStructField("field2",
+                                     2,
+                                     methodName + "." + GetPredefinedStructName(StructTypeId::Method_Desc),
+                                     FieldFlags::None,
+                                     "",
+                                     EntityDocs("Second.")));
+    ASSERT_NE(service_->implementedMethods().find(methodName), service_->implementedMethods().end());
+    EXPECT_EQ(service_->implementedMethods().find(methodName)->docs().brief(), "First.");
+    EXPECT_EQ(service_->implementedMethods().size(), 1);
+}
+
 TEST_F(ServiceEntityTest, Adding_Fields_To_Invokes_Struct_Creates_Invoked_Method)
 {
     Struct* desc = nullptr;
@@ -200,5 +228,35 @@ TEST_F(ServiceEntityTest, Invoked_Method_Documentation_Is_Correctly_Initialized)
     EXPECT_EQ(invkMethod.docs().description(), docs.description());
     EXPECT_EQ(invkMethod.docs().brief(), docs.brief());
     EXPECT_EQ(invkMethod.docs().commands(), docs.commands());
+}
+
+TEST_F(ServiceEntityTest, Adding_Field_To_Invokes_Struct_Does_Not_Overwrite_Invoked_Method_If_It_Already_Exist)
+{
+    Struct* desc = nullptr;
+    Struct* invk = nullptr;
+    std::string methodName =
+        std::string(Project_Entity_Name) + "." + std::string(Api_Entity_Name) + ".namespace.class.method1";
+
+    ASSERT_TRUE(desc = service_->addStruct(GetPredefinedStructName(StructTypeId::Service_Desc), "service.proto"));
+    ASSERT_TRUE(invk = desc->addStruct(GetPredefinedStructName(StructTypeId::Service_Invokes)));
+
+    EXPECT_TRUE(invk->addStructField("field1",
+                                     1,
+                                     methodName + "." + GetPredefinedStructName(StructTypeId::Method_Desc),
+                                     FieldFlags::None,
+                                     "",
+                                     EntityDocs("First.")));
+    ASSERT_NE(service_->invokedMethods().find(methodName), service_->invokedMethods().end());
+    EXPECT_EQ(service_->invokedMethods().find(methodName)->docs().brief(), "First.");
+
+    EXPECT_TRUE(invk->addStructField("field2",
+                                     2,
+                                     methodName + "." + GetPredefinedStructName(StructTypeId::Method_Desc),
+                                     FieldFlags::None,
+                                     "",
+                                     EntityDocs("Second.")));
+    ASSERT_NE(service_->invokedMethods().find(methodName), service_->invokedMethods().end());
+    EXPECT_EQ(service_->invokedMethods().find(methodName)->docs().brief(), "First.");
+    EXPECT_EQ(service_->invokedMethods().size(), 1);
 }
 }} // namespace busrpc::test

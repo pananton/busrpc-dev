@@ -145,8 +145,8 @@ constexpr const char* GetEntityTypeIdStr(EntityTypeId id)
     case EntityTypeId::Enum: return "enum";
     case EntityTypeId::Constant: return "constant";
     case EntityTypeId::Service: return "service";
-    case EntityTypeId::Implemented_Method: return "implemented method";
-    case EntityTypeId::Invoked_Method: return "invoked method";
+    case EntityTypeId::Implemented_Method: return "implemented_method";
+    case EntityTypeId::Invoked_Method: return "invoked_method";
     default: return nullptr;
     }
 }
@@ -427,5 +427,19 @@ constexpr const char* GetFieldTypeIdStr(FieldTypeId id)
     case Message: return "message";
     default: return nullptr;
     }
+}
+
+/// Return \c true if field with the specified \a type, \a flags and \a oneofName can be encoded.
+/// \note Whether \ref FieldTypeId::Message field can be encoded depends on the it's nested fields. This function
+///       always returns \c false if \a type is \ref FieldTypeId::Message.
+/// \note See [specification](https://github.com/pananton/busrpc-spec) for definition of encodable types.
+constexpr bool IsEncodableField(FieldTypeId type, FieldFlags flags = FieldFlags::None, std::string_view oneofName = "")
+{
+    if (!oneofName.empty() || CheckAll(flags, FieldFlags::Repeated)) {
+        return false;
+    }
+
+    return type == FieldTypeId::Enum ||
+           (IsScalarFieldType(type) && type != FieldTypeId::Float && type != FieldTypeId::Double);
 }
 } // namespace busrpc

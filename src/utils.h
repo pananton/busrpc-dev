@@ -2,6 +2,7 @@
 
 #include <filesystem>
 #include <string>
+#include <string_view>
 #include <vector>
 
 /// \file utils.h Utilities.
@@ -19,7 +20,22 @@ std::vector<std::string> SplitString(const std::string& str,
 /// Remove leading and trailing spaces/tabs from \a str.
 std::string TrimString(const std::string& str);
 
-/// Initialize \a path to a canonical path to the existing directory.
+/// Return \c true if \a name consists of alphas in lowercase, digits and underscores.
+/// \note Digit can't be used as starting character.
+/// \note Because empty string does not have any prohibited characters, this function returns \c true for it.
+bool IsLowercaseWithUnderscores(std::string_view name);
+
+/// Return \c true if \a name consists of alphas in uppercase, digits and underscores.
+/// \note Digit can't be used as starting character.
+/// \note Because empty string does not have any prohibited characters, this function returns \c true for it.
+bool IsUppercaseWithUnderscores(std::string_view name);
+
+/// Return \c true if \a name consists of lower- and uppercase alphas (with single initial uppercase alpha) and digits.
+/// \note Digit can't be used as starting character.
+/// \note Because empty string does not have any prohibited characters, this function returns \c true for it.
+bool IsCamelCase(std::string_view name);
+
+    /// Initialize \a path to a canonical path to the existing directory.
 /// \throws std::filesystem::filesystem_error
 /// \note Value of \a path is not changed if any error occurs.
 /// \note If \a dir is empty, then canonical path to current directory is returned.

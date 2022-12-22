@@ -48,6 +48,17 @@ Struct::Struct(CompositeEntity* parent,
     }
 }
 
+bool Struct::isEncodable() const noexcept
+{
+    for (const auto& field : fields_) {
+        if (!IsEncodableField(field->fieldType(), field->flags(), field->oneofName())) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 Field* Struct::addScalarField(const std::string& name,
                               int32_t number,
                               FieldTypeId type,

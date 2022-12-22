@@ -38,6 +38,12 @@ public:
     /// Flag indicating whether structure data is hashed when used as a busrpc endpoint component.
     bool isHashed() const noexcept { return CheckAll(flags_, StructFlags::Hashed); }
 
+    /// Flag indicating whether structure is encodable.
+    /// \note See [specification](https://github.com/pananton/busrpc-spec) for definition of encodable types.
+    /// \note Structure encodability depends on added fields, so generally you should call it when structure
+    ///       is fully initialized and no more fields will be added.
+    bool isEncodable() const noexcept;
+
     /// Structure fields ordered by name.
     const EntityContainer<Field>& fields() const noexcept { return fields_; }
 

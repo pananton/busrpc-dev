@@ -52,6 +52,7 @@ TEST(ErrorCollectorTest, add_Correctly_Initializes_Error_Description)
     ecol.add(ec, "test", std::make_pair("var", 1001));
 
     ASSERT_TRUE(ecol.majorError());
+    EXPECT_NE(ecol.majorError()->description.find(ec.category().name()), std::string::npos);
     EXPECT_NE(ecol.majorError()->description.find(ec.message()), std::string::npos);
     EXPECT_NE(ecol.majorError()->description.find("test"), std::string::npos);
     EXPECT_NE(ecol.majorError()->description.find("var='1001'"), std::string::npos);
