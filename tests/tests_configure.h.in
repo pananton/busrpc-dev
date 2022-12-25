@@ -1,0 +1,4 @@
+#pragma once
+
+#define BUSRPC_TESTS_PROTOBUF_ROOT "@BUSRPC_TESTS_PROTOBUF_ROOT@"
+

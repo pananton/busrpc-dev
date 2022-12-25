@@ -7,6 +7,7 @@
 namespace busrpc {
 
 namespace {
+
 class SpecErrorCategory: public std::error_category {
 public:
     const char* name() const noexcept override { return "specification error"; }
@@ -16,6 +17,9 @@ public:
         using enum SpecErrc;
 
         switch (static_cast<SpecErrc>(code)) {
+        case Invalid_Entity: return "Invalid entity";
+        case Multiple_Definitions: return "Entity is defined more than once.";
+        case Unexpected_Package: return "Entity is defined in unexpected protobuf package";
         case Missing_Api: return "Project does not define an API";
         case Missing_Builtin: return "Busrpc built-in type could not be found";
         case Nonconforming_Builtin: return "Busrpc built-in type does not conform with specification";
@@ -26,7 +30,6 @@ public:
         case Unknown_Type: return "Unknown structure field type";
         case Unexpected_Type: return "Unexpected structure field type";
         case Unknown_Method: return "Unknown method";
-        case Multiple_Definitions: return "Multiple definitions";
         default: return "Unknown error";
         }
     }
@@ -128,7 +131,7 @@ ErrorCollector Project::check() const
 {
     SeverityOrder orderFunc = [](std::error_code lhs, std::error_code rhs) {
         if (lhs.category() == rhs.category()) {
-            return true;
+            return false;
         }
 
         if (rhs.category() == spec_error_category() ||
@@ -329,7 +332,7 @@ void Project::checkResultMessage(const Struct* result, ErrorCollector& ecol) con
                 ecol.add(SpecErrc::Nonconforming_Builtin,
                          std::make_pair("builtin", typeName),
                          "'" + std::string(Result_Message_Exception_Field_Name) + "' field type should be '" +
-                             GetPredefinedStructName(StructTypeId::Method_Exception));
+                             GetPredefinedStructName(StructTypeId::Method_Exception) + "'");
             }
         }
 
@@ -374,7 +377,7 @@ void Project::checkNamespaceDesc(const Namespace* ns, ErrorCollector& ecol) cons
     auto desc = ns->descriptor();
 
     if (!desc) {
-        ecol.add(SpecErrc::Missing_Descriptor, std::make_pair("namespace", ns->dname()));
+        ecol.add(SpecErrc::Missing_Descriptor, std::make_pair(GetEntityTypeIdStr(ns->type()), ns->dname()));
     } else if (desc->file().filename() != Namespace_Desc_File) {
         ecol.add(SpecErrc::Missing_Descriptor,
                  std::make_pair(GetEntityTypeIdStr(ns->type()), ns->dname()),
@@ -382,7 +385,7 @@ void Project::checkNamespaceDesc(const Namespace* ns, ErrorCollector& ecol) cons
     } else if (!desc->fields().empty() || !desc->structs().empty() || !desc->enums().empty()) {
         ecol.add(SpecWarn::Unexpected_Nested_Entity,
                  std::make_pair(GetEntityTypeIdStr(ns->type()), ns->dname()),
-                 "modifications to the descriptor format are discouraged");
+                 "deviations from the descriptor format defined in the specification are discouraged");
     }
 }
 
@@ -428,7 +431,7 @@ void Project::checkClassDesc(const Class* cls, ErrorCollector& ecol) const
         if (!desc->fields().empty() || hasUnexpectedStructs || !desc->enums().empty()) {
             ecol.add(SpecWarn::Unexpected_Nested_Entity,
                      std::make_pair(GetEntityTypeIdStr(cls->type()), cls->dname()),
-                     "modifications to the descriptor format are discouraged");
+                     "deviations from the descriptor format defined in the specification are discouraged");
         }
     }
 }
@@ -461,13 +464,8 @@ void Project::checkMethodDesc(const Method* method, ErrorCollector& ecol) const
 {
     auto desc = method->descriptor();
 
-    if (method->parent()->isStatic() && !method->isStatic()) {
-        ecol.add(SpecErrc::Not_Static_Method,
-                 std::make_pair(GetEntityTypeIdStr(method->type()), method->dname()),
-                 "static class can contain only static methods");
-    }
     if (!desc) {
-        ecol.add(SpecErrc::Missing_Descriptor, std::make_pair("method", method->dname()));
+        ecol.add(SpecErrc::Missing_Descriptor, std::make_pair(GetEntityTypeIdStr(method->type()), method->dname()));
     } else if (desc->file().filename() != Method_Desc_File) {
         ecol.add(SpecErrc::Missing_Descriptor,
                  std::make_pair(GetEntityTypeIdStr(method->type()), method->dname()),
@@ -491,7 +489,7 @@ void Project::checkMethodDesc(const Method* method, ErrorCollector& ecol) const
         if (!desc->fields().empty() || hasUnexpectedStructs || !desc->enums().empty()) {
             ecol.add(SpecWarn::Unexpected_Nested_Entity,
                      std::make_pair(GetEntityTypeIdStr(method->type()), method->dname()),
-                     "modifications to the descriptor format are discouraged");
+                     "deviations from the descriptor format defined in the specification are discouraged");
         }
     }
 }
@@ -527,7 +525,7 @@ void Project::checkServiceDesc(const Service* service, ErrorCollector& ecol) con
     auto desc = service->descriptor();
 
     if (!desc) {
-        ecol.add(SpecErrc::Missing_Descriptor, std::make_pair("service", service->dname()));
+        ecol.add(SpecErrc::Missing_Descriptor, std::make_pair(GetEntityTypeIdStr(service->type()), service->dname()));
     } else if (desc->file().filename() != Service_Desc_File) {
         ecol.add(SpecErrc::Missing_Descriptor,
                  std::make_pair(GetEntityTypeIdStr(service->type()), service->dname()),
@@ -547,7 +545,7 @@ void Project::checkServiceDesc(const Service* service, ErrorCollector& ecol) con
         if (!desc->fields().empty() || hasUnexpectedStructs || !desc->enums().empty()) {
             ecol.add(SpecWarn::Unexpected_Nested_Entity,
                      std::make_pair(GetEntityTypeIdStr(service->type()), service->dname()),
-                     "modifications to the descriptor format are discouraged");
+                     "deviations from the descriptor format defined in the specification are discouraged");
         }
     }
 }
@@ -643,7 +641,7 @@ void Project::checkStruct(const Struct* structure, ErrorCollector& ecol) const
     if (!IsCamelCase(structure->name())) {
         ecol.add(StyleErrc::Invalid_Name_Format,
                  std::make_pair(GetEntityTypeIdStr(structure->type()), structure->dname()),
-                 "name should consists of lower- and uppercase letters formatted as CamelCase and digits");
+                 "name should consists of lower and uppercase letters formatted as CamelCase and digits");
     }
 
     for (const auto& field: structure->fields()) {
@@ -702,7 +700,7 @@ void Project::checkField(const Field* field, ErrorCollector& ecol) const
         if (!field->dir().string().starts_with(nonScalarFieldTypeEntity->dir().string())) {
             ecol.add(SpecErrc::Not_Accessible_Type,
                      std::make_pair(GetEntityTypeIdStr(field->type()), field->dname()),
-                     "referenced type is not accessible in the current scope");
+                     "referenced type '" + nonScalarFieldTypeName + "'is not accessible in the current scope");
         }
     }
 
@@ -746,7 +744,7 @@ void Project::checkEnum(const Enum* enumeration, ErrorCollector& ecol) const
     if (!IsCamelCase(enumeration->name())) {
         ecol.add(StyleErrc::Invalid_Name_Format,
                  std::make_pair(GetEntityTypeIdStr(enumeration->type()), enumeration->dname()),
-                 "name should consists of lower- and uppercase letters formatted as CamelCase and digits");
+                 "name should consists of lower and uppercase letters formatted as CamelCase and digits");
     }
 
     for (const auto& constant: enumeration->constants()) {

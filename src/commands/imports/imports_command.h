@@ -41,9 +41,13 @@ std::error_code make_error_code(ImportsErrc errc);
 class ImportsArgs {
 public:
     /// Create \c imports command arguments.
-    ImportsArgs(std::vector<std::string> files = {}, std::string projectDir = {}, bool onlyDeps = false):
+    ImportsArgs(std::vector<std::string> files = {},
+                std::string projectDir = {},
+                std::string protobufRoot = {},
+                bool onlyDeps = false):
         files_(std::move(files)),
         projectDir_(std::move(projectDir)),
+        protobufRoot_(std::move(protobufRoot)),
         onlyDeps_(onlyDeps)
     { }
 
@@ -54,12 +58,18 @@ public:
     /// \note If empty, working directory is assumed.
     const std::string& projectDir() const noexcept { return projectDir_; }
 
+    /// Root directory for protobuf built-in '.proto' files.
+    /// \note This is the root directory for such files as 'google/protobuf/descriptor.proto',
+    ///       'google/protobuf/any.proto', etc.
+    const std::string& protobufRoot() const noexcept { return protobufRoot_; }
+
     /// Flag indicating whether \ref files themselves should not be outputted.
     bool onlyDeps() const noexcept { return onlyDeps_; }
 
 private:
     std::vector<std::string> files_;
     std::string projectDir_;
+    std::string protobufRoot_;
     bool onlyDeps_;
 };
 

@@ -310,6 +310,9 @@ TEST_F(ProjectCheckTest, Specification_Error_Codes_Have_Non_Empty_Descriptions)
 {
     using enum SpecErrc;
 
+    EXPECT_FALSE(spec_error_category().message(static_cast<int>(Invalid_Entity)).empty());
+    EXPECT_FALSE(spec_error_category().message(static_cast<int>(Multiple_Definitions)).empty());
+    EXPECT_FALSE(spec_error_category().message(static_cast<int>(Unexpected_Package)).empty());
     EXPECT_FALSE(spec_error_category().message(static_cast<int>(Missing_Api)).empty());
     EXPECT_FALSE(spec_error_category().message(static_cast<int>(Missing_Builtin)).empty());
     EXPECT_FALSE(spec_error_category().message(static_cast<int>(Nonconforming_Builtin)).empty());
@@ -320,7 +323,6 @@ TEST_F(ProjectCheckTest, Specification_Error_Codes_Have_Non_Empty_Descriptions)
     EXPECT_FALSE(spec_error_category().message(static_cast<int>(Unknown_Type)).empty());
     EXPECT_FALSE(spec_error_category().message(static_cast<int>(Unexpected_Type)).empty());
     EXPECT_FALSE(spec_error_category().message(static_cast<int>(Unknown_Method)).empty());
-    EXPECT_FALSE(spec_error_category().message(static_cast<int>(Multiple_Definitions)).empty());
 }
 
 TEST_F(ProjectCheckTest, Unknown_Specification_Error_Code_Has_Non_Empty_Description)
@@ -1375,16 +1377,19 @@ TEST_F(ProjectCheckTest, Default_Severity_Of_Errors_Is_SpecErrc_DocErrc_SpecWarn
         auto api = project.addApi();
         InitApi(api);
 
-        auto ns = api->addNamespace("Namespace"); // non-conformat name (should be lowercase)
-        auto desc = ns->addStruct(                // unexpected file (should be 'namespace.proto'), undocumented entity
+        auto ns = api->addNamespace("Namespace"); // non-conformat name (style error)
+        auto desc = ns->addStruct(                // unexpected file (spec error), undocumented entity (doc error)
             GetPredefinedStructName(StructTypeId::Namespace_Desc),
-            "1.proto",
-            StructFlags::None);
-        desc->addStruct("MyStruct", StructFlags::None, EntityDocs("My structure.")); // unexpected nested type
+            "1.proto");
+        ns->addClass("class")->addStruct(GetPredefinedStructName(StructTypeId::Class_Desc),
+                                         "1.proto"); // unexpected file (spec error)
+        desc->addStruct(
+            "MyStruct", StructFlags::None, EntityDocs("My structure.")); // unexpected nested type (spec warn)
 
         ErrorCollector ecol = project.check();
 
         EXPECT_EQ(ecol.majorError()->code.category(), spec_error_category());
+        EXPECT_NE(ecol.majorError()->description.find("namespace="), std::string::npos);
     }
 
     {

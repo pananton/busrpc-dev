@@ -7,6 +7,7 @@
 
 #include <filesystem>
 #include <string>
+#include <system_error>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -23,17 +24,19 @@ class Service;
 
 /// Busrpc [specification](https://github.com/pananton/busrpc-spec)-related error codes.
 enum class SpecErrc {
-    Missing_Api = 1,           ///< Project does not define an API.
-    Missing_Builtin = 2,       ///< One of the busrpc built-in types is missing.
-    Nonconforming_Builtin = 3, ///< One of the busrpc built-in types does not conform with the specification.
-    Missing_Descriptor = 4,    ///< Entity (namespace, class, method or service) does not have a descriptor.
-    Not_Static_Method = 5,     ///< Static class method is not marked as static.
-    Not_Encodable_Type = 6,    ///< Entity must be encodable as specified in the busrpc specification.
-    Not_Accessible_Type = 7,   ///< Type is not accessible in the current scope.
-    Unknown_Type = 8,          ///< Type of structure/enumeration field is unknown.
-    Unexpected_Type = 9,       ///< Entity type of structure/enumeration field is not as expected.
-    Unknown_Method = 10,       ///< Service \c Implements or \c Invokes type references unknown method.
-    Multiple_Definitions = 11, ///< Entity is defined more than once.
+    Invalid_Entity = 1,        ///< Invalid entity.
+    Multiple_Definitions = 2,  ///< Entity is defined more than once.
+    Unexpected_Package = 3,    ///< Entity is defined in unexpected protobuf package (should match distinguished name).
+    Missing_Api = 4,           ///< Project does not define an API.
+    Missing_Builtin = 5,       ///< One of the busrpc built-in types is missing.
+    Nonconforming_Builtin = 6, ///< One of the busrpc built-in types does not conform with the specification.
+    Missing_Descriptor = 7,    ///< Entity (namespace, class, method or service) does not have a descriptor.
+    Not_Static_Method = 8,     ///< Static class method is not marked as static.
+    Not_Encodable_Type = 9,    ///< Entity must be encodable as specified in the busrpc specification.
+    Not_Accessible_Type = 10,  ///< Type is not accessible in the current scope.
+    Unknown_Type = 11,         ///< Type of structure field is unknown.
+    Unexpected_Type = 12,      ///< Entity type of structure field is not as expected.
+    Unknown_Method = 13        ///< Service \c Implements or \c Invokes type references unknown method.
 };
 
 /// Busrpc [specification](https://github.com/pananton/busrpc-spec)-related warnings.
@@ -157,6 +160,10 @@ private:
 
     std::unordered_map<std::string, const Entity*> entityDirectory_;
 };
+
+/// Pointer to \ref Project.
+using ProjectPtr = std::shared_ptr<Project>;
+
 } // namespace busrpc
 
 namespace std {

@@ -38,6 +38,7 @@ struct HelpOptions {
 struct ImportsOptions {
     std::vector<std::string> files = {};
     std::string projectDir = {};
+    std::string protobufRoot = {};
     bool onlyDeps = false;
 };
 
@@ -54,6 +55,14 @@ void AddProjectDirOption(CLI::App& app, std::string& projectDir)
     app.add_option("-r,--root", projectDir)
         ->description("Busrpc project directory (the one containing 'api/' and 'services/' subdirectories)")
         ->envname("BUSRPC_PROJECT_DIR")
+        ->check(CLI::ExistingDirectory);
+}
+
+void AddProtobufRootOption(CLI::App& app, std::string& protobufRoot)
+{
+    app.add_option("-p,--protobuf-root", protobufRoot)
+        ->description("Root directory for protobuf built-in '.proto' files ('google/protobuf/descriptor.proto', etc.)")
+        ->envname("BUSRPC_PROTOBUF_ROOT")
         ->check(CLI::ExistingDirectory);
 }
 
@@ -77,8 +86,10 @@ void DefineCommand(CLI::App& app, const std::function<void(CheckArgs)>& callback
     app.description("Check API for conformance to the busrpc specification");
 
     app.final_callback([callback, optsPtr]() {
-        callback(
-            {std::move(optsPtr->projectDir), optsPtr->skipDocsChecks, optsPtr->skipStyleChecks, optsPtr->warningAsError});
+        callback({std::move(optsPtr->projectDir),
+                  optsPtr->skipDocsChecks,
+                  optsPtr->skipStyleChecks,
+                  optsPtr->warningAsError});
     });
 
     AddProjectDirOption(app, optsPtr->projectDir);
@@ -144,10 +155,14 @@ void DefineCommand(CLI::App& app, const std::function<void(ImportsArgs)>& callba
     app.positionals_at_end(true);
 
     app.final_callback([callback, optsPtr]() {
-        callback({std::move(optsPtr->files), std::move(optsPtr->projectDir), optsPtr->onlyDeps});
+        callback({std::move(optsPtr->files),
+                  std::move(optsPtr->projectDir),
+                  std::move(optsPtr->protobufRoot),
+                  optsPtr->onlyDeps});
     });
 
     AddProjectDirOption(app, optsPtr->projectDir);
+    AddProtobufRootOption(app, optsPtr->protobufRoot);
     AddProtobufFilesPositionalOption(app, optsPtr->files);
 
     app.add_flag("--only-deps",

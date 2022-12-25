@@ -46,7 +46,19 @@ inline constexpr const char* Result_Message_Retval_Field_Name = "retval";
 /// Predefined field name for the exception in the result message type.
 inline constexpr const char* Result_Message_Exception_Field_Name = "exception";
 
-    /// Predefined \ref Project description.
+/// Protobuf custom message option for marking structure as hashed for the purpose of the busrpc endpoint encoding.
+inline constexpr const char* Message_Option_Hashed = "hashed_struct";
+
+/// Protobuf custom field option for marking field as observable.
+inline constexpr const char* Field_Option_Observable = "observable";
+
+/// Protobuf custom field option for marking field as hashed for the purpose of the busrpc endpoint encoding.
+inline constexpr const char* Field_Option_Hashed = "hashed";
+
+/// Protobuf custom field option for setting default field value.
+inline constexpr const char* Field_Option_Default_Value = "default_value";
+
+/// Predefined \ref Project description.
 inline constexpr const char* Project_Entity_Description = "Busrpc project.";
 
 /// Predefined \ref Api description.

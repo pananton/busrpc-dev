@@ -1,6 +1,7 @@
 #include "app.h"
 #include "commands/help/help_command.h"
 #include "commands/imports/imports_command.h"
+#include "tests_configure.h"
 #include "utils.h"
 #include "utils/common.h"
 #include "utils/file_utils.h"
@@ -229,14 +230,11 @@ TEST(ImportsCommandTest, Command_Ignores_Imported_System_Files)
     std::string file2 = "syntax = \"proto3\";"
                         "package test;"
                         "import \"file1.proto\";";
-    std::string descriptorTestFile = "syntax = \"proto3\";"
-                                     "package test;";
 
     tmp.writeFile("file1.proto", file1);
     tmp.writeFile("file2.proto", file2);
-    tmp.writeFile("google/protobuf/descriptor.proto", descriptorTestFile);
 
-    EXPECT_NO_THROW(ImportsCommand({{"file2.proto"}, "tmp"}).execute(out, err));
+    EXPECT_NO_THROW(ImportsCommand({{"file2.proto"}, "tmp", BUSRPC_TESTS_PROTOBUF_ROOT}).execute(out, err));
     EXPECT_TRUE(err.str().empty());
 
     auto output = SplitString(out.str());
@@ -268,8 +266,8 @@ TEST(ImportsCommandTest, Command_Does_Not_Output_Original_Files_If_Only_Deps_Fla
     tmp.writeFile("file3.proto", file3);
     tmp.writeFile("file4.proto", file4);
 
-    EXPECT_NO_THROW(
-        ImportsCommand({{"file3.proto", "file2.proto", "file4.proto", "file3.proto"}, "tmp", true}).execute(out, err));
+    EXPECT_NO_THROW(ImportsCommand({{"file3.proto", "file2.proto", "file4.proto", "file3.proto"}, "tmp", "", true})
+                        .execute(out, err));
     EXPECT_TRUE(err.str().empty());
 
     auto output = SplitString(out.str());

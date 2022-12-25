@@ -49,5 +49,4 @@ bool InitCanonicalPathToExistingDirectory(std::filesystem::path& path, const std
 bool InitRelativePathToExistingFile(std::filesystem::path& path,
                                     const std::string& file,
                                     const std::filesystem::path& root = std::filesystem::current_path());
-
 } // namespace busrpc

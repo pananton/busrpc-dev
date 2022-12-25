@@ -41,8 +41,10 @@ endif()
 if(NOT BUSRPC_USE_EXTERNAL_PROTOBUF)
     include("cmake/FetchProtobuf.cmake")
     fetch_protobuf(${BUSRPC_PROTOBUF_TAG})
+    set(BUSRPC_TESTS_PROTOBUF_ROOT "${protobuf_SOURCE_DIR}/src")
 else()
     find_package(Protobuf REQUIRED)
+    set(BUSRPC_TESTS_PROTOBUF_ROOT "${Protobuf_INCLUDE_DIR}")
 endif()
 
 #----------------------------------------------------------------------------------------------------------------------
@@ -58,6 +60,7 @@ set(sources
     src/error_collector.h
     src/error_collector.cpp
     src/exception.h
+    src/protobuf_error_collector.h
     src/types.h
     src/utils.h
     src/utils.cpp
@@ -112,6 +115,8 @@ target_compile_features(busrpc-obj PUBLIC cxx_std_20)
 
 separate_arguments(warnings NATIVE_COMMAND "${BUSRPC_WARNINGS}")
 target_compile_options(busrpc-obj PUBLIC ${warnings})
+
+
 
 target_include_directories(busrpc-obj
     PUBLIC

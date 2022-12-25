@@ -81,9 +81,14 @@ std::error_code ImportsCommand::tryExecuteImpl(std::ostream& out, std::ostream& 
     std::set<std::string> imports;
     std::set<std::string> ignored;
     std::filesystem::path projectPath;
+    std::filesystem::path protobufPath;
 
     try {
         InitCanonicalPathToExistingDirectory(projectPath, args().projectDir());
+
+        if (!args().protobufRoot().empty()) {
+            InitCanonicalPathToExistingDirectory(protobufPath, args().protobufRoot());
+        }
     } catch (const std::filesystem::filesystem_error&) { }
 
     if (projectPath.empty()) {
@@ -93,6 +98,16 @@ std::error_code ImportsCommand::tryExecuteImpl(std::ostream& out, std::ostream& 
 
     protobuf::compiler::DiskSourceTree sourceTree;
     sourceTree.MapPath("", projectPath.generic_string());
+
+    if (!protobufPath.empty()) {
+        sourceTree.MapPath("", protobufPath.generic_string());
+    }
+
+#ifndef _WIN32
+    sourceTree.MapPath("", "/usr/include");
+    sourceTree.MapPath("", "/usr/local/include");
+#endif
+
     protobuf::compiler::Importer importer(&sourceTree, ecol.getProtobufCollector());
 
     for (const auto& file: args().files()) {

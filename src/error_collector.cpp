@@ -1,40 +1,11 @@
 #include "error_collector.h"
-
-#include <google/protobuf/compiler/importer.h>
+#include "protobuf_error_collector.h"
 
 #include <algorithm>
 
 namespace compiler = google::protobuf::compiler;
 
 namespace busrpc {
-namespace {
-
-class ProtobufErrorCollector: public compiler::MultiFileErrorCollector {
-public:
-    ProtobufErrorCollector(ErrorCollector& collector, std::error_code protobufErrorCode):
-        collector_(collector),
-        protobufErrorCode_(std::move(protobufErrorCode))
-    { }
-
-    ProtobufErrorCollector(const ProtobufErrorCollector&) = delete;
-    ProtobufErrorCollector(ProtobufErrorCollector&&) = delete;
-    ProtobufErrorCollector& operator=(const ProtobufErrorCollector&) = delete;
-    ProtobufErrorCollector& operator=(ProtobufErrorCollector&&) = delete;
-
-    void AddError(const std::string& filename, int line, int column, const std::string& description) override
-    {
-        collector_.add(protobufErrorCode_,
-                       std::make_pair("file", filename),
-                       std::make_pair("line", line),
-                       std::make_pair("column", column),
-                       std::make_pair("description", description));
-    }
-
-private:
-    ErrorCollector& collector_;
-    std::error_code protobufErrorCode_;
-};
-} // namespace
 
 ErrorCollector::ErrorCollector(SeverityOrder orderFunc, std::vector<const std::error_category*> ignoredCategories):
     ErrorCollector(nullptr, std::move(orderFunc), std::move(ignoredCategories))

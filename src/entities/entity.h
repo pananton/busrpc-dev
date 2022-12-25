@@ -53,8 +53,6 @@ public:
     const std::map<std::string, std::vector<std::string>>& commands() const noexcept { return commands_; }
 
 private:
-    std::vector<std::string> trimEmptyLines(const std::vector<std::string>& description);
-
     std::vector<std::string> description_;
     std::string brief_;
     std::map<std::string, std::vector<std::string>> commands_;
@@ -92,7 +90,7 @@ public:
     ///       and \ref Enum representing an \c enum) match fully-qualified names of a corresponding protobuf types.
     const std::string& dname() const noexcept { return dname_; }
 
-    /// Directory where entity is defined.
+    /// Directory where entity is defined, relative to busrpc project directory.
     const std::filesystem::path& dir() const noexcept { return dir_; }
 
     /// Entity documentation.
