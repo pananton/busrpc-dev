@@ -10,7 +10,7 @@ std::string GetFileHeader(const std::string& packageName, const std::vector<std:
     header.append(";\n");
 
     if (!doNotImportMain) {
-        header.append("import \"api/busrpc.proto\";\n");
+        header.append("import \"busrpc.proto\";\n");
     }
 
     for (const auto& file: imports) {
@@ -155,6 +155,8 @@ std::string GetStaticClassDescriptor()
 std::string GetMethodDescriptor()
 {
     return "// Method.\n"
+           "// \\pre Precondition.\n"
+           "// \\post Postcondition.\n"
            "message MethodDesc {\n"
            "  message Params {\n"
            "    // Param 1.\n"
@@ -248,6 +250,7 @@ void CreateMinimalProject(TmpDir& projectDir)
 void CreateTestProject(TmpDir& projectDir)
 {
     CreateMinimalProject(projectDir);
+    projectDir.writeFile("1.proto", GetFileHeader("busrpc") + GetTestEnum() + GetTestStruct());
 
     projectDir.writeFile("api/1.proto", GetFileHeader("busrpc.api") + GetTestEnum() + GetTestStruct());
 
