@@ -17,33 +17,35 @@ fetch_gtest(${BUSRPC_GTEST_TAG})
 configure_file(tests_configure.h.in "${CMAKE_CURRENT_BINARY_DIR}/tests_configure.h")
 
 set(sources
-    #bitwise_enum_tests.cpp
-    #utils_tests.cpp
-    #exception_tests.cpp
-    #error_collector_tests.cpp
-    #entity_docs_tests.cpp
-    #common_entity_tests.cpp
-    #project_entity_tests.cpp
-    #api_entity_tests.cpp
-    #namespace_entity_tests.cpp
-    #class_entity_tests.cpp
-    #method_entity_tests.cpp
-    #enum_entity_tests.cpp
-    #struct_entity_tests.cpp
-    #services_entity_tests.cpp
-    #service_entity_tests.cpp
-    #project_validation_tests.cpp
+    bitwise_enum_tests.cpp
+    utils_tests.cpp
+    exception_tests.cpp
+    error_collector_tests.cpp
+    entity_docs_tests.cpp
+    common_entity_tests.cpp
+    project_entity_tests.cpp
+    api_entity_tests.cpp
+    namespace_entity_tests.cpp
+    class_entity_tests.cpp
+    method_entity_tests.cpp
+    enum_entity_tests.cpp
+    struct_entity_tests.cpp
+    services_entity_tests.cpp
+    service_entity_tests.cpp
+    project_validation_tests.cpp
     parser_tests.cpp
-    #command_tests.cpp
-    #check_command_tests.cpp
-    #gendoc_command_tests.cpp
-    #help_command_tests.cpp
+    command_tests.cpp
+    check_command_tests.cpp
+    gendoc_command_tests.cpp
+    help_command_tests.cpp
     imports_command_tests.cpp
-    #version_command_tests.cpp
+    version_command_tests.cpp
     utils/common.h
     utils/common.cpp
     utils/file_utils.h
-    utils/file_utils.cpp)
+    utils/file_utils.cpp
+    utils/project_utils.h
+    utils/project_utils.cpp)
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${sources})
 
 #----------------------------------------------------------------------------------------------------------------------

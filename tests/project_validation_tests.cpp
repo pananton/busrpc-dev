@@ -7,7 +7,7 @@ namespace busrpc { namespace test {
 template<typename TEntity>
 Struct* AddStructsAndEnums(TEntity* entity)
 {
-    auto parent = entity->parent() && entity->parent()->type() != EntityTypeId::Project ? entity->parent() : nullptr;
+    auto parent = entity->parent();
 
     auto topStruct = entity->addStruct("Struct", "file.proto", StructFlags::None, EntityDocs("Struct."));
     topStruct->addScalarField("field1",
@@ -60,31 +60,31 @@ Struct* AddStructsAndEnums(TEntity* entity)
     return topStruct;
 }
 
-Enum* AddErrc(Api* api)
+Enum* AddErrc(Project* project)
 {
-    auto errc = api->addEnum(Errc_Enum_Name, Busrpc_Builtin_File, EntityDocs("Exception error code."));
+    auto errc = project->addEnum(Errc_Enum_Name, Busrpc_Builtin_File, EntityDocs("Exception error code."));
     errc->addConstant("ERRC_UNEXPECTED", 0, EntityDocs("Unexpected error."));
     errc->addConstant("ERRC_INTERNAL", 10, EntityDocs("Internal error."));
     return errc;
 }
 
-Struct* AddException(Api* api)
+Struct* AddException(Project* project)
 {
-    auto exception = api->addStruct(GetPredefinedStructName(StructTypeId::Method_Exception),
-                                    Busrpc_Builtin_File,
-                                    StructFlags::None,
-                                    EntityDocs("Method exception."));
+    auto exception = project->addStruct(GetPredefinedStructName(StructTypeId::Method_Exception),
+                                        Busrpc_Builtin_File,
+                                        StructFlags::None,
+                                        EntityDocs("Method exception."));
     exception->addEnumField(
-        Exception_Code_Field_Name, 5, api->dname() + ".Errc", FieldFlags::None, "", EntityDocs("Exception code."));
+        Exception_Code_Field_Name, 5, project->dname() + ".Errc", FieldFlags::None, "", EntityDocs("Exception code."));
     return exception;
 }
 
-Struct* AddCallMessage(Api* api)
+Struct* AddCallMessage(Project* project)
 {
-    auto call = api->addStruct(GetPredefinedStructName(StructTypeId::Call_Message),
-                               Busrpc_Builtin_File,
-                               StructFlags::None,
-                               EntityDocs("Call message."));
+    auto call = project->addStruct(GetPredefinedStructName(StructTypeId::Call_Message),
+                                   Busrpc_Builtin_File,
+                                   StructFlags::None,
+                                   EntityDocs("Call message."));
     call->addScalarField(Call_Message_Object_Id_Field_Name,
                          5,
                          FieldTypeId::Bytes,
@@ -102,12 +102,12 @@ Struct* AddCallMessage(Api* api)
     return call;
 }
 
-Struct* AddResultMessage(Api* api)
+Struct* AddResultMessage(Project* project)
 {
-    auto result = api->addStruct(GetPredefinedStructName(StructTypeId::Result_Message),
-                                 Busrpc_Builtin_File,
-                                 StructFlags::None,
-                                 EntityDocs("Call message."));
+    auto result = project->addStruct(GetPredefinedStructName(StructTypeId::Result_Message),
+                                     Busrpc_Builtin_File,
+                                     StructFlags::None,
+                                     EntityDocs("Call message."));
     result->addScalarField(Result_Message_Retval_Field_Name,
                            5,
                            FieldTypeId::Bytes,
@@ -117,7 +117,7 @@ Struct* AddResultMessage(Api* api)
                            EntityDocs("Method return value."));
     result->addStructField(Result_Message_Exception_Field_Name,
                            6,
-                           api->dname() + ".Exception",
+                           project->dname() + ".Exception",
                            FieldFlags::None,
                            "Result",
                            EntityDocs("Method exception."));
@@ -174,7 +174,7 @@ Struct* AddMethodDesc(Method* method, bool isStatic = false)
     auto desc = method->addStruct(GetPredefinedStructName(StructTypeId::Method_Desc),
                                   Method_Desc_File,
                                   StructFlags::None,
-                                  EntityDocs("My method."));
+                                  EntityDocs({"My method."}, {{"pre", {"precondition"}}, {"post", {"postcondition"}}}));
 
     if (isStatic) {
         desc->addStruct(
@@ -262,12 +262,16 @@ Service* AddService(Services* services)
     return service;
 }
 
+void InitMinimalProject(Project* project)
+{
+    AddErrc(project);
+    AddException(project);
+    AddCallMessage(project);
+    AddResultMessage(project);
+}
+
 void InitApi(Api* api)
 {
-    AddErrc(api);
-    AddException(api);
-    AddCallMessage(api);
-    AddResultMessage(api);
     AddStructsAndEnums(api);
 }
 
@@ -279,6 +283,9 @@ void InitServices(Services* services)
 
 void InitProject(Project* project)
 {
+    InitMinimalProject(project);
+    AddStructsAndEnums(project);
+
     auto api = project->addApi();
     InitApi(api);
     AddMethod(AddClass(AddNamespace(api)));
@@ -313,7 +320,6 @@ TEST_F(ProjectCheckTest, Specification_Error_Codes_Have_Non_Empty_Descriptions)
     EXPECT_FALSE(spec_error_category().message(static_cast<int>(Invalid_Entity)).empty());
     EXPECT_FALSE(spec_error_category().message(static_cast<int>(Multiple_Definitions)).empty());
     EXPECT_FALSE(spec_error_category().message(static_cast<int>(Unexpected_Package)).empty());
-    EXPECT_FALSE(spec_error_category().message(static_cast<int>(Missing_Api)).empty());
     EXPECT_FALSE(spec_error_category().message(static_cast<int>(Missing_Builtin)).empty());
     EXPECT_FALSE(spec_error_category().message(static_cast<int>(Nonconforming_Builtin)).empty());
     EXPECT_FALSE(spec_error_category().message(static_cast<int>(Missing_Descriptor)).empty());
@@ -391,31 +397,15 @@ TEST_F(ProjectCheckTest, Success_For_Conforming_Project)
     InitProject(&project);
     ErrorCollector ecol = project.check();
 
-    EXPECT_FALSE(ecol);
     EXPECT_EQ(ecol.errors().size(), 0);
-
-    for (const auto& error: ecol.errors()) {
-        std::cout << "INFO: " << error.description << "\n";
-    }
-}
-
-TEST_F(ProjectCheckTest, Missing_Api_Spec_Error_If_Api_Is_Not_Initialized)
-{
-    Project project;
-    ErrorCollector ecol = project.check();
-
-    ASSERT_TRUE(ecol);
-    EXPECT_EQ(ecol.errors().size(), 1);
-    EXPECT_EQ(ecol.majorError()->code, SpecErrc::Missing_Api);
 }
 
 TEST_F(ProjectCheckTest, Missing_Builtin_Spec_Error_If_Errc_Is_Not_Added)
 {
     Project project;
-    auto api = project.addApi();
-    AddException(api);
-    AddCallMessage(api);
-    AddResultMessage(api);
+    AddException(&project);
+    AddCallMessage(&project);
+    AddResultMessage(&project);
 
     auto ecol = project.check();
 
@@ -425,12 +415,11 @@ TEST_F(ProjectCheckTest, Missing_Builtin_Spec_Error_If_Errc_Is_Not_Added)
 TEST_F(ProjectCheckTest, Missing_Builtin_Spec_Error_If_Errc_Is_Defined_In_Unexpected_File)
 {
     Project project;
-    auto api = project.addApi();
-    AddException(api);
-    AddCallMessage(api);
-    AddResultMessage(api);
+    AddException(&project);
+    AddCallMessage(&project);
+    AddResultMessage(&project);
 
-    api->addEnum(Errc_Enum_Name, "1.proto");
+    project.addEnum(Errc_Enum_Name, "1.proto");
     auto ecol = project.check();
 
     EXPECT_TRUE(ecol.find(SpecErrc::Missing_Builtin));
@@ -439,10 +428,9 @@ TEST_F(ProjectCheckTest, Missing_Builtin_Spec_Error_If_Errc_Is_Defined_In_Unexpe
 TEST_F(ProjectCheckTest, Missing_Builtin_Spec_Error_If_Exception_Is_Not_Added)
 {
     Project project;
-    auto api = project.addApi();
-    AddErrc(api);
-    AddCallMessage(api);
-    AddResultMessage(api);
+    AddErrc(&project);
+    AddCallMessage(&project);
+    AddResultMessage(&project);
 
     auto ecol = project.check();
 
@@ -452,13 +440,12 @@ TEST_F(ProjectCheckTest, Missing_Builtin_Spec_Error_If_Exception_Is_Not_Added)
 TEST_F(ProjectCheckTest, Missing_Builtin_Spec_Error_If_Exception_Is_Defined_In_Unexpected_File)
 {
     Project project;
-    auto api = project.addApi();
-    AddErrc(api);
-    AddCallMessage(api);
-    AddResultMessage(api);
+    AddErrc(&project);
+    AddCallMessage(&project);
+    AddResultMessage(&project);
 
-    auto exception = api->addStruct(GetPredefinedStructName(StructTypeId::Method_Exception), "1.proto");
-    exception->addEnumField(Exception_Code_Field_Name, 1, api->dname() + ".Errc");
+    auto exception = project.addStruct(GetPredefinedStructName(StructTypeId::Method_Exception), "1.proto");
+    exception->addEnumField(Exception_Code_Field_Name, 1, project.dname() + ".Errc");
     auto ecol = project.check();
 
     EXPECT_TRUE(ecol.find(SpecErrc::Missing_Builtin));
@@ -467,12 +454,11 @@ TEST_F(ProjectCheckTest, Missing_Builtin_Spec_Error_If_Exception_Is_Defined_In_U
 TEST_F(ProjectCheckTest, Nonconforming_Builtin_Spec_Error_If_Exception_Does_Not_Have_Code_Field)
 {
     Project project;
-    auto api = project.addApi();
-    AddErrc(api);
-    AddCallMessage(api);
-    AddResultMessage(api);
+    AddErrc(&project);
+    AddCallMessage(&project);
+    AddResultMessage(&project);
 
-    api->addStruct("Exception", Busrpc_Builtin_File, StructFlags::None);
+    project.addStruct("Exception", Busrpc_Builtin_File, StructFlags::None);
     auto ecol = project.check();
 
     EXPECT_TRUE(ecol.find(SpecErrc::Nonconforming_Builtin));
@@ -481,13 +467,12 @@ TEST_F(ProjectCheckTest, Nonconforming_Builtin_Spec_Error_If_Exception_Does_Not_
 TEST_F(ProjectCheckTest, Nonconforming_Builtin_Spec_Error_If_Exception_Code_Field_Is_Not_Errc)
 {
     Project project;
-    auto api = project.addApi();
-    AddErrc(api);
-    AddCallMessage(api);
-    AddResultMessage(api);
+    AddErrc(&project);
+    AddCallMessage(&project);
+    AddResultMessage(&project);
 
-    auto exception =
-        api->addStruct(GetPredefinedStructName(StructTypeId::Method_Exception), Busrpc_Builtin_File, StructFlags::None);
+    auto exception = project.addStruct(
+        GetPredefinedStructName(StructTypeId::Method_Exception), Busrpc_Builtin_File, StructFlags::None);
     exception->addScalarField(Exception_Code_Field_Name, 1, FieldTypeId::Int32);
     auto ecol = project.check();
 
@@ -497,13 +482,12 @@ TEST_F(ProjectCheckTest, Nonconforming_Builtin_Spec_Error_If_Exception_Code_Fiel
 TEST_F(ProjectCheckTest, Nonconforming_Builtin_Spec_Error_If_Exception_Code_Field_Is_Optional)
 {
     Project project;
-    auto api = project.addApi();
-    AddErrc(api);
-    AddCallMessage(api);
-    AddResultMessage(api);
+    AddErrc(&project);
+    AddCallMessage(&project);
+    AddResultMessage(&project);
 
-    auto exception = api->addStruct(GetPredefinedStructName(StructTypeId::Method_Exception), Busrpc_Builtin_File);
-    exception->addEnumField(Exception_Code_Field_Name, 1, api->dname() + ".Errc", FieldFlags::Optional);
+    auto exception = project.addStruct(GetPredefinedStructName(StructTypeId::Method_Exception), Busrpc_Builtin_File);
+    exception->addEnumField(Exception_Code_Field_Name, 1, project.dname() + ".Errc", FieldFlags::Optional);
     auto ecol = project.check();
 
     EXPECT_TRUE(ecol.find(SpecErrc::Nonconforming_Builtin));
@@ -512,13 +496,12 @@ TEST_F(ProjectCheckTest, Nonconforming_Builtin_Spec_Error_If_Exception_Code_Fiel
 TEST_F(ProjectCheckTest, Nonconforming_Builtin_Spec_Error_If_Exception_Code_Field_Is_Repeated)
 {
     Project project;
-    auto api = project.addApi();
-    AddErrc(api);
-    AddCallMessage(api);
-    AddResultMessage(api);
+    AddErrc(&project);
+    AddCallMessage(&project);
+    AddResultMessage(&project);
 
-    auto exception = api->addStruct(GetPredefinedStructName(StructTypeId::Method_Exception), Busrpc_Builtin_File);
-    exception->addEnumField(Exception_Code_Field_Name, 1, api->dname() + ".Errc", FieldFlags::Repeated);
+    auto exception = project.addStruct(GetPredefinedStructName(StructTypeId::Method_Exception), Busrpc_Builtin_File);
+    exception->addEnumField(Exception_Code_Field_Name, 1, project.dname() + ".Errc", FieldFlags::Repeated);
     auto ecol = project.check();
 
     EXPECT_TRUE(ecol.find(SpecErrc::Nonconforming_Builtin));
@@ -527,10 +510,9 @@ TEST_F(ProjectCheckTest, Nonconforming_Builtin_Spec_Error_If_Exception_Code_Fiel
 TEST_F(ProjectCheckTest, Missing_Builtin_Spec_Error_If_Call_Message_Is_Not_Added)
 {
     Project project;
-    auto api = project.addApi();
-    AddErrc(api);
-    AddException(api);
-    AddResultMessage(api);
+    AddErrc(&project);
+    AddException(&project);
+    AddResultMessage(&project);
 
     auto ecol = project.check();
 
@@ -540,12 +522,11 @@ TEST_F(ProjectCheckTest, Missing_Builtin_Spec_Error_If_Call_Message_Is_Not_Added
 TEST_F(ProjectCheckTest, Missing_Builtin_Spec_Error_If_Call_Message_Is_Defined_In_Unexpected_File)
 {
     Project project;
-    auto api = project.addApi();
-    AddErrc(api);
-    AddException(api);
-    AddResultMessage(api);
+    AddErrc(&project);
+    AddException(&project);
+    AddResultMessage(&project);
 
-    auto call = api->addStruct(GetPredefinedStructName(StructTypeId::Call_Message), "1.proto");
+    auto call = project.addStruct(GetPredefinedStructName(StructTypeId::Call_Message), "1.proto");
     call->addScalarField(Call_Message_Object_Id_Field_Name, 5, FieldTypeId::Bytes, FieldFlags::Optional);
     call->addScalarField(Call_Message_Params_Field_Name, 6, FieldTypeId::Bytes, FieldFlags::Optional);
     auto ecol = project.check();
@@ -556,12 +537,11 @@ TEST_F(ProjectCheckTest, Missing_Builtin_Spec_Error_If_Call_Message_Is_Defined_I
 TEST_F(ProjectCheckTest, Nonconforming_Builtin_Spec_Error_If_Call_Message_Does_Not_Have_Object_Id_Field)
 {
     Project project;
-    auto api = project.addApi();
-    AddErrc(api);
-    AddException(api);
-    AddResultMessage(api);
+    AddErrc(&project);
+    AddException(&project);
+    AddResultMessage(&project);
 
-    auto call = api->addStruct(GetPredefinedStructName(StructTypeId::Call_Message), Busrpc_Builtin_File);
+    auto call = project.addStruct(GetPredefinedStructName(StructTypeId::Call_Message), Busrpc_Builtin_File);
     call->addScalarField(Call_Message_Params_Field_Name, 6, FieldTypeId::Bytes, FieldFlags::Optional);
     auto ecol = project.check();
 
@@ -571,12 +551,11 @@ TEST_F(ProjectCheckTest, Nonconforming_Builtin_Spec_Error_If_Call_Message_Does_N
 TEST_F(ProjectCheckTest, Nonconforming_Builtin_Spec_Error_If_Call_Message_Does_Not_Have_Params_Field)
 {
     Project project;
-    auto api = project.addApi();
-    AddErrc(api);
-    AddException(api);
-    AddResultMessage(api);
+    AddErrc(&project);
+    AddException(&project);
+    AddResultMessage(&project);
 
-    auto call = api->addStruct(GetPredefinedStructName(StructTypeId::Call_Message), Busrpc_Builtin_File);
+    auto call = project.addStruct(GetPredefinedStructName(StructTypeId::Call_Message), Busrpc_Builtin_File);
     call->addScalarField(Call_Message_Object_Id_Field_Name, 5, FieldTypeId::Bytes, FieldFlags::Optional);
     auto ecol = project.check();
 
@@ -586,12 +565,11 @@ TEST_F(ProjectCheckTest, Nonconforming_Builtin_Spec_Error_If_Call_Message_Does_N
 TEST_F(ProjectCheckTest, Nonconforming_Builtin_Spec_Error_If_Call_Message_Object_Id_Field_Is_Not_Bytes)
 {
     Project project;
-    auto api = project.addApi();
-    AddErrc(api);
-    AddException(api);
-    AddResultMessage(api);
+    AddErrc(&project);
+    AddException(&project);
+    AddResultMessage(&project);
 
-    auto call = api->addStruct(GetPredefinedStructName(StructTypeId::Call_Message), Busrpc_Builtin_File);
+    auto call = project.addStruct(GetPredefinedStructName(StructTypeId::Call_Message), Busrpc_Builtin_File);
     call->addScalarField(Call_Message_Object_Id_Field_Name, 5, FieldTypeId::Int32, FieldFlags::Optional);
     call->addScalarField(Call_Message_Params_Field_Name, 6, FieldTypeId::Bytes, FieldFlags::Optional);
     auto ecol = project.check();
@@ -602,12 +580,11 @@ TEST_F(ProjectCheckTest, Nonconforming_Builtin_Spec_Error_If_Call_Message_Object
 TEST_F(ProjectCheckTest, Nonconforming_Builtin_Spec_Error_If_Call_Message_Params_Field_Is_Not_Bytes)
 {
     Project project;
-    auto api = project.addApi();
-    AddErrc(api);
-    AddException(api);
-    AddResultMessage(api);
+    AddErrc(&project);
+    AddException(&project);
+    AddResultMessage(&project);
 
-    auto call = api->addStruct(GetPredefinedStructName(StructTypeId::Call_Message), Busrpc_Builtin_File);
+    auto call = project.addStruct(GetPredefinedStructName(StructTypeId::Call_Message), Busrpc_Builtin_File);
     call->addScalarField(Call_Message_Object_Id_Field_Name, 5, FieldTypeId::Bytes, FieldFlags::Optional);
     call->addScalarField(Call_Message_Params_Field_Name, 6, FieldTypeId::Int32, FieldFlags::Optional);
     auto ecol = project.check();
@@ -618,12 +595,11 @@ TEST_F(ProjectCheckTest, Nonconforming_Builtin_Spec_Error_If_Call_Message_Params
 TEST_F(ProjectCheckTest, Nonconforming_Builtin_Spec_Error_If_Call_Message_Object_Id_Field_Is_Not_Optional)
 {
     Project project;
-    auto api = project.addApi();
-    AddErrc(api);
-    AddException(api);
-    AddResultMessage(api);
+    AddErrc(&project);
+    AddException(&project);
+    AddResultMessage(&project);
 
-    auto call = api->addStruct(GetPredefinedStructName(StructTypeId::Call_Message), Busrpc_Builtin_File);
+    auto call = project.addStruct(GetPredefinedStructName(StructTypeId::Call_Message), Busrpc_Builtin_File);
     call->addScalarField(Call_Message_Object_Id_Field_Name, 5, FieldTypeId::Bytes);
     call->addScalarField(Call_Message_Params_Field_Name, 6, FieldTypeId::Bytes, FieldFlags::Optional);
     auto ecol = project.check();
@@ -634,12 +610,11 @@ TEST_F(ProjectCheckTest, Nonconforming_Builtin_Spec_Error_If_Call_Message_Object
 TEST_F(ProjectCheckTest, Nonconforming_Builtin_Spec_Error_If_Call_Message_Params_Field_Is_Not_Optional)
 {
     Project project;
-    auto api = project.addApi();
-    AddErrc(api);
-    AddException(api);
-    AddResultMessage(api);
+    AddErrc(&project);
+    AddException(&project);
+    AddResultMessage(&project);
 
-    auto call = api->addStruct(GetPredefinedStructName(StructTypeId::Call_Message), Busrpc_Builtin_File);
+    auto call = project.addStruct(GetPredefinedStructName(StructTypeId::Call_Message), Busrpc_Builtin_File);
     call->addScalarField(Call_Message_Object_Id_Field_Name, 5, FieldTypeId::Bytes, FieldFlags::Optional);
     call->addScalarField(Call_Message_Params_Field_Name, 6, FieldTypeId::Bytes);
     auto ecol = project.check();
@@ -650,12 +625,11 @@ TEST_F(ProjectCheckTest, Nonconforming_Builtin_Spec_Error_If_Call_Message_Params
 TEST_F(ProjectCheckTest, Nonconforming_Builtin_Spec_Error_If_Call_Message_Has_Unknown_Fields)
 {
     Project project;
-    auto api = project.addApi();
-    AddErrc(api);
-    AddException(api);
-    AddResultMessage(api);
+    AddErrc(&project);
+    AddException(&project);
+    AddResultMessage(&project);
 
-    auto call = AddCallMessage(api);
+    auto call = AddCallMessage(&project);
     call->addScalarField("unknown_field", 7, FieldTypeId::Bytes, FieldFlags::Optional);
     auto ecol = project.check();
 
@@ -665,10 +639,9 @@ TEST_F(ProjectCheckTest, Nonconforming_Builtin_Spec_Error_If_Call_Message_Has_Un
 TEST_F(ProjectCheckTest, Missing_Builtin_Spec_Error_If_Result_Message_Is_Not_Added)
 {
     Project project;
-    auto api = project.addApi();
-    AddErrc(api);
-    AddException(api);
-    AddCallMessage(api);
+    AddErrc(&project);
+    AddException(&project);
+    AddCallMessage(&project);
 
     auto ecol = project.check();
 
@@ -678,15 +651,14 @@ TEST_F(ProjectCheckTest, Missing_Builtin_Spec_Error_If_Result_Message_Is_Not_Add
 TEST_F(ProjectCheckTest, Missing_Builtin_Spec_Error_If_Result_Message_Is_Defined_In_Unexpected_File)
 {
     Project project;
-    auto api = project.addApi();
-    AddErrc(api);
-    AddException(api);
-    AddCallMessage(api);
+    AddErrc(&project);
+    AddException(&project);
+    AddCallMessage(&project);
 
-    auto result = api->addStruct(GetPredefinedStructName(StructTypeId::Result_Message), "1.proto");
+    auto result = project.addStruct(GetPredefinedStructName(StructTypeId::Result_Message), "1.proto");
     result->addScalarField(Result_Message_Retval_Field_Name, 5, FieldTypeId::Bytes, FieldFlags::None, "Result");
     result->addStructField(
-        Result_Message_Exception_Field_Name, 6, api->dname() + ".Exception", FieldFlags::None, "Result");
+        Result_Message_Exception_Field_Name, 6, project.dname() + ".Exception", FieldFlags::None, "Result");
     auto ecol = project.check();
 
     EXPECT_TRUE(ecol.find(SpecErrc::Missing_Builtin));
@@ -695,14 +667,13 @@ TEST_F(ProjectCheckTest, Missing_Builtin_Spec_Error_If_Result_Message_Is_Defined
 TEST_F(ProjectCheckTest, Nonconforming_Builtin_Spec_Error_If_Result_Message_Does_Not_Have_Retval_Field)
 {
     Project project;
-    auto api = project.addApi();
-    AddErrc(api);
-    AddException(api);
-    AddCallMessage(api);
+    AddErrc(&project);
+    AddException(&project);
+    AddCallMessage(&project);
 
-    auto result = api->addStruct(GetPredefinedStructName(StructTypeId::Result_Message), Busrpc_Builtin_File);
+    auto result = project.addStruct(GetPredefinedStructName(StructTypeId::Result_Message), Busrpc_Builtin_File);
     result->addStructField(
-        Result_Message_Exception_Field_Name, 6, api->dname() + ".Exception", FieldFlags::None, "Result");
+        Result_Message_Exception_Field_Name, 6, project.dname() + ".Exception", FieldFlags::None, "Result");
     auto ecol = project.check();
 
     EXPECT_TRUE(ecol.find(SpecErrc::Nonconforming_Builtin));
@@ -711,12 +682,11 @@ TEST_F(ProjectCheckTest, Nonconforming_Builtin_Spec_Error_If_Result_Message_Does
 TEST_F(ProjectCheckTest, Nonconforming_Builtin_Spec_Error_If_Result_Message_Does_Not_Have_Exception_Field)
 {
     Project project;
-    auto api = project.addApi();
-    AddErrc(api);
-    AddException(api);
-    AddCallMessage(api);
+    AddErrc(&project);
+    AddException(&project);
+    AddCallMessage(&project);
 
-    auto result = api->addStruct(GetPredefinedStructName(StructTypeId::Result_Message), Busrpc_Builtin_File);
+    auto result = project.addStruct(GetPredefinedStructName(StructTypeId::Result_Message), Busrpc_Builtin_File);
     result->addScalarField(Result_Message_Retval_Field_Name, 5, FieldTypeId::Bytes, FieldFlags::None, "Result");
     auto ecol = project.check();
 
@@ -726,15 +696,14 @@ TEST_F(ProjectCheckTest, Nonconforming_Builtin_Spec_Error_If_Result_Message_Does
 TEST_F(ProjectCheckTest, Nonconforming_Builtin_Spec_Error_If_Result_Message_Retval_Field_Is_Not_Bytes)
 {
     Project project;
-    auto api = project.addApi();
-    AddErrc(api);
-    AddException(api);
-    AddCallMessage(api);
+    AddErrc(&project);
+    AddException(&project);
+    AddCallMessage(&project);
 
-    auto result = api->addStruct(GetPredefinedStructName(StructTypeId::Result_Message), Busrpc_Builtin_File);
+    auto result = project.addStruct(GetPredefinedStructName(StructTypeId::Result_Message), Busrpc_Builtin_File);
     result->addScalarField(Result_Message_Retval_Field_Name, 5, FieldTypeId::Int32, FieldFlags::None, "Result");
     result->addStructField(
-        Result_Message_Exception_Field_Name, 6, api->dname() + ".Exception", FieldFlags::None, "Result");
+        Result_Message_Exception_Field_Name, 6, project.dname() + ".Exception", FieldFlags::None, "Result");
     auto ecol = project.check();
 
     EXPECT_TRUE(ecol.find(SpecErrc::Nonconforming_Builtin));
@@ -743,12 +712,11 @@ TEST_F(ProjectCheckTest, Nonconforming_Builtin_Spec_Error_If_Result_Message_Retv
 TEST_F(ProjectCheckTest, Nonconforming_Builtin_Spec_Error_If_Result_Message_Exception_Field_Is_Not_Exception)
 {
     Project project;
-    auto api = project.addApi();
-    AddErrc(api);
-    AddException(api);
-    AddCallMessage(api);
+    AddErrc(&project);
+    AddException(&project);
+    AddCallMessage(&project);
 
-    auto result = api->addStruct(GetPredefinedStructName(StructTypeId::Result_Message), Busrpc_Builtin_File);
+    auto result = project.addStruct(GetPredefinedStructName(StructTypeId::Result_Message), Busrpc_Builtin_File);
     result->addScalarField(Result_Message_Retval_Field_Name, 5, FieldTypeId::Bytes, FieldFlags::None, "Result");
     result->addScalarField(Result_Message_Exception_Field_Name, 6, FieldTypeId::Int32, FieldFlags::None, "Result");
     auto ecol = project.check();
@@ -759,15 +727,14 @@ TEST_F(ProjectCheckTest, Nonconforming_Builtin_Spec_Error_If_Result_Message_Exce
 TEST_F(ProjectCheckTest, Nonconforming_Builtin_Spec_Error_If_Result_Message_Retval_Field_Is_Not_Part_Of_Oneof)
 {
     Project project;
-    auto api = project.addApi();
-    AddErrc(api);
-    AddException(api);
-    AddCallMessage(api);
+    AddErrc(&project);
+    AddException(&project);
+    AddCallMessage(&project);
 
-    auto result = api->addStruct(GetPredefinedStructName(StructTypeId::Result_Message), Busrpc_Builtin_File);
+    auto result = project.addStruct(GetPredefinedStructName(StructTypeId::Result_Message), Busrpc_Builtin_File);
     result->addScalarField(Result_Message_Retval_Field_Name, 5, FieldTypeId::Bytes, FieldFlags::None);
     result->addStructField(
-        Result_Message_Exception_Field_Name, 6, api->dname() + ".Exception", FieldFlags::None, "Result");
+        Result_Message_Exception_Field_Name, 6, project.dname() + ".Exception", FieldFlags::None, "Result");
     auto ecol = project.check();
 
     EXPECT_TRUE(ecol.find(SpecErrc::Nonconforming_Builtin));
@@ -776,14 +743,13 @@ TEST_F(ProjectCheckTest, Nonconforming_Builtin_Spec_Error_If_Result_Message_Retv
 TEST_F(ProjectCheckTest, Nonconforming_Builtin_Spec_Error_If_Result_Message_Exception_Field_Is_Not_Part_Of_Oneof)
 {
     Project project;
-    auto api = project.addApi();
-    AddErrc(api);
-    AddException(api);
-    AddCallMessage(api);
+    AddErrc(&project);
+    AddException(&project);
+    AddCallMessage(&project);
 
-    auto result = api->addStruct(GetPredefinedStructName(StructTypeId::Result_Message), Busrpc_Builtin_File);
+    auto result = project.addStruct(GetPredefinedStructName(StructTypeId::Result_Message), Busrpc_Builtin_File);
     result->addScalarField(Result_Message_Retval_Field_Name, 5, FieldTypeId::Bytes, FieldFlags::None, "Result");
-    result->addStructField(Result_Message_Exception_Field_Name, 6, api->dname() + ".Exception", FieldFlags::None);
+    result->addStructField(Result_Message_Exception_Field_Name, 6, project.dname() + ".Exception", FieldFlags::None);
     auto ecol = project.check();
 
     EXPECT_TRUE(ecol.find(SpecErrc::Nonconforming_Builtin));
@@ -793,15 +759,14 @@ TEST_F(ProjectCheckTest,
        Nonconforming_Builtin_Spec_Error_If_Result_Message_Retval_And_Exception_Fields_Does_Not_Belong_To_Same_Oneof)
 {
     Project project;
-    auto api = project.addApi();
-    AddErrc(api);
-    AddException(api);
-    AddCallMessage(api);
+    AddErrc(&project);
+    AddException(&project);
+    AddCallMessage(&project);
 
-    auto result = api->addStruct(GetPredefinedStructName(StructTypeId::Result_Message), Busrpc_Builtin_File);
+    auto result = project.addStruct(GetPredefinedStructName(StructTypeId::Result_Message), Busrpc_Builtin_File);
     result->addScalarField(Result_Message_Retval_Field_Name, 5, FieldTypeId::Bytes, FieldFlags::None, "Result");
     result->addStructField(
-        Result_Message_Exception_Field_Name, 6, api->dname() + ".Exception", FieldFlags::None, "Result1");
+        Result_Message_Exception_Field_Name, 6, project.dname() + ".Exception", FieldFlags::None, "Result1");
     auto ecol = project.check();
 
     EXPECT_TRUE(ecol.find(SpecErrc::Nonconforming_Builtin));
@@ -810,12 +775,11 @@ TEST_F(ProjectCheckTest,
 TEST_F(ProjectCheckTest, Nonconforming_Builtin_Spec_Error_If_Result_Message_Has_Unknown_Fields)
 {
     Project project;
-    auto api = project.addApi();
-    AddErrc(api);
-    AddException(api);
-    AddCallMessage(api);
+    AddErrc(&project);
+    AddException(&project);
+    AddCallMessage(&project);
 
-    auto result = AddResultMessage(api);
+    auto result = AddResultMessage(&project);
     result->addScalarField("unknown_field", 7, FieldTypeId::Int32);
     auto ecol = project.check();
 
@@ -1112,7 +1076,7 @@ TEST_F(ProjectCheckTest, Invalid_Name_Format_Style_Error_If_Service_Name_Is_Not_
 
 TEST_F(ProjectCheckTest, Unknown_Type_Spec_Error_If_Struct_Type_Of_The_Field_Is_Unknown)
 {
-    auto structure = api_->addStruct("MyStruct", "1.proto");
+    auto structure = project_.addStruct("MyStruct", "1.proto");
     structure->addStructField("field1", 1, "UnknownStruct");
     auto ecol = project_.check();
 
@@ -1121,7 +1085,7 @@ TEST_F(ProjectCheckTest, Unknown_Type_Spec_Error_If_Struct_Type_Of_The_Field_Is_
 
 TEST_F(ProjectCheckTest, Unknown_Type_Spec_Error_If_Enum_Type_Of_The_Field_Is_Unknown)
 {
-    auto structure = api_->addStruct("MyStruct", "1.proto");
+    auto structure = project_.addStruct("MyStruct", "1.proto");
     structure->addEnumField("field1", 1, "UnknownEnum");
     auto ecol = project_.check();
 
@@ -1130,7 +1094,7 @@ TEST_F(ProjectCheckTest, Unknown_Type_Spec_Error_If_Enum_Type_Of_The_Field_Is_Un
 
 TEST_F(ProjectCheckTest, Unknown_Type_Spec_Error_If_Struct_Value_Type_Of_The_Map_Field_Is_Unknown)
 {
-    auto structure = api_->addStruct("MyStruct", "1.proto");
+    auto structure = project_.addStruct("MyStruct", "1.proto");
     structure->addMapField("field1", 1, FieldTypeId::Int32, FieldTypeId::Message, "UnknownStruct");
     auto ecol = project_.check();
 
@@ -1139,7 +1103,7 @@ TEST_F(ProjectCheckTest, Unknown_Type_Spec_Error_If_Struct_Value_Type_Of_The_Map
 
 TEST_F(ProjectCheckTest, Unknown_Type_Spec_Error_If_Enum_Value_Type_Of_The_Map_Field_Is_Unknown)
 {
-    auto structure = api_->addStruct("MyStruct", "1.proto");
+    auto structure = project_.addStruct("MyStruct", "1.proto");
     structure->addMapField("field1", 1, FieldTypeId::Int32, FieldTypeId::Enum, "UnknownEnum");
     auto ecol = project_.check();
 
@@ -1148,8 +1112,8 @@ TEST_F(ProjectCheckTest, Unknown_Type_Spec_Error_If_Enum_Value_Type_Of_The_Map_F
 
 TEST_F(ProjectCheckTest, Unexpected_Type_Spec_Error_If_Struct_Type_Of_The_Field_Is_Not_Struct_Entity)
 {
-    auto enumeration = api_->addEnum("MyEnum", "1.proto");
-    auto structure = api_->addStruct("MyStruct", "1.proto");
+    auto enumeration = project_.addEnum("MyEnum", "1.proto");
+    auto structure = project_.addStruct("MyStruct", "1.proto");
     structure->addStructField("field1", 1, enumeration->dname());
     auto ecol = project_.check();
 
@@ -1158,8 +1122,8 @@ TEST_F(ProjectCheckTest, Unexpected_Type_Spec_Error_If_Struct_Type_Of_The_Field_
 
 TEST_F(ProjectCheckTest, Unexpected_Type_Spec_Error_If_Enum_Type_Of_The_Field_Is_Not_Enum_Entity)
 {
-    auto structure1 = api_->addStruct("MyStruct1", "1.proto");
-    auto structure2 = api_->addStruct("MyStruct2", "1.proto");
+    auto structure1 = project_.addStruct("MyStruct1", "1.proto");
+    auto structure2 = project_.addStruct("MyStruct2", "1.proto");
     structure2->addEnumField("field1", 1, structure1->dname());
     auto ecol = project_.check();
 
@@ -1168,8 +1132,8 @@ TEST_F(ProjectCheckTest, Unexpected_Type_Spec_Error_If_Enum_Type_Of_The_Field_Is
 
 TEST_F(ProjectCheckTest, Unexpected_Type_Spec_Error_If_Struct_Value_Type_Of_The_Map_Field_Is_Not_Struct_Entity)
 {
-    auto enumeration = api_->addEnum("MyEnum", "1.proto");
-    auto structure = api_->addStruct("MyStruct", "1.proto");
+    auto enumeration = project_.addEnum("MyEnum", "1.proto");
+    auto structure = project_.addStruct("MyStruct", "1.proto");
     structure->addMapField("field1", 1, FieldTypeId::Int32, FieldTypeId::Message, enumeration->dname());
     auto ecol = project_.check();
 
@@ -1178,8 +1142,8 @@ TEST_F(ProjectCheckTest, Unexpected_Type_Spec_Error_If_Struct_Value_Type_Of_The_
 
 TEST_F(ProjectCheckTest, Unexpected_Type_Spec_Error_If_Enum_Value_Type_Of_The_Map_Field_Is_Not_Enum_Entity)
 {
-    auto structure1 = api_->addStruct("MyStruct1", "1.proto");
-    auto structure2 = api_->addStruct("MyStruct2", "1.proto");
+    auto structure1 = project_.addStruct("MyStruct1", "1.proto");
+    auto structure2 = project_.addStruct("MyStruct2", "1.proto");
     structure2->addMapField("field1", 1, FieldTypeId::Int32, FieldTypeId::Enum, structure1->dname());
     auto ecol = project_.check();
 
@@ -1188,7 +1152,7 @@ TEST_F(ProjectCheckTest, Unexpected_Type_Spec_Error_If_Enum_Value_Type_Of_The_Ma
 
 TEST_F(ProjectCheckTest, Not_Encodable_Type_Spec_Error_If_Non_Encodable_Structure_Is_Marked_As_Hashed)
 {
-    auto nonEncodable = api_->addStruct("MyStruct", "1.proto", StructFlags::Hashed);
+    auto nonEncodable = project_.addStruct("MyStruct", "1.proto", StructFlags::Hashed);
     nonEncodable->addScalarField("field1", 1, FieldTypeId::Int32, FieldFlags::Repeated);
     auto ecol = project_.check();
 
@@ -1197,7 +1161,7 @@ TEST_F(ProjectCheckTest, Not_Encodable_Type_Spec_Error_If_Non_Encodable_Structur
 
 TEST_F(ProjectCheckTest, Not_Encodable_Type_Spec_Error_If_Field_Of_Non_Encodable_Type_Is_Marked_As_Observable)
 {
-    auto structure = api_->addStruct("MyStruct", "1.proto");
+    auto structure = project_.addStruct("MyStruct", "1.proto");
     structure->addScalarField("field1", 1, FieldTypeId::Int32, FieldFlags::Observable, "oneofName");
     auto ecol = project_.check();
 
@@ -1206,7 +1170,7 @@ TEST_F(ProjectCheckTest, Not_Encodable_Type_Spec_Error_If_Field_Of_Non_Encodable
 
 TEST_F(ProjectCheckTest, Not_Encodable_Type_Spec_Error_If_Field_Of_Non_Encodable_Type_Is_Marked_As_Hashed)
 {
-    auto structure = api_->addStruct("MyStruct", "1.proto");
+    auto structure = project_.addStruct("MyStruct", "1.proto");
     structure->addScalarField("field1", 1, FieldTypeId::Int32, FieldFlags::Hashed, "oneofName");
     auto ecol = project_.check();
 
@@ -1215,10 +1179,10 @@ TEST_F(ProjectCheckTest, Not_Encodable_Type_Spec_Error_If_Field_Of_Non_Encodable
 
 TEST_F(ProjectCheckTest, Not_Encodable_Type_Spec_Error_If_Field_Of_Non_Encodable_Structure_Type_Is_Marked_As_Observable)
 {
-    auto structure1 = api_->addStruct("MyStruct1", "1.proto");
+    auto structure1 = project_.addStruct("MyStruct1", "1.proto");
     structure1->addScalarField("field1", 1, FieldTypeId::Double);
 
-    auto structure2 = api_->addStruct("MyStruct2", "2.proto");
+    auto structure2 = project_.addStruct("MyStruct2", "2.proto");
     structure2->addStructField("field1", 1, structure1->dname(), FieldFlags::Observable);
 
     auto ecol = project_.check();
@@ -1228,10 +1192,10 @@ TEST_F(ProjectCheckTest, Not_Encodable_Type_Spec_Error_If_Field_Of_Non_Encodable
 
 TEST_F(ProjectCheckTest, Not_Encodable_Type_Spec_Error_If_Field_Of_Non_Encodable_Structure_Type_Is_Marked_As_Hashed)
 {
-    auto structure1 = api_->addStruct("MyStruct1", "1.proto");
+    auto structure1 = project_.addStruct("MyStruct1", "1.proto");
     structure1->addScalarField("field1", 1, FieldTypeId::Double);
 
-    auto structure2 = api_->addStruct("MyStruct2", "2.proto");
+    auto structure2 = project_.addStruct("MyStruct2", "2.proto");
     structure2->addStructField("field1", 1, structure1->dname(), FieldFlags::Hashed);
 
     auto ecol = project_.check();
@@ -1241,7 +1205,7 @@ TEST_F(ProjectCheckTest, Not_Encodable_Type_Spec_Error_If_Field_Of_Non_Encodable
 
 TEST_F(ProjectCheckTest, Not_Encodable_Type_Spec_Error_If_Field_Of_Google_Type_Is_Marked_As_Observable)
 {
-    auto structure = api_->addStruct("MyStruct", "1.proto");
+    auto structure = project_.addStruct("MyStruct", "1.proto");
     structure->addStructField("field1", 1, "google.protobuf.Any", FieldFlags::Observable);
     auto ecol = project_.check();
 
@@ -1250,7 +1214,7 @@ TEST_F(ProjectCheckTest, Not_Encodable_Type_Spec_Error_If_Field_Of_Google_Type_I
 
 TEST_F(ProjectCheckTest, Not_Encodable_Type_Spec_Error_If_Field_Google_Type_Is_Marked_As_Hashed)
 {
-    auto structure = api_->addStruct("MyStruct", "1.proto");
+    auto structure = project_.addStruct("MyStruct", "1.proto");
     structure->addStructField("field1", 1, "google.protobuf.Any", FieldFlags::Hashed);
     auto ecol = project_.check();
 
@@ -1259,9 +1223,9 @@ TEST_F(ProjectCheckTest, Not_Encodable_Type_Spec_Error_If_Field_Google_Type_Is_M
 
 TEST_F(ProjectCheckTest, Not_Accessible_Type_Spec_Error_If_Referenced_Type_Outside_The_Current_Scope)
 {
-    auto namespaceStruct = AddNamespace(api_)->addStruct("MyStruct", "1.proto");
     auto apiStruct = api_->addStruct("MyStruct", "1.proto");
-    apiStruct->addStructField("field1", 1, namespaceStruct->dname());
+    auto projectStruct = project_.addStruct("MyStruct", "1.proto");
+    projectStruct->addStructField("field1", 1, apiStruct->dname());
     auto ecol = project_.check();
 
     EXPECT_TRUE(ecol.find(SpecErrc::Not_Accessible_Type));
@@ -1269,7 +1233,7 @@ TEST_F(ProjectCheckTest, Not_Accessible_Type_Spec_Error_If_Referenced_Type_Outsi
 
 TEST_F(ProjectCheckTest, Invalid_Name_Format_Style_Error_If_Struct_Name_Is_Not_CamelCase)
 {
-    api_->addStruct("myStruct", "1.proto");
+    project_.addStruct("myStruct", "1.proto");
     auto ecol = project_.check();
 
     EXPECT_TRUE(ecol.find(StyleErrc::Invalid_Name_Format));
@@ -1277,7 +1241,7 @@ TEST_F(ProjectCheckTest, Invalid_Name_Format_Style_Error_If_Struct_Name_Is_Not_C
 
 TEST_F(ProjectCheckTest, Invalid_Name_Format_Style_Error_If_Enum_Name_Is_Not_CamelCase)
 {
-    api_->addEnum("MY_ENUM", "1.proto");
+    project_. addEnum("MY_ENUM", "1.proto");
     auto ecol = project_.check();
 
     EXPECT_TRUE(ecol.find(StyleErrc::Invalid_Name_Format));
@@ -1285,7 +1249,7 @@ TEST_F(ProjectCheckTest, Invalid_Name_Format_Style_Error_If_Enum_Name_Is_Not_Cam
 
 TEST_F(ProjectCheckTest, Invalid_Name_Format_Style_Error_If_Struct_Field_Name_Is_Not_Lowercase_With_Underscores)
 {
-    auto structure = api_->addStruct("MyStruct", "1.proto");
+    auto structure = project_.addStruct("MyStruct", "1.proto");
     structure->addScalarField("MyField", 1, FieldTypeId::Int32);
     auto ecol = project_.check();
 
@@ -1294,7 +1258,7 @@ TEST_F(ProjectCheckTest, Invalid_Name_Format_Style_Error_If_Struct_Field_Name_Is
 
 TEST_F(ProjectCheckTest, Invalid_Name_Format_Style_Error_If_Enum_Constant_Name_Is_Not_Uppercase_With_Underscores)
 {
-    auto enumeration = api_->addEnum("MyEnum", "1.proto");
+    auto enumeration = project_.addEnum("MyEnum", "1.proto");
     enumeration->addConstant("TESt_CONSTANT", 1001);
     auto ecol = project_.check();
 
@@ -1303,7 +1267,7 @@ TEST_F(ProjectCheckTest, Invalid_Name_Format_Style_Error_If_Enum_Constant_Name_I
 
 TEST_F(ProjectCheckTest, Undocumented_Entity_Doc_Error_If_Struct_Is_Not_Documented)
 {
-    api_->addStruct("MyStruct", "1.proto");
+    project_.addStruct("MyStruct", "1.proto");
     auto ecol = project_.check();
 
     EXPECT_TRUE(ecol.find(DocErrc::Undocumented_Entity));
@@ -1311,7 +1275,7 @@ TEST_F(ProjectCheckTest, Undocumented_Entity_Doc_Error_If_Struct_Is_Not_Document
 
 TEST_F(ProjectCheckTest, Undocumented_Entity_Doc_Error_If_Enum_Is_Not_Documented)
 {
-    api_->addEnum("MyEnum", "1.proto");
+    project_.addEnum("MyEnum", "1.proto");
     auto ecol = project_.check();
 
     EXPECT_TRUE(ecol.find(DocErrc::Undocumented_Entity));
@@ -1319,7 +1283,7 @@ TEST_F(ProjectCheckTest, Undocumented_Entity_Doc_Error_If_Enum_Is_Not_Documented
 
 TEST_F(ProjectCheckTest, Undocumented_Entity_Doc_Error_If_Struct_Field_Is_Not_Documented)
 {
-    auto structure = api_->addStruct("MyStruct", "1.proto", StructFlags::None, EntityDocs("My struct."));
+    auto structure = project_.addStruct("MyStruct", "1.proto", StructFlags::None, EntityDocs("My struct."));
     structure->addScalarField("field1", 1, FieldTypeId::Int32);
     auto ecol = project_.check();
 
@@ -1328,7 +1292,7 @@ TEST_F(ProjectCheckTest, Undocumented_Entity_Doc_Error_If_Struct_Field_Is_Not_Do
 
 TEST_F(ProjectCheckTest, Undocumented_Entity_Doc_Error_If_Enum_Constant_Is_Not_Documented)
 {
-    auto enumeration = api_->addEnum("MyEnum", "1.proto", EntityDocs("My enumeration."));
+    auto enumeration = project_.addEnum("MyEnum", "1.proto", EntityDocs("My enumeration."));
     enumeration->addConstant("CONSTANT_1", 1);
     auto ecol = project_.check();
 
@@ -1337,7 +1301,7 @@ TEST_F(ProjectCheckTest, Undocumented_Entity_Doc_Error_If_Enum_Constant_Is_Not_D
 
 TEST_F(ProjectCheckTest, Unknown_Doc_Command_Doc_Error_If_Struct_Documentation_Command_Is_Unrecognized)
 {
-    api_->addStruct("MyStruct", "1.proto", StructFlags::None, {{"My structure."}, {{"cmd1", {"value1"}}}});
+    project_.addStruct("MyStruct", "1.proto", StructFlags::None, {{"My structure."}, {{"cmd1", {"value1"}}}});
     auto ecol = project_.check();
 
     EXPECT_TRUE(ecol.find(DocErrc::Unknown_Doc_Command));
@@ -1345,7 +1309,7 @@ TEST_F(ProjectCheckTest, Unknown_Doc_Command_Doc_Error_If_Struct_Documentation_C
 
 TEST_F(ProjectCheckTest, Unknown_Doc_Command_Doc_Error_If_Enum_Documentation_Command_Is_Unrecognized)
 {
-    api_->addEnum("MyEnum", "1.proto", {{"My enumeration."}, {{"cmd1", {"value1"}}}});
+    project_.addEnum("MyEnum", "1.proto", {{"My enumeration."}, {{"cmd1", {"value1"}}}});
     auto ecol = project_.check();
 
     EXPECT_TRUE(ecol.find(DocErrc::Unknown_Doc_Command));
@@ -1353,7 +1317,7 @@ TEST_F(ProjectCheckTest, Unknown_Doc_Command_Doc_Error_If_Enum_Documentation_Com
 
 TEST_F(ProjectCheckTest, Unknown_Doc_Command_Doc_Error_If_Struct_Field_Documentation_Command_Is_Unrecognized)
 {
-    auto structure = api_->addStruct("MyStruct", "1.proto", StructFlags::None, EntityDocs("My structure."));
+    auto structure = project_.addStruct("MyStruct", "1.proto", StructFlags::None, EntityDocs("My structure."));
     structure->addScalarField(
         "field1", 1, FieldTypeId::Int32, FieldFlags::None, "", "", {{"Field 1."}, {{"cmd1", {"value1"}}}});
     auto ecol = project_.check();
@@ -1363,7 +1327,7 @@ TEST_F(ProjectCheckTest, Unknown_Doc_Command_Doc_Error_If_Struct_Field_Documenta
 
 TEST_F(ProjectCheckTest, Unknown_Doc_Command_Doc_Error_If_Enum_Constant_Documentation_Command_Is_Unrecognized)
 {
-    auto enumeration = api_->addEnum("MyEnum", "1.proto", EntityDocs("My enumeration."));
+    auto enumeration = project_.addEnum("MyEnum", "1.proto", EntityDocs("My enumeration."));
     enumeration->addConstant("CONSTANT_1", 1001, {{"Constant 1."}, {{"cmd1", {"value1"}}}});
     auto ecol = project_.check();
 
@@ -1374,8 +1338,8 @@ TEST_F(ProjectCheckTest, Default_Severity_Of_Errors_Is_SpecErrc_DocErrc_SpecWarn
 {
     {
         Project project;
+        InitMinimalProject(&project);
         auto api = project.addApi();
-        InitApi(api);
 
         auto ns = api->addNamespace("Namespace"); // non-conformat name (style error)
         auto desc = ns->addStruct(                // unexpected file (spec error), undocumented entity (doc error)
@@ -1394,8 +1358,8 @@ TEST_F(ProjectCheckTest, Default_Severity_Of_Errors_Is_SpecErrc_DocErrc_SpecWarn
 
     {
         Project project;
+        InitMinimalProject(&project);
         auto api = project.addApi();
-        InitApi(api);
 
         auto ns = api->addNamespace("Namespace"); // non-conformat name (should be lowercase)
         auto desc = ns->addStruct(                // undocumented entity
@@ -1411,8 +1375,8 @@ TEST_F(ProjectCheckTest, Default_Severity_Of_Errors_Is_SpecErrc_DocErrc_SpecWarn
 
     {
         Project project;
+        InitMinimalProject(&project);
         auto api = project.addApi();
-        InitApi(api);
 
         auto ns = api->addNamespace("Namespace"); // non-conformat name (should be lowercase)
         auto desc = ns->addStruct(GetPredefinedStructName(StructTypeId::Namespace_Desc),

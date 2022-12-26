@@ -76,10 +76,49 @@ TEST_F(ProjectEntityTest, Ctor_Correctly_Initializes_Project_Entity)
     EXPECT_EQ(project_->docs().description()[0], Project_Entity_Description);
 }
 
-TEST_F(ProjectEntityTest, Ctor_Does_Not_Initialize_Api_And_Services)
+TEST_F(ProjectEntityTest, Ctor_Does_Not_Initialize_Builtins_Api_And_Services)
 {
+    EXPECT_FALSE(Project().errc());
+    EXPECT_FALSE(Project().exception());
+    EXPECT_FALSE(Project().callMessage());
+    EXPECT_FALSE(Project().resultMessage());
     EXPECT_FALSE(Project().api());
     EXPECT_FALSE(Project().services());
+}
+
+TEST_F(ProjectEntityTest, Adding_Errc_Enum_Sets_Api_Error_Code_Type)
+{
+    Enum* errc = nullptr;
+
+    EXPECT_TRUE(errc = project_->addEnum(Errc_Enum_Name, "file.proto"));
+    EXPECT_EQ(errc, project_->errc());
+}
+
+TEST_F(ProjectEntityTest, Adding_Exception_Struct_Sets_Api_Exception_Type)
+{
+    Struct* exception = nullptr;
+    auto name = GetPredefinedStructName(StructTypeId::Method_Exception);
+
+    EXPECT_TRUE(exception = project_->addStruct(name, "file.proto"));
+    EXPECT_EQ(exception, project_->exception());
+}
+
+TEST_F(ProjectEntityTest, Adding_CallMessage_Struct_Sets_Api_Call_Message_Type)
+{
+    Struct* callMsg = nullptr;
+    auto name = GetPredefinedStructName(StructTypeId::Call_Message);
+
+    EXPECT_TRUE(callMsg = project_->addStruct(name, Busrpc_Builtin_File));
+    EXPECT_EQ(callMsg, project_->callMessage());
+}
+
+TEST_F(ProjectEntityTest, Adding_ResultMessage_Struct_Sets_Api_Result_Message_Type)
+{
+    Struct* resultMsg = nullptr;
+    auto name = GetPredefinedStructName(StructTypeId::Result_Message);
+
+    EXPECT_TRUE(resultMsg = project_->addStruct(name, Busrpc_Builtin_File));
+    EXPECT_EQ(resultMsg, project_->resultMessage());
 }
 
 TEST_F(ProjectEntityTest, addApi_Initializes_Api_Entity)
@@ -106,7 +145,13 @@ TEST_F(ProjectEntityTest, find_Returns_Correct_Entity_If_It_Exists)
     std::string svcPrefix = std::string(Project_Entity_Name) + "." + Services_Entity_Name + ".";
 
     EXPECT_EQ(project_->find(std::string(Project_Entity_Name)), project_.get());
+    EXPECT_EQ(project_->find(std::string(Project_Entity_Name) + "." + Errc_Enum_Name), project_->errc());
+    EXPECT_EQ(
+        project_->find(std::string(Project_Entity_Name) + "." + GetPredefinedStructName(StructTypeId::Call_Message)),
+        project_->callMessage());
+
     EXPECT_EQ(project_->find(std::string(Project_Entity_Name) + "." + Api_Entity_Name), api_);
+    EXPECT_EQ(project_->find(std::string(Project_Entity_Name) + "." + Services_Entity_Name), services_);
 
     EXPECT_EQ(project_->find(apiPrefix + "ns1"), ns1_);
     EXPECT_EQ(project_->find(apiPrefix + "ns2"), ns2_);

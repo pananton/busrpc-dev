@@ -44,6 +44,12 @@ public:
     /// Flag indicating whether method is one-way (i.e., does not have a retval).
     bool isOneway() const noexcept { return retval() == nullptr; }
 
+    /// Method precondition.
+    const std::string& precondition() const noexcept { return precondition_; }
+
+    /// Method postcondition.
+    const std::string& postcondition() const noexcept { return postcondition_; }
+
 protected:
     /// Create method entity.
     Method(CompositeEntity* cls, const std::string& name);
@@ -51,10 +57,14 @@ protected:
 private:
     friend class CompositeEntity;
     void onNestedEntityAdded(Entity* entity);
+    void parseDocCommands();
 
     const Struct* descriptor_ = nullptr;
     const Struct* params_ = nullptr;
     const Struct* retval_ = nullptr;
     bool isStatic_ = false;
+
+    std::string precondition_;
+    std::string postcondition_;
 };
 } // namespace busrpc

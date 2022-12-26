@@ -108,6 +108,12 @@ inline constexpr const char* Default_Implements_Description = "Methods implement
 inline constexpr const char* Default_Invokes_Description = "Methods invoked by the service.";
 
 namespace doc_cmd {
+/// Method precondition.
+inline constexpr const char* Method_Precondition = "pre";
+
+/// Method postcondition.
+inline constexpr const char* Method_Postcondition = "post";
+
 /// Service author.
 inline constexpr const char* Service_Author = "author";
 

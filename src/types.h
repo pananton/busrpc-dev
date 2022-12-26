@@ -307,8 +307,8 @@ constexpr StructTypeId GetStructTypeId(std::string_view structName,
     case Class_Desc: return *parentType == EntityTypeId::Class ? Class_Desc : General;
     case Method_Desc: return *parentType == EntityTypeId::Method ? Method_Desc : General;
     case Service_Desc: return *parentType == EntityTypeId::Service ? Service_Desc : General;
-    case Call_Message: return *parentType == EntityTypeId::Api ? Call_Message : General;
-    case Result_Message: return *parentType == EntityTypeId::Api ? Result_Message : General;
+    case Call_Message: return *parentType == EntityTypeId::Project ? Call_Message : General;
+    case Result_Message: return *parentType == EntityTypeId::Project ? Result_Message : General;
     case Object_Id: return *parentType == EntityTypeId::Struct && *parentStructType == Class_Desc ? Object_Id : General;
     case Static_Marker:
         return *parentType == EntityTypeId::Struct && *parentStructType == Method_Desc ? Static_Marker : General;
@@ -316,7 +316,7 @@ constexpr StructTypeId GetStructTypeId(std::string_view structName,
         return *parentType == EntityTypeId::Struct && *parentStructType == Method_Desc ? Method_Params : General;
     case Method_Retval:
         return *parentType == EntityTypeId::Struct && *parentStructType == Method_Desc ? Method_Retval : General;
-    case Method_Exception: return *parentType == EntityTypeId::Api ? Method_Exception : General;
+    case Method_Exception: return *parentType == EntityTypeId::Project ? Method_Exception : General;
     case Service_Config:
         return *parentType == EntityTypeId::Struct && *parentStructType == Service_Desc ? Service_Config : General;
     case Service_Implements:

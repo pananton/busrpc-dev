@@ -203,19 +203,7 @@ protected:
     /// \note If callback is already set (for example, copied from the parent entity during object initialization),
     ///       then new function is created and is set as a callback. This function simply calls \a callback first
     ///       and then calls original callback. This mechanism allows to chain callbacks.
-    void setNestedEntityAddedCallback(NestedEntityAddedCallback callback)
-    {
-        if (onNestedEntityAdded_) {
-            onNestedEntityAdded_ = [this,
-                                    newCallback = std::move(callback),
-                                    originalCallback = std::move(onNestedEntityAdded_)](Entity* addedEntity) {
-                newCallback(addedEntity);
-                originalCallback(addedEntity);
-            };
-        } else {
-            onNestedEntityAdded_ = callback;
-        }
-    }
+    void setNestedEntityAddedCallback(NestedEntityAddedCallback callback);
 
 private:
     std::queue<std::shared_ptr<Entity>> storage_;

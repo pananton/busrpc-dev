@@ -17,8 +17,7 @@ class MultiFileErrorCollector;
 namespace busrpc {
 
 /// Type of the function used to order error codes by their severities.
-/// \note If returns \c true, then \a lhs should be considered less severe than \a rhs and \c false otherwise (or
-///       if \a lhs and \a rhs have the same severity level).
+/// \note If returns \c true, then \a lhs should be considered less severe than \a rhs and \c false otherwise.
 using SeverityOrder = std::function<bool(std::error_code lhs, std::error_code rhs)>;
 
 /// Commonly used severity order functions, which treats error codes with greater value as being more severe.
@@ -36,6 +35,7 @@ public:
     /// Create error collector.
     /// \note Function \a orderFunc is invoked for two error codes to determine which one should be considered more
     ///       severe. It is used to calculate the most severe error code which is returned by \ref majorError method.
+    ///       If parameter is not set, then the first occurred error is considered the most severe.
     /// \note Parameter \a ignoredCategories determines error code categories to be ignored by the collector.
     /// \note This constructor assumes that protobuf errors will not be collected and does not initialize protobuf
     ///       error collector.
@@ -45,6 +45,7 @@ public:
     /// Create error collector for the error \a category.
     /// \note Function \a orderFunc is invoked for two error codes to determine which one should be considered more
     ///       severe. It is used to calculate the most severe error code which is returned by \ref majorError method.
+    ///       If parameter is not set, then the first occurred error is considered the most severe.
     /// \note Parameter \a ignoredCategories determines error code categories to be ignored by the collector.
     /// \note This constructor assumes that protobuf errors will be collected with \a protobufErrorCode and
     ///       initializes protobuf error collector.

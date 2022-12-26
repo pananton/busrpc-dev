@@ -10,7 +10,7 @@ namespace {
 
 class SpecErrorCategory: public std::error_category {
 public:
-    const char* name() const noexcept override { return "specification error"; }
+    const char* name() const noexcept override { return "spec error"; }
 
     std::string message(int code) const override
     {
@@ -20,7 +20,6 @@ public:
         case Invalid_Entity: return "Invalid entity";
         case Multiple_Definitions: return "Entity is defined more than once.";
         case Unexpected_Package: return "Entity is defined in unexpected protobuf package";
-        case Missing_Api: return "Project does not define an API";
         case Missing_Builtin: return "Busrpc built-in type could not be found";
         case Nonconforming_Builtin: return "Busrpc built-in type does not conform with specification";
         case Missing_Descriptor: return "Descriptor could not be found";
@@ -37,7 +36,7 @@ public:
 
 class SpecWarnCategory: public std::error_category {
 public:
-    const char* name() const noexcept override { return "specification warning"; }
+    const char* name() const noexcept override { return "spec warn"; }
 
     std::string message(int code) const override
     {
@@ -52,7 +51,7 @@ public:
 
 class DocErrorCategory: public std::error_category {
 public:
-    const char* name() const noexcept override { return "documentation error"; }
+    const char* name() const noexcept override { return "doc error"; }
 
     std::string message(int code) const override
     {
@@ -84,7 +83,7 @@ public:
 } // namespace
 
 Project::Project(std::filesystem::path root):
-    CompositeEntity(nullptr, EntityTypeId::Project, Project_Entity_Name, {{Project_Entity_Description}, {}}),
+    GeneralCompositeEntity(nullptr, EntityTypeId::Project, Project_Entity_Name, {{Project_Entity_Description}, {}}),
     root_(std::move(root))
 {
     setNestedEntityAddedCallback([this](Entity* entity) { onNestedEntityAdded(entity); });
@@ -151,12 +150,17 @@ ErrorCollector Project::check() const
 
 void Project::check(ErrorCollector& ecol) const
 {
-    if (!api_) {
-        ecol.add(SpecErrc::Missing_Api);
-        return;
-    }
+    checkErrc(errc_, ecol);
+    checkException(exception_, ecol);
+    checkCallMessage(callMessage_, ecol);
+    checkResultMessage(resultMessage_, ecol);
 
-    checkApi(api_, ecol);
+    checkNestedStructs(this, ecol);
+    checkNestedEnums(this, ecol);
+
+    if (api_) {
+        checkApi(api_, ecol);
+    }
 
     if (services_) {
         checkServices(services_, ecol);
@@ -167,15 +171,27 @@ void Project::onNestedEntityAdded(Entity* entity)
 {
     auto isAdded = entityDirectory_.emplace(entity->dname(), entity).second;
     assert(isAdded);
+
+    if (entity->type() == EntityTypeId::Struct) {
+        auto structEntity = static_cast<Struct*>(entity);
+
+        switch (structEntity->structType()) {
+        case StructTypeId::Call_Message: callMessage_ = structEntity; break;
+        case StructTypeId::Result_Message: resultMessage_ = structEntity; break;
+        case StructTypeId::Method_Exception: exception_ = structEntity; break;
+        default: break;
+        }
+    } else if (entity->type() == EntityTypeId::Enum) {
+        auto enumEntity = static_cast<Enum*>(entity);
+
+        if (enumEntity->parent() == this && enumEntity->name() == Errc_Enum_Name) {
+            errc_ = enumEntity;
+        }
+    }
 }
 
 void Project::checkApi(const Api* api, ErrorCollector& ecol) const
 {
-    checkErrc(api->errc(), ecol);
-    checkException(api->exception(), ecol);
-    checkCallMessage(api->callMessage(), ecol);
-    checkResultMessage(api->resultMessage(), ecol);
-
     checkNestedStructs(api, ecol);
     checkNestedEnums(api, ecol);
 
@@ -212,7 +228,7 @@ void Project::checkException(const Struct* exception, ErrorCollector& ecol) cons
         if (codeIt != exception->fields().end()) {
             auto entityIt = entityDirectory_.find((*codeIt)->fieldTypeName());
 
-            if (entityIt == entityDirectory_.end() || entityIt->second != api()->errc()) {
+            if (entityIt == entityDirectory_.end() || entityIt->second != errc_) {
                 ecol.add(SpecErrc::Nonconforming_Builtin,
                          std::make_pair("builtin", typeName),
                          "'" + std::string(Exception_Code_Field_Name) + "' field type should be '" + Errc_Enum_Name +
@@ -328,7 +344,7 @@ void Project::checkResultMessage(const Struct* result, ErrorCollector& ecol) con
         } else {
             auto entityIt = entityDirectory_.find((*exceptionIt)->fieldTypeName());
 
-            if (entityIt == entityDirectory_.end() || entityIt->second != api()->exception()) {
+            if (entityIt == entityDirectory_.end() || entityIt->second != exception_) {
                 ecol.add(SpecErrc::Nonconforming_Builtin,
                          std::make_pair("builtin", typeName),
                          "'" + std::string(Result_Message_Exception_Field_Name) + "' field type should be '" +
@@ -628,7 +644,10 @@ void Project::checkStruct(const Struct* structure, ErrorCollector& ecol) const
     std::unordered_set<std::string> allowedDocCommands;
     std::unordered_set<std::string> allowedFieldDocCommands;
 
-    if (structure->structType() == StructTypeId::Service_Desc) {
+    if (structure->structType() == StructTypeId::Method_Desc) {
+        allowedDocCommands.insert(doc_cmd::Method_Precondition);
+        allowedDocCommands.insert(doc_cmd::Method_Postcondition);
+    } else if (structure->structType() == StructTypeId::Service_Desc) {
         allowedDocCommands.insert(doc_cmd::Service_Author);
         allowedDocCommands.insert(doc_cmd::Service_Email);
         allowedDocCommands.insert(doc_cmd::Service_Url);
@@ -696,7 +715,10 @@ void Project::checkField(const Field* field, ErrorCollector& ecol) const
         }
     }
 
-    if (isApiEntity(field) && isFieldTypeValid && nonScalarFieldTypeEntity) {
+    if (isFieldTypeValid && nonScalarFieldTypeEntity &&
+        field->parent()->structType() != StructTypeId::Service_Implements &&
+        field->parent()->structType() != StructTypeId::Service_Invokes) {
+
         if (!field->dir().string().starts_with(nonScalarFieldTypeEntity->dir().string())) {
             ecol.add(SpecErrc::Not_Accessible_Type,
                      std::make_pair(GetEntityTypeIdStr(field->type()), field->dname()),

@@ -172,12 +172,15 @@ TEST(ErrorCollectorTest, All_Errors_Are_Outputted_To_Stream)
     std::vector<std::string> lines = SplitString(out.str());
 
     ASSERT_EQ(lines.size(), 3);
+    EXPECT_NE(lines[0].find(check_error_category().name()), std::string::npos);
     EXPECT_NE(lines[0].find(check_error_category().message(static_cast<int>(CheckErrc::File_Read_Failed))),
               std::string::npos);
     EXPECT_NE(lines[1].find(check_error_category().message(static_cast<int>(CheckErrc::Spec_Violated))),
               std::string::npos);
+    EXPECT_NE(lines[1].find(check_error_category().name()), std::string::npos);
     EXPECT_NE(lines[2].find(check_error_category().message(static_cast<int>(CheckErrc::Protobuf_Style_Violated))),
               std::string::npos);
+    EXPECT_NE(lines[2].find(check_error_category().name()), std::string::npos);
 }
 
 TEST(ErrorCollectorTest, Collector_Guard_Outputs_Errors_In_Destructor)

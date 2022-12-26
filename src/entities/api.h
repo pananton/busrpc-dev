@@ -27,19 +27,6 @@ public:
     /// Project to which API belongs.
     Project* parent() noexcept;
 
-    /// Network message representing API call.
-    const Struct* callMessage() const noexcept { return callMessage_; }
-
-    /// Network message representing API call result.
-    const Struct* resultMessage() const noexcept { return resultMessage_; }
-
-    /// API common exception type.
-    const Struct* exception() const noexcept { return exception_; }
-
-    /// API error code enumeration.
-    /// \note Provides extended information about API exception.
-    const Enum* errc() const noexcept { return errc_; }
-
     /// API namespaces.
     const EntityContainer<Namespace>& namespaces() const noexcept { return namespaces_; }
 
@@ -53,12 +40,7 @@ protected:
 
 private:
     friend class CompositeEntity;
-    void onNestedEntityAdded(Entity* entity);
 
-    const Struct* callMessage_ = nullptr;
-    const Struct* resultMessage_ = nullptr;
-    const Struct* exception_ = nullptr;
-    const Enum* errc_ = nullptr;
     EntityContainer<Namespace> namespaces_;
 };
 } // namespace busrpc

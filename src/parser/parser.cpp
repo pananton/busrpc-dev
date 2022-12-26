@@ -13,17 +13,17 @@ namespace protobuf = google::protobuf;
 namespace busrpc {
 namespace {
 
-class FileErrorCategory: public std::error_category {
+class ParserErrorCategory: public std::error_category {
 public:
-    const char* name() const noexcept override { return "file error"; }
+    const char* name() const noexcept override { return "parser error"; }
 
     std::string message(int code) const override
     {
-        using enum FileErrc;
+        using enum ParserErrc;
 
-        switch (static_cast<FileErrc>(code)) {
+        switch (static_cast<ParserErrc>(code)) {
         case Read_Failed: return "Failed to read file";
-        case Parser_Error: return "Protobuf parser error";
+        case Protobuf_Error: return "Protobuf error";
         default: return "Unknown error";
         }
     }
@@ -35,6 +35,7 @@ Enum* CreateEnum(GeneralCompositeEntity* entity,
                  const std::string& blockComment)
 {
     switch (entity->type()) {
+    case EntityTypeId::Project: return static_cast<Project*>(entity)->addEnum(name, filename, EntityDocs(blockComment));
     case EntityTypeId::Api: return static_cast<Api*>(entity)->addEnum(name, filename, EntityDocs(blockComment));
     case EntityTypeId::Namespace:
         return static_cast<Namespace*>(entity)->addEnum(name, filename, EntityDocs(blockComment));
@@ -55,6 +56,8 @@ Struct* CreateStruct(GeneralCompositeEntity* entity,
                      const std::string& blockComment)
 {
     switch (entity->type()) {
+    case EntityTypeId::Project:
+        return static_cast<Project*>(entity)->addStruct(name, filename, flags, EntityDocs(blockComment));
     case EntityTypeId::Api:
         return static_cast<Api*>(entity)->addStruct(name, filename, flags, EntityDocs(blockComment));
     case EntityTypeId::Namespace:
@@ -116,21 +119,21 @@ std::pair<ProjectPtr, ErrorCollector> Parser::parse() const
 {
     SeverityOrder orderFunc = [](std::error_code lhs, std::error_code rhs) {
         if (lhs.category() == rhs.category()) {
-            if (lhs.category() == file_error_category()) {
+            if (lhs.category() == parser_error_category()) {
                 return lhs.value() > rhs.value();
             } else {
                 return false;
             }
         }
 
-        if (rhs.category() == file_error_category() ||
+        if (rhs.category() == parser_error_category() ||
 
-            (rhs.category() == spec_error_category() && lhs.category() != file_error_category()) ||
+            (rhs.category() == spec_error_category() && lhs.category() != parser_error_category()) ||
 
-            (rhs.category() == doc_error_category() && lhs.category() != file_error_category() &&
+            (rhs.category() == doc_error_category() && lhs.category() != parser_error_category() &&
              lhs.category() != spec_error_category()) ||
 
-            (rhs.category() == spec_warn_category() && lhs.category() != file_error_category() &&
+            (rhs.category() == spec_warn_category() && lhs.category() != parser_error_category() &&
              lhs.category() != spec_error_category() && lhs.category() != doc_error_category())) {
 
             return true;
@@ -139,7 +142,7 @@ std::pair<ProjectPtr, ErrorCollector> Parser::parse() const
         return false;
     };
 
-    ErrorCollector ecol(FileErrc::Parser_Error, std::move(orderFunc));
+    ErrorCollector ecol(ParserErrc::Protobuf_Error, std::move(orderFunc));
     auto projectPtr = parse(ecol);
     return std::make_pair(projectPtr, std::move(ecol));
 }
@@ -147,7 +150,7 @@ std::pair<ProjectPtr, ErrorCollector> Parser::parse() const
 ProjectPtr Parser::parse(ErrorCollector& ecol) const
 {
     auto projectPtr = std::make_shared<Project>(projectDir_);
-    ProtobufErrorCollector protobufCollector(ecol, FileErrc::Parser_Error);
+    ProtobufErrorCollector protobufCollector(ecol, ParserErrc::Protobuf_Error);
     std::filesystem::path projectPath;
     std::filesystem::path protobufPath;
 
@@ -160,7 +163,7 @@ ProjectPtr Parser::parse(ErrorCollector& ecol) const
     } catch (const std::filesystem::filesystem_error&) { }
 
     if (projectPath.empty()) {
-        ecol.add(FileErrc::Read_Failed, std::make_pair("dir", projectDir_));
+        ecol.add(ParserErrc::Read_Failed, std::make_pair("dir", projectDir_));
         return projectPtr;
     }
 
@@ -179,14 +182,7 @@ ProjectPtr Parser::parse(ErrorCollector& ecol) const
     protobuf::compiler::Importer importer(
         &sourceTree, ecol.getProtobufCollector() ? ecol.getProtobufCollector() : &protobufCollector);
 
-    if (std::filesystem::is_directory(projectPath / Api_Entity_Name)) {
-        parseDir(importer, projectPtr->addApi(), ecol);
-    }
-
-    if (std::filesystem::is_directory(projectPath / Services_Entity_Name)) {
-        parseDir(importer, projectPtr->addServices(), ecol);
-    }
-
+    parseDir(importer, projectPtr.get(), ecol);
     projectPtr->check(ecol);
     return projectPtr;
 }
@@ -196,6 +192,16 @@ GeneralCompositeEntity* Parser::visitSubdirectory(GeneralCompositeEntity* parent
                                                   const std::string& subdirName) const
 {
     switch (parent->type()) {
+    case EntityTypeId::Project:
+        {
+            if (subdirName == Api_Entity_Name) {
+                return static_cast<Project*>(parent)->addApi();
+            } else if (subdirName == Services_Entity_Name) {
+                return static_cast<Project*>(parent)->addServices();
+            }
+
+            break;
+        }
     case EntityTypeId::Api: return static_cast<Api*>(parent)->addNamespace(subdirName);
     case EntityTypeId::Namespace: return static_cast<Namespace*>(parent)->addClass(subdirName);
     case EntityTypeId::Class: return static_cast<Class*>(parent)->addMethod(subdirName);
@@ -203,8 +209,7 @@ GeneralCompositeEntity* Parser::visitSubdirectory(GeneralCompositeEntity* parent
     default: break;
     }
 
-    // May occur only when subdirectory is found in method or service directory. Such
-    // subdirectories are out of scope of the busrpc specification and ignored.
+    // May occur only when subdirectory is not part of busrpc directory layout and should be ignored
 
     ecol.add(SpecWarn::Unexpected_Nested_Entity,
              std::make_pair("dir", parent->dir() / subdirName),
@@ -276,7 +281,7 @@ void Parser::parseDir(google::protobuf::compiler::Importer& importer,
 
     if (!ec) {
         ecol.add(
-            FileErrc::Read_Failed, std::make_pair("dir", entity->dir()), "can't iterate through directory content");
+            ParserErrc::Read_Failed, std::make_pair("dir", entity->dir()), "can't iterate through directory content");
         return;
     }
 }
@@ -484,14 +489,14 @@ void Parser::addField(Struct* structure,
     }
 }
 
-const std::error_category& file_error_category()
+const std::error_category& parser_error_category()
 {
-    static const FileErrorCategory category;
+    static const ParserErrorCategory category;
     return category;
 }
 
-std::error_code make_error_code(FileErrc e)
+std::error_code make_error_code(ParserErrc e)
 {
-    return {static_cast<int>(e), file_error_category()};
+    return {static_cast<int>(e), parser_error_category()};
 }
 } // namespace busrpc

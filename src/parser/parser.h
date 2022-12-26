@@ -26,17 +26,17 @@ class Importer;
 
 namespace busrpc {
 
-/// Filesystem operation error code.
-enum class FileErrc {
-    Read_Failed = 1, ///< Failed to read protobuf file (this code is also used if directory can't be read).
-    Parser_Error = 2 ///< Protobuf parser error.
+/// Parser error code.
+enum class ParserErrc {
+    Read_Failed = 1,   ///< Failed to read protobuf file (this code is also used if directory can't be read).
+    Protobuf_Error = 2 ///< Error reported by the internally used protobuf parser.
 };
 
-/// Return error category for the specification-related error codes.
-const std::error_category& file_error_category();
+/// Return parser error category.
+const std::error_category& parser_error_category();
 
-/// Create error code from the \ref FilesystemErrc value.
-std::error_code make_error_code(FileErrc errc);
+/// Create error code from the \ref ParserErrc value.
+std::error_code make_error_code(ParserErrc errc);
 
 /// \note Reads files with \a .proto extension and builds \ref Project from them.
 class Parser {
@@ -107,5 +107,5 @@ private:
 
 namespace std {
 template<>
-struct is_error_code_enum<busrpc::FileErrc>: true_type { };
+struct is_error_code_enum<busrpc::ParserErrc>: true_type { };
 } // namespace std

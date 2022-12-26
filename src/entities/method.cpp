@@ -29,12 +29,30 @@ void Method::onNestedEntityAdded(Entity* entity)
         case StructTypeId::Method_Desc:
             descriptor_ = structEntity;
             setDocumentation(structEntity->docs());
+            parseDocCommands();
             break;
         case StructTypeId::Static_Marker: isStatic_ = true; break;
         case StructTypeId::Method_Params: params_ = structEntity; break;
         case StructTypeId::Method_Retval: retval_ = structEntity; break;
         default: break;
         }
+    }
+}
+
+void Method::parseDocCommands()
+{
+    auto it = docs().commands().find(doc_cmd::Method_Precondition);
+
+    if (it != docs().commands().end()) {
+        assert(!it->second.empty());
+        precondition_ = it->second.back();
+    }
+
+    it = docs().commands().find(doc_cmd::Method_Postcondition);
+
+    if (it != docs().commands().end()) {
+        assert(!it->second.empty());
+        postcondition_ = it->second.back();
     }
 }
 } // namespace busrpc

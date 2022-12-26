@@ -37,36 +37,4 @@ TEST_F(ApiEntityTest, addNamespace_Stores_Added_Namespace)
     ASSERT_NE(api_->namespaces().find("namespace"), api_->namespaces().end());
     ASSERT_EQ(*(api_->namespaces().find("namespace")), ns);
 }
-
-TEST_F(ApiEntityTest, Adding_CallMessage_Struct_Sets_Api_Call_Message_Type)
-{
-    Struct* callMsg = nullptr;
-
-    EXPECT_TRUE(callMsg = api_->addStruct(GetPredefinedStructName(StructTypeId::Call_Message), "file.proto"));
-    EXPECT_EQ(callMsg, api_->callMessage());
-}
-
-TEST_F(ApiEntityTest, Adding_ResultMessage_Struct_Sets_Api_Result_Message_Type)
-{
-    Struct* resultMsg = nullptr;
-
-    EXPECT_TRUE(resultMsg = api_->addStruct(GetPredefinedStructName(StructTypeId::Result_Message), "file.proto"));
-    EXPECT_EQ(resultMsg, api_->resultMessage());
-}
-
-TEST_F(ApiEntityTest, Adding_Exception_Struct_Sets_Api_Exception_Type)
-{
-    Struct* exception = nullptr;
-
-    EXPECT_TRUE(exception = api_->addStruct(GetPredefinedStructName(StructTypeId::Method_Exception), "file.proto"));
-    EXPECT_EQ(exception, api_->exception());
-}
-
-TEST_F(ApiEntityTest, Adding_Errc_Enum_Sets_Api_Error_Code_Type)
-{
-    Enum* errc = nullptr;
-
-    EXPECT_TRUE(errc = api_->addEnum(Errc_Enum_Name, "file.proto"));
-    EXPECT_EQ(errc, api_->errc());
-}
 }} // namespace busrpc::test

@@ -295,8 +295,8 @@ TEST(CommonEntityTest, GetStructTypeId_Returns_Predefined_Type_For_Properly_Name
     EXPECT_EQ(Class_Desc, GetStructTypeId(GetPredefinedStructName(Class_Desc), EntityTypeId::Class));
     EXPECT_EQ(Method_Desc, GetStructTypeId(GetPredefinedStructName(Method_Desc), EntityTypeId::Method));
     EXPECT_EQ(Service_Desc, GetStructTypeId(GetPredefinedStructName(Service_Desc), EntityTypeId::Service));
-    EXPECT_EQ(Call_Message, GetStructTypeId(GetPredefinedStructName(Call_Message), EntityTypeId::Api));
-    EXPECT_EQ(Result_Message, GetStructTypeId(GetPredefinedStructName(Result_Message), EntityTypeId::Api));
+    EXPECT_EQ(Call_Message, GetStructTypeId(GetPredefinedStructName(Call_Message), EntityTypeId::Project));
+    EXPECT_EQ(Result_Message, GetStructTypeId(GetPredefinedStructName(Result_Message), EntityTypeId::Project));
     EXPECT_EQ(Object_Id,
               GetStructTypeId(GetPredefinedStructName(Object_Id), EntityTypeId::Struct, StructTypeId::Class_Desc));
     EXPECT_EQ(Static_Marker,
@@ -305,7 +305,7 @@ TEST(CommonEntityTest, GetStructTypeId_Returns_Predefined_Type_For_Properly_Name
               GetStructTypeId(GetPredefinedStructName(Method_Params), EntityTypeId::Struct, StructTypeId::Method_Desc));
     EXPECT_EQ(Method_Retval,
               GetStructTypeId(GetPredefinedStructName(Method_Retval), EntityTypeId::Struct, StructTypeId::Method_Desc));
-    EXPECT_EQ(Method_Exception, GetStructTypeId(GetPredefinedStructName(Method_Exception), EntityTypeId::Api));
+    EXPECT_EQ(Method_Exception, GetStructTypeId(GetPredefinedStructName(Method_Exception), EntityTypeId::Project));
     EXPECT_EQ(
         Service_Config,
         GetStructTypeId(GetPredefinedStructName(Service_Config), EntityTypeId::Struct, StructTypeId::Service_Desc));
@@ -321,20 +321,20 @@ TEST(CommonEntityTest, GetStructTypeId_Returns_General_Type_For_Incorrectly_Nest
 {
     using enum StructTypeId;
 
-    EXPECT_EQ(General, GetStructTypeId(GetPredefinedStructName(Namespace_Desc), EntityTypeId::Project));
-    EXPECT_EQ(General, GetStructTypeId(GetPredefinedStructName(Class_Desc), EntityTypeId::Project));
-    EXPECT_EQ(General, GetStructTypeId(GetPredefinedStructName(Method_Desc), EntityTypeId::Project));
-    EXPECT_EQ(General, GetStructTypeId(GetPredefinedStructName(Service_Desc), EntityTypeId::Project));
-    EXPECT_EQ(General, GetStructTypeId(GetPredefinedStructName(Call_Message), EntityTypeId::Project));
-    EXPECT_EQ(General, GetStructTypeId(GetPredefinedStructName(Result_Message), EntityTypeId::Project));
-    EXPECT_EQ(General, GetStructTypeId(GetPredefinedStructName(Object_Id), EntityTypeId::Project));
-    EXPECT_EQ(General, GetStructTypeId(GetPredefinedStructName(Static_Marker), EntityTypeId::Project));
-    EXPECT_EQ(General, GetStructTypeId(GetPredefinedStructName(Method_Params), EntityTypeId::Project));
-    EXPECT_EQ(General, GetStructTypeId(GetPredefinedStructName(Method_Retval), EntityTypeId::Project));
-    EXPECT_EQ(General, GetStructTypeId(GetPredefinedStructName(Method_Exception), EntityTypeId::Project));
-    EXPECT_EQ(General, GetStructTypeId(GetPredefinedStructName(Service_Config), EntityTypeId::Project));
-    EXPECT_EQ(General, GetStructTypeId(GetPredefinedStructName(Service_Implements), EntityTypeId::Project));
-    EXPECT_EQ(General, GetStructTypeId(GetPredefinedStructName(Service_Invokes), EntityTypeId::Project));
+    EXPECT_EQ(General, GetStructTypeId(GetPredefinedStructName(Namespace_Desc), EntityTypeId::Services));
+    EXPECT_EQ(General, GetStructTypeId(GetPredefinedStructName(Class_Desc), EntityTypeId::Services));
+    EXPECT_EQ(General, GetStructTypeId(GetPredefinedStructName(Method_Desc), EntityTypeId::Services));
+    EXPECT_EQ(General, GetStructTypeId(GetPredefinedStructName(Service_Desc), EntityTypeId::Services));
+    EXPECT_EQ(General, GetStructTypeId(GetPredefinedStructName(Call_Message), EntityTypeId::Services));
+    EXPECT_EQ(General, GetStructTypeId(GetPredefinedStructName(Result_Message), EntityTypeId::Services));
+    EXPECT_EQ(General, GetStructTypeId(GetPredefinedStructName(Object_Id), EntityTypeId::Services));
+    EXPECT_EQ(General, GetStructTypeId(GetPredefinedStructName(Static_Marker), EntityTypeId::Services));
+    EXPECT_EQ(General, GetStructTypeId(GetPredefinedStructName(Method_Params), EntityTypeId::Services));
+    EXPECT_EQ(General, GetStructTypeId(GetPredefinedStructName(Method_Retval), EntityTypeId::Services));
+    EXPECT_EQ(General, GetStructTypeId(GetPredefinedStructName(Method_Exception), EntityTypeId::Services));
+    EXPECT_EQ(General, GetStructTypeId(GetPredefinedStructName(Service_Config), EntityTypeId::Services));
+    EXPECT_EQ(General, GetStructTypeId(GetPredefinedStructName(Service_Implements), EntityTypeId::Services));
+    EXPECT_EQ(General, GetStructTypeId(GetPredefinedStructName(Service_Invokes), EntityTypeId::Services));
 }
 
 TEST(CommonEntityTest, GetStructTypeId_Returns_General_Type_If_Parent_Struct_Type_Is_Required_But_Not_Specified)

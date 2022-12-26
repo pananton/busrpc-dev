@@ -125,6 +125,20 @@ Entity::Entity(CompositeEntity* parent, EntityTypeId type, const std::string& na
     dname_.append(name_);
 }
 
+void CompositeEntity::setNestedEntityAddedCallback(NestedEntityAddedCallback callback)
+{
+    if (onNestedEntityAdded_) {
+        onNestedEntityAdded_ = [this,
+                                newCallback = std::move(callback),
+                                originalCallback = std::move(onNestedEntityAdded_)](Entity* addedEntity) {
+            newCallback(addedEntity);
+            originalCallback(addedEntity);
+        };
+    } else {
+        onNestedEntityAdded_ = callback;
+    }
+}
+
 Struct* GeneralCompositeEntity::addStruct(const std::string& name,
                                           const std::string& filename,
                                           StructFlags flags,

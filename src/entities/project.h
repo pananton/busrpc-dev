@@ -27,16 +27,15 @@ enum class SpecErrc {
     Invalid_Entity = 1,        ///< Invalid entity.
     Multiple_Definitions = 2,  ///< Entity is defined more than once.
     Unexpected_Package = 3,    ///< Entity is defined in unexpected protobuf package (should match distinguished name).
-    Missing_Api = 4,           ///< Project does not define an API.
-    Missing_Builtin = 5,       ///< One of the busrpc built-in types is missing.
-    Nonconforming_Builtin = 6, ///< One of the busrpc built-in types does not conform with the specification.
-    Missing_Descriptor = 7,    ///< Entity (namespace, class, method or service) does not have a descriptor.
-    Not_Static_Method = 8,     ///< Static class method is not marked as static.
-    Not_Encodable_Type = 9,    ///< Entity must be encodable as specified in the busrpc specification.
-    Not_Accessible_Type = 10,  ///< Type is not accessible in the current scope.
-    Unknown_Type = 11,         ///< Type of structure field is unknown.
-    Unexpected_Type = 12,      ///< Entity type of structure field is not as expected.
-    Unknown_Method = 13        ///< Service \c Implements or \c Invokes type references unknown method.
+    Missing_Builtin = 4,       ///< One of the busrpc built-in types is missing.
+    Nonconforming_Builtin = 5, ///< One of the busrpc built-in types does not conform with the specification.
+    Missing_Descriptor = 6,    ///< Entity (namespace, class, method or service) does not have a descriptor.
+    Not_Static_Method = 7,     ///< Static class method is not marked as static.
+    Not_Encodable_Type = 8,    ///< Entity must be encodable as specified in the busrpc specification.
+    Not_Accessible_Type = 9,   ///< Type is not accessible in the current scope.
+    Unknown_Type = 10,         ///< Type of structure field is unknown.
+    Unexpected_Type = 11,      ///< Entity type of structure field is not as expected.
+    Unknown_Method = 12        ///< Service \c Implements or \c Invokes type references unknown method.
 };
 
 /// Busrpc [specification](https://github.com/pananton/busrpc-spec)-related warnings.
@@ -81,13 +80,29 @@ const std::error_category& style_error_category();
 std::error_code make_error_code(StyleErrc errc);
 
 /// Project entity.
-class Project: public CompositeEntity {
+class Project: public GeneralCompositeEntity {
 public:
+    using GeneralCompositeEntity::addStruct;
+    using GeneralCompositeEntity::addEnum;
+
     /// Create project entity.
     explicit Project(std::filesystem::path root = std::filesystem::current_path());
 
     /// Project root directory.
     const std::filesystem::path& root() const noexcept { return root_; }
+
+    /// API error code enumeration.
+    /// \note Provides extended information about API exception.
+    const Enum* errc() const noexcept { return errc_; }
+
+    /// API common exception type.
+    const Struct* exception() const noexcept { return exception_; }
+
+    /// Network message representing API call.
+    const Struct* callMessage() const noexcept { return callMessage_; }
+
+    /// Network message representing API call result.
+    const Struct* resultMessage() const noexcept { return resultMessage_; }
 
     /// Project API.
     const Api* api() const noexcept { return api_; }
@@ -120,11 +135,12 @@ public:
 private:
     void onNestedEntityAdded(Entity* entity);
 
-    void checkApi(const Api* api, ErrorCollector& ecol) const;
     void checkErrc(const Enum* errc, ErrorCollector& ecol) const;
     void checkException(const Struct* errc, ErrorCollector& ecol) const;
     void checkCallMessage(const Struct* errc, ErrorCollector& ecol) const;
     void checkResultMessage(const Struct* errc, ErrorCollector& ecol) const;
+
+    void checkApi(const Api* api, ErrorCollector& ecol) const;
 
     void checkNamespace(const Namespace* ns, ErrorCollector& ecol) const;
     void checkNamespaceDesc(const Namespace* ns, ErrorCollector& ecol) const;
@@ -155,6 +171,12 @@ private:
     bool isApiEntity(const Entity* entity) const noexcept;
 
     std::filesystem::path root_;
+
+    const Enum* errc_ = nullptr;
+    const Struct* exception_ = nullptr;
+    const Struct* callMessage_ = nullptr;
+    const Struct* resultMessage_ = nullptr;
+
     const Api* api_ = nullptr;
     const Services* services_ = nullptr;
 

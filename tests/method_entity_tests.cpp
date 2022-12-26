@@ -52,16 +52,17 @@ TEST_F(MethodEntityTest, Adding_MethodDesc_Struct_Sets_Method_Descriptor)
 
 TEST_F(MethodEntityTest, Adding_MethodDesc_Struct_Sets_Method_Documentation)
 {
-    EntityDocs docs({}, {{"cmd", {"cmd value"}}});
+    EntityDocs docs({}, {{"cmd", {"cmd value"}}, {"pre", {"precondition"}}, {"post", {"postcondition"}}});
     Struct* desc = nullptr;
 
-    EXPECT_TRUE(
-        desc = method_->addStruct(
-            GetPredefinedStructName(StructTypeId::Method_Desc), "method.proto", StructFlags::None, docs));
+    EXPECT_TRUE(desc = method_->addStruct(
+                    GetPredefinedStructName(StructTypeId::Method_Desc), "method.proto", StructFlags::None, docs));
     EXPECT_EQ(desc, method_->descriptor());
     EXPECT_EQ(method_->docs().description(), docs.description());
     EXPECT_EQ(method_->docs().brief(), docs.brief());
     EXPECT_EQ(method_->docs().commands(), docs.commands());
+    EXPECT_EQ(method_->precondition(), "precondition");
+    EXPECT_EQ(method_->postcondition(), "postcondition");
 }
 
 TEST_F(MethodEntityTest, Adding_Params_Struct_To_Descriptor_Sets_Method_Parameters)
