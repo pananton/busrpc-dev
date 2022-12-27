@@ -444,4 +444,198 @@ TEST(ParserTest, Parser_Correctly_Parses_Test_Project)
 
     checkEntity(project.get());
 }
+
+TEST(ParserTest, Invalid_Project_Dir_Parser_Error_If_Project_Directory_Does_Not_Contain_Builtin_File)
+{
+    TmpDir tmp;
+    Parser parser(tmp.path(), BUSRPC_TESTS_PROTOBUF_ROOT);
+
+    EXPECT_TRUE(parser.parse().second.find(ParserErrc::Invalid_Project_Dir));
+}
+
+TEST(ParserTest, Unexpected_Nested_Entity_Spec_Warn_If_Unknown_Directory_Is_Found_In_Project_Directory)
+{
+    TmpDir tmp;
+    CreateMinimalProject(tmp);
+    tmp.createDir("unknown_dir");
+    Parser parser(tmp.path(), BUSRPC_TESTS_PROTOBUF_ROOT);
+
+    EXPECT_TRUE(parser.parse().second.find(SpecWarn::Unexpected_Nested_Entity));
+}
+
+TEST(ParserTest, Unexpected_Nested_Entity_Spec_Warn_If_Directory_Is_Found_In_Method_Directory)
+{
+    TmpDir tmp;
+    CreateTestProject(tmp);
+    tmp.createDir("api/namespace/class/method/some_dir");
+    Parser parser(tmp.path(), BUSRPC_TESTS_PROTOBUF_ROOT);
+
+    EXPECT_TRUE(parser.parse().second.find(SpecWarn::Unexpected_Nested_Entity));
+}
+
+TEST(ParserTest, Unexpected_Nested_Entity_Spec_Warn_If_Directory_Is_Found_In_Service_Directory)
+{
+    TmpDir tmp;
+    CreateTestProject(tmp);
+    tmp.createDir("services/service/some_dir");
+    Parser parser(tmp.path(), BUSRPC_TESTS_PROTOBUF_ROOT);
+
+    EXPECT_TRUE(parser.parse().second.find(SpecWarn::Unexpected_Nested_Entity));
+}
+
+TEST(ParserTest, Unexpected_Directories_Are_Ignored_By_Parser)
+{
+    TmpDir tmp;
+    CreateMinimalProject(tmp);
+    tmp.writeFile("unknown_dir/file.proto", "invalid protobuf file");
+    tmp.writeFile("CallMessage/file.proto", "invalid protobuf file");
+    Parser parser(tmp.path(), BUSRPC_TESTS_PROTOBUF_ROOT);
+
+    auto ecol = parser.parse().second;
+
+    EXPECT_FALSE(ecol.find(ParserErrc::Protobuf_Error));
+}
+
+TEST(ParserTest, Files_With_Extension_Other_Than_proto_Are_Ignored_By_Parser)
+{
+    TmpDir tmp;
+    CreateMinimalProject(tmp);
+    tmp.writeFile("file.proto1", "invalid protobuf file");
+    Parser parser(tmp.path(), BUSRPC_TESTS_PROTOBUF_ROOT);
+
+    EXPECT_FALSE(parser.parse().second);
+}
+
+TEST(ParserTest, Unexpected_Package_Spec_Error_If_File_Content_Is_Not_Placed_Into_Expected_Package)
+{
+    std::string content = "syntax = \"proto3\";\n"
+                          "package busrpc.aaa;\n"
+                          "message MyStruct {}\n";
+    TmpDir tmp;
+    CreateMinimalProject(tmp);
+    tmp.writeFile("file.proto", content);
+    Parser parser(tmp.path(), BUSRPC_TESTS_PROTOBUF_ROOT);
+
+    EXPECT_TRUE(parser.parse().second.find(SpecErrc::Unexpected_Package));
+}
+
+TEST(ParserTest, Multiple_Definitions_Spec_Error_If_Next_Level_Entity_Conflicts_With_One_Of_The_Current_Level_Entities)
+{
+    std::string content = "syntax = \"proto3\";"
+                          "package busrpc;\n"
+                          "enum api {\n"
+                          "  CONSTANT_0 = 0;\n"
+                          "}\n";
+    TmpDir tmp;
+    CreateMinimalProject(tmp);
+    tmp.writeFile("file.proto", content);
+    tmp.createDir("api");
+    Parser parser(tmp.path(), BUSRPC_TESTS_PROTOBUF_ROOT);
+
+    auto [projectPtr, ecol] = parser.parse();
+
+    EXPECT_TRUE(ecol.find(SpecErrc::Multiple_Definitions));
+    EXPECT_FALSE(projectPtr->api());
+}
+
+TEST(ParserTest, Invalid_Entity_Spec_Error_If_Entity_Has_Invalid_Name)
+{
+    TmpDir tmp;
+    CreateMinimalProject(tmp);
+    tmp.createDir("api/namespace.proto");
+    Parser parser(tmp.path(), BUSRPC_TESTS_PROTOBUF_ROOT);
+
+    EXPECT_TRUE(parser.parse().second.find(SpecErrc::Invalid_Entity));
+}
+
+TEST(ParserTest, Protobuf_Error_Parser_Error_If_File_Has_Invalid_Protobuf_Syntax)
+{
+    TmpDir tmp;
+    CreateMinimalProject(tmp);
+    tmp.writeFile("invalid.proto", "syntax =");
+    Parser parser(tmp.path(), BUSRPC_TESTS_PROTOBUF_ROOT);
+
+    EXPECT_TRUE(parser.parse().second.find(ParserErrc::Protobuf_Error));
+}
+
+TEST(ParserTest, Default_Severity_Of_Errors_Is_ParserErrc_SpecErrc_DocErrc_SpecWarn_StyleErrc)
+{
+    std::string namespaceDesc = "syntax = \"proto3\";\n"
+                                "package busrpc.api.Namespace;\n"
+                                "//Namespace.\n"
+                                "message NamespaceDesc {}";
+    std::string undocumentedStruct = "syntax = \"proto3\";\n"
+                                     "package busrpc;\n"
+                                     "message MyStruct {}";
+
+    {
+        TmpDir tmp;
+        CreateMinimalProject(tmp);
+        Parser parser(tmp.path(), BUSRPC_TESTS_PROTOBUF_ROOT);
+
+        tmp.writeFile("invalid.proto", "syntax =");      // invalid syntax, parser error
+        tmp.createDir("api/Namespace");                  // non-conformat name (style error), no descriptor (spec error)
+        tmp.createDir("unknown_dir");                    // unexpected nested type (spec warn)
+        tmp.writeFile("file.proto", undocumentedStruct); // undocumented entity (doc error)
+
+        ErrorCollector ecol = parser.parse().second;
+
+        EXPECT_EQ(ecol.majorError()->code.category(), parser_error_category());
+    }
+
+    {
+        TmpDir tmp;
+        CreateMinimalProject(tmp);
+        Parser parser(tmp.path(), BUSRPC_TESTS_PROTOBUF_ROOT);
+
+        tmp.createDir("api/Namespace");                  // non-conformat name (style error), no descriptor (spec error)
+        tmp.createDir("unknown_dir");                    // unexpected nested type (spec warn)
+        tmp.writeFile("file.proto", undocumentedStruct); // undocumented entity (doc error)
+
+        ErrorCollector ecol = parser.parse().second;
+
+        EXPECT_EQ(ecol.majorError()->code.category(), spec_error_category());
+    }
+
+    {
+
+        TmpDir tmp;
+        CreateMinimalProject(tmp);
+        Parser parser(tmp.path(), BUSRPC_TESTS_PROTOBUF_ROOT);
+
+        tmp.writeFile("api/Namespace/namespace.proto", namespaceDesc); // non-conformat name (style error)
+        tmp.createDir("unknown_dir");                                  // unexpected nested type (spec warn)
+        tmp.writeFile("file.proto", undocumentedStruct);               // undocumented entity (doc error)
+
+        ErrorCollector ecol = parser.parse().second;
+
+        EXPECT_EQ(ecol.majorError()->code.category(), doc_error_category());
+    }
+
+    {
+
+        TmpDir tmp;
+        CreateMinimalProject(tmp);
+        Parser parser(tmp.path(), BUSRPC_TESTS_PROTOBUF_ROOT);
+
+        tmp.writeFile("api/Namespace/namespace.proto", namespaceDesc); // non-conformat name (style error)
+        tmp.createDir("unknown_dir");                                  // unexpected nested type (spec warn)
+
+        ErrorCollector ecol = parser.parse().second;
+
+        EXPECT_EQ(ecol.majorError()->code.category(), spec_warn_category());
+    }
+
+    {
+
+        TmpDir tmp;
+        CreateMinimalProject(tmp);
+        Parser parser(tmp.path(), BUSRPC_TESTS_PROTOBUF_ROOT);
+
+        tmp.writeFile("api/Namespace/namespace.proto", namespaceDesc); // non-conformat name (style error)
+        ErrorCollector ecol = parser.parse().second;
+
+        EXPECT_EQ(ecol.majorError()->code.category(), style_error_category());
+    }
+}
 }} // namespace busrpc::test

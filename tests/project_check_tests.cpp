@@ -1420,5 +1420,21 @@ TEST_F(ProjectCheckTest, Default_Severity_Of_Errors_Is_SpecErrc_DocErrc_SpecWarn
 
         EXPECT_EQ(ecol.majorError()->code.category(), spec_warn_category());
     }
+
+    {
+        Project project;
+        InitMinimalProject(&project);
+        auto api = project.addApi();
+
+        auto ns = api->addNamespace("Namespace"); // non-conformat name (should be lowercase)
+        auto desc = ns->addStruct(GetPredefinedStructName(StructTypeId::Namespace_Desc),
+                                  Namespace_Desc_File,
+                                  StructFlags::None,
+                                  EntityDocs("Namespace."));
+
+        ErrorCollector ecol = project.check();
+
+        EXPECT_EQ(ecol.majorError()->code.category(), style_error_category());
+    }
 }
 }} // namespace busrpc::test

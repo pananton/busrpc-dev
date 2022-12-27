@@ -22,6 +22,7 @@ public:
         using enum ParserErrc;
 
         switch (static_cast<ParserErrc>(code)) {
+        case Invalid_Project_Dir: return "Directory does not represent a valid busrpc project directory.";
         case Read_Failed: return "Failed to read file";
         case Protobuf_Error: return "Protobuf error";
         default: return "Unknown error";
@@ -119,11 +120,7 @@ std::pair<ProjectPtr, ErrorCollector> Parser::parse() const
 {
     SeverityOrder orderFunc = [](std::error_code lhs, std::error_code rhs) {
         if (lhs.category() == rhs.category()) {
-            if (lhs.category() == parser_error_category()) {
-                return lhs.value() > rhs.value();
-            } else {
-                return false;
-            }
+            return false;
         }
 
         if (rhs.category() == parser_error_category() ||
@@ -165,6 +162,9 @@ ProjectPtr Parser::parse(ErrorCollector& ecol) const
     if (projectPath.empty()) {
         ecol.add(ParserErrc::Read_Failed, std::make_pair("dir", projectDir_));
         return projectPtr;
+    } else if (!std::filesystem::is_regular_file(projectPath / Busrpc_Builtin_File)) {
+        ecol.add(ParserErrc::Invalid_Project_Dir, std::make_pair("dir", projectDir_));
+        return projectPtr;
     }
 
     protobuf::compiler::DiskSourceTree sourceTree;
@@ -184,7 +184,7 @@ ProjectPtr Parser::parse(ErrorCollector& ecol) const
 
     parseDir(importer, projectPtr.get(), ecol);
 
-    if (!ecol) {
+    if (!ecol.majorError() || ecol.majorError()->code.category() != parser_error_category()) {
         projectPtr->check(ecol);
     }
 
@@ -367,10 +367,6 @@ void Parser::addStruct(GeneralCompositeEntity* entity,
                        const google::protobuf::DescriptorProto* descProto,
                        const std::string& filename) const
 {
-    if (desc->name() == "NestedTestStruct") {
-        int a = 0;
-        ++a;
-    }
     protobuf::SourceLocation source;
     desc->GetSourceLocation(&source);
     StructFlags flags = StructFlags::None;
@@ -424,10 +420,6 @@ void Parser::addField(Struct* structure,
                       const google::protobuf::FieldDescriptor* desc,
                       const google::protobuf::FieldDescriptorProto* descProto) const
 {
-    if (structure->name() == "NestedTestStruct") {
-        int a = 0;
-        ++a;
-    }
     google::protobuf::SourceLocation source;
     desc->GetSourceLocation(&source);
     FieldFlags flags = FieldFlags::None;

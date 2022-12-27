@@ -89,14 +89,23 @@ const std::filesystem::path& TmpDir::path() const noexcept
     return dir_;
 }
 
-void TmpDir::writeFile(const std::filesystem::path& path, const std::string& content)
+void TmpDir::writeFile(const std::filesystem::path& file, const std::string& content)
 {
-    auto filePath = path.is_relative() ? dir_ / path : path;
-    WriteFile(filePath, content);
-
-    if (!isNestedPath(dir_, filePath)) {
-        std::filesystem::remove(filePath);
-        throw std::runtime_error("path '" + path.string() + "' is outside temporary directory '" + dir_.string() + "'");
+    if (!file.is_relative()) {
+        throw std::runtime_error("should be relative path");
     }
+
+    auto filePath = dir_ / file;
+    WriteFile(filePath, content);
+}
+
+void TmpDir::createDir(const std::filesystem::path& dir)
+{
+    if (!dir.is_relative()) {
+        throw std::runtime_error("should be relative path");
+    }
+
+    auto dirPath = dir_ / dir;
+    std::filesystem::create_directories(dirPath);
 }
 }} // namespace busrpc::test

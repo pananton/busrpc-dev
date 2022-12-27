@@ -21,7 +21,8 @@ public:
     TmpDir& operator=(const TmpDir&&) = delete;
 
     const std::filesystem::path& path() const noexcept;
-    void writeFile(const std::filesystem::path&, const std::string& content = {});
+    void writeFile(const std::filesystem::path& file, const std::string& content = {});
+    void createDir(const std::filesystem::path& dir);
 
 private:
     std::filesystem::path dir_;

@@ -28,8 +28,9 @@ namespace busrpc {
 
 /// Parser error code.
 enum class ParserErrc {
-    Read_Failed = 1,   ///< Failed to read protobuf file (this code is also used if directory can't be read).
-    Protobuf_Error = 2 ///< Error reported by the internally used protobuf parser.
+    Invalid_Project_Dir = 1, //< Directory does not represent a valid busrpc project directory.
+    Read_Failed = 2,         ///< Failed to read protobuf file (this code is also used if directory can't be read).
+    Protobuf_Error = 3       ///< Error reported by the internally used protobuf parser.
 };
 
 /// Return parser error category.
