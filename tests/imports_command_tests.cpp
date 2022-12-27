@@ -34,12 +34,12 @@ TEST(ImportsCommandTest, Description_For_Unknown_Command_Error_Code_Differs_From
 {
     using enum ImportsErrc;
 
-    EXPECT_NE(imports_error_category().message(static_cast<int>(File_Read_Failed)),
-              imports_error_category().message(0));
     EXPECT_NE(imports_error_category().message(static_cast<int>(Protobuf_Parsing_Failed)),
               imports_error_category().message(0));
+    EXPECT_NE(imports_error_category().message(static_cast<int>(File_Read_Failed)),
+              imports_error_category().message(0));
     EXPECT_NE(imports_error_category().message(static_cast<int>(File_Not_Found)), imports_error_category().message(0));
-    EXPECT_NE(imports_error_category().message(static_cast<int>(Project_Dir_Does_Not_Exist)),
+    EXPECT_NE(imports_error_category().message(static_cast<int>(Invalid_Project_Dir)),
               imports_error_category().message(0));
 }
 
@@ -47,10 +47,10 @@ TEST(ImportsCommandTest, Error_Codes_Are_Mapped_To_Appropriate_Error_Conditions)
 {
     using enum ImportsErrc;
 
-    EXPECT_EQ(std::error_code(File_Read_Failed), CommandError::File_Operation_Failed);
     EXPECT_EQ(std::error_code(Protobuf_Parsing_Failed), CommandError::Protobuf_Parsing_Failed);
+    EXPECT_EQ(std::error_code(File_Read_Failed), CommandError::File_Operation_Failed);
     EXPECT_EQ(std::error_code(File_Not_Found), CommandError::Invalid_Argument);
-    EXPECT_EQ(std::error_code(Project_Dir_Does_Not_Exist), CommandError::Invalid_Argument);
+    EXPECT_EQ(std::error_code(Invalid_Project_Dir), CommandError::Invalid_Argument);
 }
 
 TEST(ImportsCommandTest, Help_Is_Defined_For_The_Command)
@@ -82,7 +82,7 @@ TEST(ImportsCommandTest, Command_Fails_If_Invoked_Wo_Files_And_Invalid_Project_D
     std::ostringstream err;
 
     EXPECT_COMMAND_EXCEPTION(ImportsCommand({{}, "missing_project_dir"}).execute(std::nullopt, err),
-                             ImportsErrc::Project_Dir_Does_Not_Exist);
+                             ImportsErrc::Invalid_Project_Dir);
     EXPECT_FALSE(err.str().empty());
 }
 
@@ -91,7 +91,7 @@ TEST(ImportsCommandTest, Command_Fails_If_Project_Dir_Does_Not_Exist)
     std::ostringstream err;
 
     EXPECT_COMMAND_EXCEPTION(ImportsCommand({{"missing_file.proto"}, "missing_project_dir"}).execute(std::nullopt, err),
-                             ImportsErrc::Project_Dir_Does_Not_Exist);
+                             ImportsErrc::Invalid_Project_Dir);
     EXPECT_FALSE(err.str().empty());
 }
 

@@ -127,11 +127,10 @@ std::pair<ProjectPtr, ErrorCollector> Parser::parse() const
 
             (rhs.category() == spec_error_category() && lhs.category() != parser_error_category()) ||
 
-            (rhs.category() == doc_error_category() && lhs.category() != parser_error_category() &&
+            (rhs.category() == spec_warn_category() && lhs.category() != parser_error_category() &&
              lhs.category() != spec_error_category()) ||
 
-            (rhs.category() == spec_warn_category() && lhs.category() != parser_error_category() &&
-             lhs.category() != spec_error_category() && lhs.category() != doc_error_category())) {
+            (rhs.category() == doc_warn_category() && lhs.category() == style_warn_category())) {
 
             return true;
         }

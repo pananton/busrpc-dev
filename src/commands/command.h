@@ -19,27 +19,24 @@ namespace busrpc {
 ///       to compare with command-specific detailed \c std::error_code.
 /// \note Some commands do not fail fast. When error is encountered, they remember it and continue processing. That
 ///       means several errors may be encountered during a single invocation of the command and all of them may have
-///       distinct error codes. Implementation needs to decide, which code to use as the command result. The main
-///       idea used by the commands is that errors caused by user (for example, specifying invalid arguments for the
-///       command) should be signalled before various system errors. This is achieved by assigning higher values for
-///       user-caused error codes and then ordering error codes by value (greater value means higher severity).
+///       distinct error codes. The codes are odered in each command error category in a way that error with lower
+///       code value may be caused by error with higher code value. The command-specific error codes are mapped to
+///       this error condition preserving this order, i.e. the higher code is mapped to the same or higher error
+///       condition.
 enum class CommandError {
-    /// Internal error.
-    Internal = 1,
-
-    /// File or directory operation failed.
-    File_Operation_Failed = 2,
+    /// Busrpc specification is violated.
+    Spec_Violated = 1,
 
     /// Failed to parse protobuf file.
     /// \note This error is returned if protobuf file has invalid syntax or it's imports can't be located by
     ///       libprotobuf. This error is NOT used to signal busrpc specification rules violations.
-    Protobuf_Parsing_Failed = 3,
+    Protobuf_Parsing_Failed = 2,
 
-    /// Busrpc specification is violated.
-    Spec_Violated = 4,
+    /// File or directory operation failed.
+    File_Operation_Failed = 3,
 
     /// Invalid command argument.
-    Invalid_Argument = 5
+    Invalid_Argument = 4
 };
 
 /// Return busrpc command error category.

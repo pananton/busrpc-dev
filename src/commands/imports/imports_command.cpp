@@ -22,10 +22,10 @@ public:
         using enum ImportsErrc;
 
         switch (static_cast<ImportsErrc>(code)) {
+        case Protobuf_Parsing_Failed: return "Failed to parse protobuf file";
         case File_Read_Failed: return "Failed to read file";
-        case Protobuf_Parsing_Failed: return "Protobuf parsing error";
         case File_Not_Found: return "File not found";
-        case Project_Dir_Does_Not_Exist: return "Busrpc project directory does not exist";
+        case Invalid_Project_Dir: return "Invalid busrpc project directory";
         default: return "Unknown error";
         }
     }
@@ -35,10 +35,10 @@ public:
         using enum ImportsErrc;
 
         switch (static_cast<ImportsErrc>(code)) {
-        case File_Read_Failed: return condition == CommandError::File_Operation_Failed;
         case Protobuf_Parsing_Failed: return condition == CommandError::Protobuf_Parsing_Failed;
+        case File_Read_Failed: return condition == CommandError::File_Operation_Failed;
         case File_Not_Found: return condition == CommandError::Invalid_Argument;
-        case Project_Dir_Does_Not_Exist: return condition == CommandError::Invalid_Argument;
+        case Invalid_Project_Dir: return condition == CommandError::Invalid_Argument;
         default: return false;
         }
     }
@@ -92,7 +92,7 @@ std::error_code ImportsCommand::tryExecuteImpl(std::ostream& out, std::ostream& 
     } catch (const std::filesystem::filesystem_error&) { }
 
     if (projectPath.empty()) {
-        ecol.add(ImportsErrc::Project_Dir_Does_Not_Exist, std::make_pair("dir", args().projectDir()));
+        ecol.add(ImportsErrc::Invalid_Project_Dir, std::make_pair("dir", args().projectDir()));
         return ecol.majorError()->code;
     }
 

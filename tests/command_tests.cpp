@@ -71,18 +71,18 @@ TEST(CommandTest, Command_Error_Category_Name_Is_command)
 
 TEST(CommandTest, Command_Error_Ctor_Sets_Command_Id)
 {
-    EXPECT_EQ(command_error(TestCommand::Id, ImportsErrc::Project_Dir_Does_Not_Exist).commandId(), TestCommand::Id);
+    EXPECT_EQ(command_error(TestCommand::Id, ImportsErrc::Invalid_Project_Dir).commandId(), TestCommand::Id);
 }
 
 TEST(CommandTest, Command_Error_Ctor_Sets_Error_Code)
 {
-    EXPECT_EQ(command_error(TestCommand::Id, ImportsErrc::Project_Dir_Does_Not_Exist).code(),
-              ImportsErrc::Project_Dir_Does_Not_Exist);
+    EXPECT_EQ(command_error(TestCommand::Id, ImportsErrc::Invalid_Project_Dir).code(),
+              ImportsErrc::Invalid_Project_Dir);
 }
 
 TEST(CommandTest, Command_Error_Ctor_Adds_Command_Name_To_Error_Description)
 {
-    command_error err(TestCommand::Id, ImportsErrc::Project_Dir_Does_Not_Exist);
+    command_error err(TestCommand::Id, ImportsErrc::Invalid_Project_Dir);
 
     EXPECT_NE(std::string_view(err.what()).find(GetCommandName(TestCommand::Id)), std::string_view::npos);
 }
@@ -96,12 +96,11 @@ TEST(CommandTest, Description_For_Unknown_Command_Error_Condition_Differs_From_K
 {
     using enum CommandError;
 
-    EXPECT_NE(command_error_category().message(static_cast<int>(Internal)), command_error_category().message(0));
-    EXPECT_NE(command_error_category().message(static_cast<int>(File_Operation_Failed)),
-              command_error_category().message(0));
+    EXPECT_NE(command_error_category().message(static_cast<int>(Spec_Violated)), command_error_category().message(0));
     EXPECT_NE(command_error_category().message(static_cast<int>(Protobuf_Parsing_Failed)),
               command_error_category().message(0));
-    EXPECT_NE(command_error_category().message(static_cast<int>(Spec_Violated)), command_error_category().message(0));
+    EXPECT_NE(command_error_category().message(static_cast<int>(File_Operation_Failed)),
+              command_error_category().message(0));
     EXPECT_NE(command_error_category().message(static_cast<int>(Invalid_Argument)),
               command_error_category().message(0));
 }

@@ -31,27 +31,25 @@ TEST(CheckCommandTest, Description_For_Unknown_Command_Error_Code_Differs_From_K
 {
     using enum CheckErrc;
 
-    EXPECT_NE(check_error_category().message(static_cast<int>(File_Read_Failed)), check_error_category().message(0));
+    EXPECT_NE(check_error_category().message(static_cast<int>(Style_Violated)), check_error_category().message(0));
+    EXPECT_NE(check_error_category().message(static_cast<int>(Doc_Rule_Violated)), check_error_category().message(0));
+    EXPECT_NE(check_error_category().message(static_cast<int>(Spec_Violated)), check_error_category().message(0));
     EXPECT_NE(check_error_category().message(static_cast<int>(Protobuf_Parsing_Failed)),
               check_error_category().message(0));
-    EXPECT_NE(check_error_category().message(static_cast<int>(Protobuf_Style_Violated)),
-              check_error_category().message(0));
-    EXPECT_NE(check_error_category().message(static_cast<int>(Undocumeted_Entity)), check_error_category().message(0));
-    EXPECT_NE(check_error_category().message(static_cast<int>(Spec_Violated)), check_error_category().message(0));
-    EXPECT_NE(check_error_category().message(static_cast<int>(Project_Dir_Does_Not_Exist)),
-              check_error_category().message(0));
+    EXPECT_NE(check_error_category().message(static_cast<int>(File_Read_Failed)), check_error_category().message(0));
+    EXPECT_NE(check_error_category().message(static_cast<int>(Invalid_Project_Dir)), check_error_category().message(0));
 }
 
 TEST(CheckCommandTest, Error_Codes_Are_Mapped_To_Appropriate_Error_Conditions)
 {
     using enum CheckErrc;
 
-    EXPECT_EQ(std::error_code(File_Read_Failed), CommandError::File_Operation_Failed);
-    EXPECT_EQ(std::error_code(Protobuf_Parsing_Failed), CommandError::Protobuf_Parsing_Failed);
-    EXPECT_EQ(std::error_code(Protobuf_Style_Violated), CommandError::Spec_Violated);
-    EXPECT_EQ(std::error_code(Undocumeted_Entity), CommandError::Spec_Violated);
+    EXPECT_EQ(std::error_code(Style_Violated), CommandError::Spec_Violated);
+    EXPECT_EQ(std::error_code(Doc_Rule_Violated), CommandError::Spec_Violated);
     EXPECT_EQ(std::error_code(Spec_Violated), CommandError::Spec_Violated);
-    EXPECT_EQ(std::error_code(Project_Dir_Does_Not_Exist), CommandError::Invalid_Argument);
+    EXPECT_EQ(std::error_code(Protobuf_Parsing_Failed), CommandError::Protobuf_Parsing_Failed);
+    EXPECT_EQ(std::error_code(File_Read_Failed), CommandError::File_Operation_Failed);
+    EXPECT_EQ(std::error_code(Invalid_Project_Dir), CommandError::Invalid_Argument);
 }
 
 TEST(CheckCommandTest, Help_Is_Defined_For_The_Command)

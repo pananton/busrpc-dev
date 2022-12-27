@@ -13,12 +13,11 @@ struct CommandErrorCategory: std::error_category {
         using enum CommandError;
 
         switch (static_cast<CommandError>(ev)) {
-        case Internal: return "internal error";
-        case File_Operation_Failed: return "file or directory access error";
-        case Protobuf_Parsing_Failed: return "failed to parse protobuf file";
-        case Spec_Violated: return "busrpc specification violated";
-        case Invalid_Argument: return "invalid argument";
-        default: return "unknown error";
+        case Spec_Violated: return "Busrpc specification violated";
+        case Protobuf_Parsing_Failed: return "Failed to parse protobuf file";
+        case File_Operation_Failed: return "File or directory access error";
+        case Invalid_Argument: return "Invalid argument";
+        default: return "Unknown error";
         }
     }
 };

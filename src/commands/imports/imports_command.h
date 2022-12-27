@@ -18,17 +18,17 @@ namespace busrpc {
 
 /// Command-specific error code.
 enum class ImportsErrc {
-    /// Failed to read file for which import tree is built.
-    File_Read_Failed = 1,
+    ///< Failed to parse protobuf file.
+    Protobuf_Parsing_Failed = 1,
 
-    /// Failed to parse protobuf file.
-    Protobuf_Parsing_Failed = 2,
+    ///< Failed to read file for which import tree is built.
+    File_Read_Failed = 2,
 
-    /// File for which import tree should be built is not found.
+    ///< File for which import tree should be built is not found.
     File_Not_Found = 3,
 
-    /// Busrpc project directory does not exist.
-    Project_Dir_Does_Not_Exist = 4
+    /// Busrpc project directory does not exist or does not represent a valid project directory.
+    Invalid_Project_Dir = 4
 };
 
 /// Return error category for the \c imports command.

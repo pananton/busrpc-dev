@@ -28,7 +28,7 @@ namespace busrpc {
 
 /// Parser error code.
 enum class ParserErrc {
-    Invalid_Project_Dir = 1, //< Directory does not represent a valid busrpc project directory.
+    Invalid_Project_Dir = 1, ///< Directory does not exist or does not represent a valid busrpc project directory.
     Read_Failed = 2,         ///< Failed to read protobuf file (this code is also used if directory can't be read).
     Protobuf_Error = 3       ///< Error reported by the internally used protobuf parser.
 };
@@ -43,7 +43,8 @@ std::error_code make_error_code(ParserErrc errc);
 class Parser {
 public:
     /// Create parser for \a projectDir.
-    /// \note Project directory is the directory which contains \a api/ and \a services/ subdirectories.
+    /// \note Project directory is the directory which contains \a busrpc.proto file and \a api/ and \a services/
+    ///       subdirectories.
     /// \note Paremeter \a protobufRoot allows to specify where to search for built-in \a .proto files provided by
     ///       the protobuf library (for example, 'google/protobuf/descriptor.proto', etc.). On *nix systems parser
     ///       additionally searches for built-in \a .proto files in '/usr/include' and '/usr/local/include' if
@@ -64,7 +65,7 @@ public:
     /// \note Parser does not stop working when error is encountered, which means that returned project may be
     ///       incomplete if errors are found.
     ///  \note Uses default error collector, which assumes the following priorities of the error codes:
-    ///        <tt>FilesystemErrc > SpecErrc > DocsErrc > SpecWarn > StyleErrc</tt>
+    ///        <tt>ParserErrc > SpecErrc > SpecWarn > DocWarn > StyleWarn</tt>
     std::pair<ProjectPtr, ErrorCollector> parse() const;
 
     /// Parse project directory and build \ref Project.

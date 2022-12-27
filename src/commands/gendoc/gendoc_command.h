@@ -17,23 +17,20 @@ namespace busrpc {
 
 /// Command-specific error code.
 enum class GenDocErrc {
-    /// Failed to write generated documentation to the output directory.
-    File_Write_Failed = 1,
-
-    /// Failed to read a source file for documentation.
-    File_Read_Failed = 2,
-
-    /// Failed to create output directory.
-    Create_Output_Dir_Failed = 3,
+    /// Busrpc specification violated.
+    Spec_Violated = 1,
 
     /// Failed to parse protobuf file.
-    Protobuf_Parsing_Failed = 4,
+    Protobuf_Parsing_Failed = 2,
 
-    /// Busrpc specification is violated.
-    Spec_Violated = 5,
+    /// Failed to write generated documentation to the output directory.
+    File_Write_Failed = 3,
 
-    /// Busrpc project directory does not exist.
-    Project_Dir_Does_Not_Exist = 6
+    /// Failed to read a source file for documentation.
+    File_Read_Failed = 4,
+
+    /// Busrpc project directory does not exist or does not represent a valid project directory.
+    Invalid_Project_Dir = 5
 };
 
 /// Return error category for the \c gendoc command.

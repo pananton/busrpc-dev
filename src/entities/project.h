@@ -46,14 +46,14 @@ enum class SpecWarn {
     Unexpected_Nested_Entity = 1
 };
 
-/// Documentation-related error codes.
-enum class DocErrc {
+/// Documentation-related warnings.
+enum class DocWarn {
     Undocumented_Entity = 1, ///< Entity is not documented.
     Unknown_Doc_Command = 2  ///< Unknown documentation command.
 };
 
-/// Style-related error codes.
-enum class StyleErrc {
+/// Style-related warnings.
+enum class StyleWarn {
     Invalid_Name_Format = 1 ///< Entity name format is invalid.
 };
 
@@ -70,16 +70,16 @@ const std::error_category& spec_warn_category();
 std::error_code make_error_code(SpecWarn errc);
 
 /// Return error category for the documentation-related error codes.
-const std::error_category& doc_error_category();
+const std::error_category& doc_warn_category();
 
-/// Create error code from the \ref DocErrc value.
-std::error_code make_error_code(DocErrc errc);
+/// Create error code from the \ref DocWarn value.
+std::error_code make_error_code(DocWarn errc);
 
 /// Return error category for the style-related error codes.
-const std::error_category& style_error_category();
+const std::error_category& style_warn_category();
 
-/// Create error code from the \ref StyleErrc value.
-std::error_code make_error_code(StyleErrc errc);
+/// Create error code from the \ref StyleWarn value.
+std::error_code make_error_code(StyleWarn errc);
 
 /// Project entity.
 class Project: public GeneralCompositeEntity {
@@ -128,7 +128,7 @@ public:
 
     /// Check project for conformance with busrpc specification.
     /// \note Uses default error collector, which assumes the following priorities of the error codes:
-    ///       <tt>SpecErrc > DocsErrc > SpecWarn > StyleErrc</tt>
+    ///       <tt>SpecErrc > SpecWarn > DocWarn > StyleWarn</tt>
     ErrorCollector check() const;
 
     /// Check project for conformance with busrpc specification.
@@ -198,8 +198,8 @@ template<>
 struct is_error_code_enum<busrpc::SpecWarn>: true_type { };
 
 template<>
-struct is_error_code_enum<busrpc::DocErrc>: true_type { };
+struct is_error_code_enum<busrpc::DocWarn>: true_type { };
 
 template<>
-struct is_error_code_enum<busrpc::StyleErrc>: true_type { };
+struct is_error_code_enum<busrpc::StyleWarn>: true_type { };
 } // namespace std

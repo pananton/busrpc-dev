@@ -558,7 +558,7 @@ TEST(ParserTest, Protobuf_Error_Parser_Error_If_File_Has_Invalid_Protobuf_Syntax
     EXPECT_TRUE(parser.parse().second.find(ParserErrc::Protobuf_Error));
 }
 
-TEST(ParserTest, Default_Severity_Of_Errors_Is_ParserErrc_SpecErrc_DocErrc_SpecWarn_StyleErrc)
+TEST(ParserTest, Default_Severity_Of_Errors_Is_ParserErrc_SpecErrc_SpecWarn_DocWarn_StyleWarn)
 {
     std::string namespaceDesc = "syntax = \"proto3\";\n"
                                 "package busrpc.api.Namespace;\n"
@@ -574,9 +574,9 @@ TEST(ParserTest, Default_Severity_Of_Errors_Is_ParserErrc_SpecErrc_DocErrc_SpecW
         Parser parser(tmp.path(), BUSRPC_TESTS_PROTOBUF_ROOT);
 
         tmp.writeFile("invalid.proto", "syntax =");      // invalid syntax, parser error
-        tmp.createDir("api/Namespace");                  // non-conformat name (style error), no descriptor (spec error)
+        tmp.createDir("api/Namespace");                  // non-conformat name (style warn), no descriptor (spec error)
         tmp.createDir("unknown_dir");                    // unexpected nested type (spec warn)
-        tmp.writeFile("file.proto", undocumentedStruct); // undocumented entity (doc error)
+        tmp.writeFile("file.proto", undocumentedStruct); // undocumented entity (doc warn)
 
         ErrorCollector ecol = parser.parse().second;
 
@@ -588,9 +588,9 @@ TEST(ParserTest, Default_Severity_Of_Errors_Is_ParserErrc_SpecErrc_DocErrc_SpecW
         CreateMinimalProject(tmp);
         Parser parser(tmp.path(), BUSRPC_TESTS_PROTOBUF_ROOT);
 
-        tmp.createDir("api/Namespace");                  // non-conformat name (style error), no descriptor (spec error)
+        tmp.createDir("api/Namespace");                  // non-conformat name (style warn), no descriptor (spec error)
         tmp.createDir("unknown_dir");                    // unexpected nested type (spec warn)
-        tmp.writeFile("file.proto", undocumentedStruct); // undocumented entity (doc error)
+        tmp.writeFile("file.proto", undocumentedStruct); // undocumented entity (doc warn)
 
         ErrorCollector ecol = parser.parse().second;
 
@@ -603,23 +603,9 @@ TEST(ParserTest, Default_Severity_Of_Errors_Is_ParserErrc_SpecErrc_DocErrc_SpecW
         CreateMinimalProject(tmp);
         Parser parser(tmp.path(), BUSRPC_TESTS_PROTOBUF_ROOT);
 
-        tmp.writeFile("api/Namespace/namespace.proto", namespaceDesc); // non-conformat name (style error)
+        tmp.writeFile("api/Namespace/namespace.proto", namespaceDesc); // non-conformat name (style warn)
         tmp.createDir("unknown_dir");                                  // unexpected nested type (spec warn)
-        tmp.writeFile("file.proto", undocumentedStruct);               // undocumented entity (doc error)
-
-        ErrorCollector ecol = parser.parse().second;
-
-        EXPECT_EQ(ecol.majorError()->code.category(), doc_error_category());
-    }
-
-    {
-
-        TmpDir tmp;
-        CreateMinimalProject(tmp);
-        Parser parser(tmp.path(), BUSRPC_TESTS_PROTOBUF_ROOT);
-
-        tmp.writeFile("api/Namespace/namespace.proto", namespaceDesc); // non-conformat name (style error)
-        tmp.createDir("unknown_dir");                                  // unexpected nested type (spec warn)
+        tmp.writeFile("file.proto", undocumentedStruct);               // undocumented entity (doc warn)
 
         ErrorCollector ecol = parser.parse().second;
 
@@ -632,10 +618,24 @@ TEST(ParserTest, Default_Severity_Of_Errors_Is_ParserErrc_SpecErrc_DocErrc_SpecW
         CreateMinimalProject(tmp);
         Parser parser(tmp.path(), BUSRPC_TESTS_PROTOBUF_ROOT);
 
-        tmp.writeFile("api/Namespace/namespace.proto", namespaceDesc); // non-conformat name (style error)
+        tmp.writeFile("api/Namespace/namespace.proto", namespaceDesc); // non-conformat name (style warn)
+        tmp.writeFile("file.proto", undocumentedStruct);               // undocumented entity (doc warn)
+
         ErrorCollector ecol = parser.parse().second;
 
-        EXPECT_EQ(ecol.majorError()->code.category(), style_error_category());
+        EXPECT_EQ(ecol.majorError()->code.category(), doc_warn_category());
+    }
+
+    {
+
+        TmpDir tmp;
+        CreateMinimalProject(tmp);
+        Parser parser(tmp.path(), BUSRPC_TESTS_PROTOBUF_ROOT);
+
+        tmp.writeFile("api/Namespace/namespace.proto", namespaceDesc); // non-conformat name (style warn)
+        ErrorCollector ecol = parser.parse().second;
+
+        EXPECT_EQ(ecol.majorError()->code.category(), style_warn_category());
     }
 }
 }} // namespace busrpc::test

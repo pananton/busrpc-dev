@@ -86,7 +86,7 @@ TEST(ErrorCollectorTest, First_Error_Is_Stored_As_Major_If_No_Ordering_Function_
     ErrorCollector ecol;
     ecol.add(CheckErrc::File_Read_Failed);
     ecol.add(CheckErrc::Spec_Violated, "test");
-    ecol.add(CheckErrc::Protobuf_Style_Violated, std::make_pair(1, 1));
+    ecol.add(CheckErrc::Style_Violated, std::make_pair(1, 1));
 
     ASSERT_TRUE(ecol.majorError());
     EXPECT_EQ(ecol.majorError()->code, CheckErrc::File_Read_Failed);
@@ -95,12 +95,12 @@ TEST(ErrorCollectorTest, First_Error_Is_Stored_As_Major_If_No_Ordering_Function_
 TEST(ErrorCollectorTest, Most_Severe_Error_Is_Stored_As_Major_As_Determined_By_Specified_Ordering_Function)
 {
     ErrorCollector ecol(SeverityByErrorCodeValue);
-    ecol.add(CheckErrc::File_Read_Failed);
     ecol.add(CheckErrc::Spec_Violated, "test");
-    ecol.add(CheckErrc::Protobuf_Style_Violated, std::make_pair(1, 1));
+    ecol.add(CheckErrc::Style_Violated, std::make_pair(1, 1));
+    ecol.add(CheckErrc::File_Read_Failed);
 
     ASSERT_TRUE(ecol.majorError());
-    EXPECT_EQ(ecol.majorError()->code, CheckErrc::Spec_Violated);
+    EXPECT_EQ(ecol.majorError()->code, CheckErrc::File_Read_Failed);
 }
 
 TEST(ErrorCollectorTest, add_Ignores_Error_Code_Indicating_Success)
@@ -138,12 +138,12 @@ TEST(ErrorCollectorTest, Error_Codes_Are_Stored_In_Order_Of_Addition)
     ErrorCollector ecol;
     ecol.add(CheckErrc::File_Read_Failed);
     ecol.add(CheckErrc::Spec_Violated, "test");
-    ecol.add(CheckErrc::Protobuf_Style_Violated, std::make_pair(1, 1));
+    ecol.add(CheckErrc::Style_Violated, std::make_pair(1, 1));
 
     ASSERT_EQ(ecol.errors().size(), 3);
     EXPECT_EQ(ecol.errors()[0].code, CheckErrc::File_Read_Failed);
     EXPECT_EQ(ecol.errors()[1].code, CheckErrc::Spec_Violated);
-    EXPECT_EQ(ecol.errors()[2].code, CheckErrc::Protobuf_Style_Violated);
+    EXPECT_EQ(ecol.errors()[2].code, CheckErrc::Style_Violated);
 }
 
 TEST(ErrorCollectorTest, clear_Removes_All_Error_Codes)
@@ -151,7 +151,7 @@ TEST(ErrorCollectorTest, clear_Removes_All_Error_Codes)
     ErrorCollector ecol;
     ecol.add(CheckErrc::File_Read_Failed);
     ecol.add(CheckErrc::Spec_Violated, "test");
-    ecol.add(CheckErrc::Protobuf_Style_Violated, std::make_pair(1, 1));
+    ecol.add(CheckErrc::Style_Violated, std::make_pair(1, 1));
 
     ASSERT_NO_THROW(ecol.clear());
     EXPECT_FALSE(ecol);
@@ -165,7 +165,7 @@ TEST(ErrorCollectorTest, All_Errors_Are_Outputted_To_Stream)
     ErrorCollector ecol;
     ecol.add(CheckErrc::File_Read_Failed);
     ecol.add(CheckErrc::Spec_Violated, "test");
-    ecol.add(CheckErrc::Protobuf_Style_Violated, std::make_pair(1, 1));
+    ecol.add(CheckErrc::Style_Violated, std::make_pair(1, 1));
 
     ASSERT_NO_THROW(out << ecol);
 
@@ -178,7 +178,7 @@ TEST(ErrorCollectorTest, All_Errors_Are_Outputted_To_Stream)
     EXPECT_NE(lines[1].find(check_error_category().message(static_cast<int>(CheckErrc::Spec_Violated))),
               std::string::npos);
     EXPECT_NE(lines[1].find(check_error_category().name()), std::string::npos);
-    EXPECT_NE(lines[2].find(check_error_category().message(static_cast<int>(CheckErrc::Protobuf_Style_Violated))),
+    EXPECT_NE(lines[2].find(check_error_category().message(static_cast<int>(CheckErrc::Style_Violated))),
               std::string::npos);
     EXPECT_NE(lines[2].find(check_error_category().name()), std::string::npos);
 }
@@ -192,7 +192,7 @@ TEST(ErrorCollectorTest, Collector_Guard_Outputs_Errors_In_Destructor)
         ErrorCollectorGuard guard(ecol, out);
         ecol.add(CheckErrc::File_Read_Failed);
         ecol.add(CheckErrc::Spec_Violated, "test");
-        ecol.add(CheckErrc::Protobuf_Style_Violated, std::make_pair(1, 1));
+        ecol.add(CheckErrc::Style_Violated, std::make_pair(1, 1));
     }
 
     std::vector<std::string> lines = SplitString(out.str());
@@ -203,7 +203,7 @@ TEST(ErrorCollectorTest, Collector_Guard_Outputs_Errors_In_Destructor)
               std::string::npos);
     EXPECT_NE(lines[1].find(check_error_category().message(static_cast<int>(CheckErrc::Spec_Violated))),
               std::string::npos);
-    EXPECT_NE(lines[2].find(check_error_category().message(static_cast<int>(CheckErrc::Protobuf_Style_Violated))),
+    EXPECT_NE(lines[2].find(check_error_category().message(static_cast<int>(CheckErrc::Style_Violated))),
               std::string::npos);
 }
 }} // namespace busrpc::test

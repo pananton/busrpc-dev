@@ -357,41 +357,41 @@ TEST_F(ProjectCheckTest, Unknown_Specification_Warning_Code_Has_Non_Empty_Descri
     EXPECT_FALSE(spec_warn_category().message(0).empty());
 }
 
-TEST_F(ProjectCheckTest, Documentation_Error_Category_Name_Is_Not_Empty)
+TEST_F(ProjectCheckTest, Documentation_Warning_Category_Name_Is_Not_Empty)
 {
-    EXPECT_TRUE(doc_error_category().name());
-    EXPECT_NE(doc_error_category().name()[0], 0);
+    EXPECT_TRUE(doc_warn_category().name());
+    EXPECT_NE(doc_warn_category().name()[0], 0);
 }
 
-TEST_F(ProjectCheckTest, Documentation_Error_Codes_Have_Non_Empty_Descriptions)
+TEST_F(ProjectCheckTest, Documentation_Warning_Codes_Have_Non_Empty_Descriptions)
 {
-    using enum DocErrc;
+    using enum DocWarn;
 
-    EXPECT_FALSE(doc_error_category().message(static_cast<int>(Undocumented_Entity)).empty());
-    EXPECT_FALSE(doc_error_category().message(static_cast<int>(Unknown_Doc_Command)).empty());
+    EXPECT_FALSE(doc_warn_category().message(static_cast<int>(Undocumented_Entity)).empty());
+    EXPECT_FALSE(doc_warn_category().message(static_cast<int>(Unknown_Doc_Command)).empty());
 }
 
-TEST_F(ProjectCheckTest, Unknown_Documentation_Error_Code_Has_Non_Empty_Description)
+TEST_F(ProjectCheckTest, Unknown_Documentation_Warning_Code_Has_Non_Empty_Description)
 {
-    EXPECT_FALSE(doc_error_category().message(0).empty());
+    EXPECT_FALSE(doc_warn_category().message(0).empty());
 }
 
-TEST_F(ProjectCheckTest, Style_Error_Category_Name_Is_Not_Empty)
+TEST_F(ProjectCheckTest, Style_Warning_Category_Name_Is_Not_Empty)
 {
-    EXPECT_TRUE(style_error_category().name());
-    EXPECT_NE(style_error_category().name()[0], 0);
+    EXPECT_TRUE(style_warn_category().name());
+    EXPECT_NE(style_warn_category().name()[0], 0);
 }
 
-TEST_F(ProjectCheckTest, Style_Error_Codes_Have_Non_Empty_Descriptions)
+TEST_F(ProjectCheckTest, Style_Warning_Codes_Have_Non_Empty_Descriptions)
 {
-    using enum StyleErrc;
+    using enum StyleWarn;
 
-    EXPECT_FALSE(style_error_category().message(static_cast<int>(Invalid_Name_Format)).empty());
+    EXPECT_FALSE(style_warn_category().message(static_cast<int>(Invalid_Name_Format)).empty());
 }
 
-TEST_F(ProjectCheckTest, Unknown_Style_Error_Code_Has_Non_Empty_Description)
+TEST_F(ProjectCheckTest, Unknown_Warning_Error_Code_Has_Non_Empty_Description)
 {
-    EXPECT_FALSE(style_error_category().message(0).empty());
+    EXPECT_FALSE(style_warn_category().message(0).empty());
 }
 
 TEST_F(ProjectCheckTest, Success_For_Conforming_Project)
@@ -836,13 +836,13 @@ TEST_F(ProjectCheckTest, Unexpected_Nested_Entity_Spec_Warn_If_Namespace_Descrip
     EXPECT_TRUE(ecol.find(SpecWarn::Unexpected_Nested_Entity));
 }
 
-TEST_F(ProjectCheckTest, Invalid_Name_Format_Style_Error_If_Namespace_Name_Is_Not_Lowercase_With_Underscores)
+TEST_F(ProjectCheckTest, Invalid_Name_Format_Style_Warn_If_Namespace_Name_Is_Not_Lowercase_With_Underscores)
 {
     auto ns = api_->addNamespace("Namespace");
     AddNamespaceDesc(ns);
     auto ecol = project_.check();
 
-    EXPECT_TRUE(ecol.find(StyleErrc::Invalid_Name_Format));
+    EXPECT_TRUE(ecol.find(StyleWarn::Invalid_Name_Format));
 }
 
 TEST_F(ProjectCheckTest, No_Descriptor_Spec_Error_If_Class_Does_Not_Have_Descriptor)
@@ -901,13 +901,13 @@ TEST_F(ProjectCheckTest, Unexpected_Nested_Entity_Spec_Warn_If_Class_Descriptor_
     EXPECT_TRUE(ecol.find(SpecWarn::Unexpected_Nested_Entity));
 }
 
-TEST_F(ProjectCheckTest, Invalid_Name_Format_Style_Error_If_Class_Name_Is_Not_Lowercase_With_Underscores)
+TEST_F(ProjectCheckTest, Invalid_Name_Format_Style_Warn_If_Class_Name_Is_Not_Lowercase_With_Underscores)
 {
     auto cls = AddNamespace(api_)->addClass("clasS");
     AddClassDesc(cls);
     auto ecol = project_.check();
 
-    EXPECT_TRUE(ecol.find(StyleErrc::Invalid_Name_Format));
+    EXPECT_TRUE(ecol.find(StyleWarn::Invalid_Name_Format));
 }
 
 TEST_F(ProjectCheckTest, No_Descriptor_Spec_Error_If_Method_Does_Not_Have_Descriptor)
@@ -964,13 +964,13 @@ TEST_F(ProjectCheckTest, Unexpected_Nested_Entity_Spec_Warn_If_Method_Descriptor
     EXPECT_TRUE(ecol.find(SpecWarn::Unexpected_Nested_Entity));
 }
 
-TEST_F(ProjectCheckTest, Invalid_Name_Format_Style_Error_If_Method_Name_Is_Not_Lowercase_With_Underscores)
+TEST_F(ProjectCheckTest, Invalid_Name_Format_Style_Warn_If_Method_Name_Is_Not_Lowercase_With_Underscores)
 {
     auto method = AddClass(AddNamespace(api_))->addMethod("meThod");
     AddMethodDesc(method);
     auto ecol = project_.check();
 
-    EXPECT_TRUE(ecol.find(StyleErrc::Invalid_Name_Format));
+    EXPECT_TRUE(ecol.find(StyleWarn::Invalid_Name_Format));
 }
 
 TEST_F(ProjectCheckTest, No_Descriptor_Spec_Error_If_Service_Does_Not_Have_Descriptor)
@@ -1073,13 +1073,13 @@ TEST_F(ProjectCheckTest, Unexpected_Nested_Entity_Spec_Warn_If_Service_Descripto
     EXPECT_TRUE(ecol.find(SpecWarn::Unexpected_Nested_Entity));
 }
 
-TEST_F(ProjectCheckTest, Invalid_Name_Format_Style_Error_If_Service_Name_Is_Not_Lowercase_With_Underscores)
+TEST_F(ProjectCheckTest, Invalid_Name_Format_Style_Warn_If_Service_Name_Is_Not_Lowercase_With_Underscores)
 {
     auto service = services_->addService("Service");
     AddServiceDesc(service);
     auto ecol = project_.check();
 
-    EXPECT_TRUE(ecol.find(StyleErrc::Invalid_Name_Format));
+    EXPECT_TRUE(ecol.find(StyleWarn::Invalid_Name_Format));
 }
 
 TEST_F(ProjectCheckTest, Empty_Enum_Spec_Error_If_Enum_Does_Not_Have_Constants)
@@ -1259,125 +1259,123 @@ TEST_F(ProjectCheckTest, Not_Accessible_Type_Spec_Error_If_Referenced_Type_Outsi
     EXPECT_TRUE(ecol.find(SpecErrc::Not_Accessible_Type));
 }
 
-TEST_F(ProjectCheckTest, Invalid_Name_Format_Style_Error_If_Struct_Name_Is_Not_CamelCase)
+TEST_F(ProjectCheckTest, Invalid_Name_Format_Style_Warn_If_Struct_Name_Is_Not_CamelCase)
 {
     project_.addStruct("myStruct", "1.proto");
     auto ecol = project_.check();
 
-    EXPECT_TRUE(ecol.find(StyleErrc::Invalid_Name_Format));
+    EXPECT_TRUE(ecol.find(StyleWarn::Invalid_Name_Format));
 }
 
-TEST_F(ProjectCheckTest, Invalid_Name_Format_Style_Error_If_Enum_Name_Is_Not_CamelCase)
+TEST_F(ProjectCheckTest, Invalid_Name_Format_Style_Warn_If_Enum_Name_Is_Not_CamelCase)
 {
     auto enumeration = project_.addEnum("MY_ENUM", "1.proto");
     enumeration->addConstant("CONSTANT_0", 0, EntityDocs("Constant."));
     auto ecol = project_.check();
 
-    EXPECT_TRUE(ecol.find(StyleErrc::Invalid_Name_Format));
+    EXPECT_TRUE(ecol.find(StyleWarn::Invalid_Name_Format));
 }
 
-TEST_F(ProjectCheckTest, Invalid_Name_Format_Style_Error_If_Struct_Field_Name_Is_Not_Lowercase_With_Underscores)
+TEST_F(ProjectCheckTest, Invalid_Name_Format_Style_Warn_If_Struct_Field_Name_Is_Not_Lowercase_With_Underscores)
 {
     auto structure = project_.addStruct("MyStruct", "1.proto");
     structure->addScalarField("MyField", 1, FieldTypeId::Int32);
     auto ecol = project_.check();
 
-    EXPECT_TRUE(ecol.find(StyleErrc::Invalid_Name_Format));
+    EXPECT_TRUE(ecol.find(StyleWarn::Invalid_Name_Format));
 }
 
-TEST_F(ProjectCheckTest, Invalid_Name_Format_Style_Error_If_Enum_Constant_Name_Is_Not_Uppercase_With_Underscores)
+TEST_F(ProjectCheckTest, Invalid_Name_Format_Style_Warn_If_Enum_Constant_Name_Is_Not_Uppercase_With_Underscores)
 {
     auto enumeration = project_.addEnum("MyEnum", "1.proto");
     enumeration->addConstant("TESt_CONSTANT", 0);
     auto ecol = project_.check();
 
-    EXPECT_TRUE(ecol.find(StyleErrc::Invalid_Name_Format));
+    EXPECT_TRUE(ecol.find(StyleWarn::Invalid_Name_Format));
 }
 
-TEST_F(ProjectCheckTest, Undocumented_Entity_Doc_Error_If_Struct_Is_Not_Documented)
+TEST_F(ProjectCheckTest, Undocumented_Entity_Doc_Warn_If_Struct_Is_Not_Documented)
 {
     project_.addStruct("MyStruct", "1.proto");
     auto ecol = project_.check();
 
-    EXPECT_TRUE(ecol.find(DocErrc::Undocumented_Entity));
+    EXPECT_TRUE(ecol.find(DocWarn::Undocumented_Entity));
 }
 
-TEST_F(ProjectCheckTest, Undocumented_Entity_Doc_Error_If_Enum_Is_Not_Documented)
+TEST_F(ProjectCheckTest, Undocumented_Entity_Doc_Warn_If_Enum_Is_Not_Documented)
 {
     auto enumeration = project_.addEnum("MyEnum", "1.proto");
     enumeration->addConstant("CONSTANT_0", 0, EntityDocs("Constant."));
     auto ecol = project_.check();
 
-    EXPECT_TRUE(ecol.find(DocErrc::Undocumented_Entity));
+    EXPECT_TRUE(ecol.find(DocWarn::Undocumented_Entity));
 }
 
-TEST_F(ProjectCheckTest, Undocumented_Entity_Doc_Error_If_Struct_Field_Is_Not_Documented)
+TEST_F(ProjectCheckTest, Undocumented_Entity_Doc_Warn_If_Struct_Field_Is_Not_Documented)
 {
     auto structure = project_.addStruct("MyStruct", "1.proto", StructFlags::None, EntityDocs("My struct."));
     structure->addScalarField("field1", 1, FieldTypeId::Int32);
     auto ecol = project_.check();
 
-    EXPECT_TRUE(ecol.find(DocErrc::Undocumented_Entity));
+    EXPECT_TRUE(ecol.find(DocWarn::Undocumented_Entity));
 }
 
-TEST_F(ProjectCheckTest, Undocumented_Entity_Doc_Error_If_Enum_Constant_Is_Not_Documented)
+TEST_F(ProjectCheckTest, Undocumented_Entity_Doc_Warn_If_Enum_Constant_Is_Not_Documented)
 {
     auto enumeration = project_.addEnum("MyEnum", "1.proto", EntityDocs("My enumeration."));
     enumeration->addConstant("CONSTANT_0", 0);
     auto ecol = project_.check();
 
-    EXPECT_TRUE(ecol.find(DocErrc::Undocumented_Entity));
+    EXPECT_TRUE(ecol.find(DocWarn::Undocumented_Entity));
 }
 
-TEST_F(ProjectCheckTest, Unknown_Doc_Command_Doc_Error_If_Struct_Documentation_Command_Is_Unrecognized)
+TEST_F(ProjectCheckTest, Unknown_Doc_Command_Doc_Warn_If_Struct_Documentation_Command_Is_Unrecognized)
 {
     project_.addStruct("MyStruct", "1.proto", StructFlags::None, {{"My structure."}, {{"cmd1", {"value1"}}}});
     auto ecol = project_.check();
 
-    EXPECT_TRUE(ecol.find(DocErrc::Unknown_Doc_Command));
+    EXPECT_TRUE(ecol.find(DocWarn::Unknown_Doc_Command));
 }
 
-TEST_F(ProjectCheckTest, Unknown_Doc_Command_Doc_Error_If_Enum_Documentation_Command_Is_Unrecognized)
+TEST_F(ProjectCheckTest, Unknown_Doc_Command_Doc_Warn_If_Enum_Documentation_Command_Is_Unrecognized)
 {
     auto enumeration = project_.addEnum("MyEnum", "1.proto", {{"My enumeration."}, {{"cmd1", {"value1"}}}});
     enumeration->addConstant("CONSTANT_0", 0, EntityDocs("Constant."));
     auto ecol = project_.check();
 
-    EXPECT_TRUE(ecol.find(DocErrc::Unknown_Doc_Command));
+    EXPECT_TRUE(ecol.find(DocWarn::Unknown_Doc_Command));
 }
 
-TEST_F(ProjectCheckTest, Unknown_Doc_Command_Doc_Error_If_Struct_Field_Documentation_Command_Is_Unrecognized)
+TEST_F(ProjectCheckTest, Unknown_Doc_Command_Doc_Warn_If_Struct_Field_Documentation_Command_Is_Unrecognized)
 {
     auto structure = project_.addStruct("MyStruct", "1.proto", StructFlags::None, EntityDocs("My structure."));
     structure->addScalarField(
         "field1", 1, FieldTypeId::Int32, FieldFlags::None, "", "", {{"Field 1."}, {{"cmd1", {"value1"}}}});
     auto ecol = project_.check();
 
-    EXPECT_TRUE(ecol.find(DocErrc::Unknown_Doc_Command));
+    EXPECT_TRUE(ecol.find(DocWarn::Unknown_Doc_Command));
 }
 
-TEST_F(ProjectCheckTest, Unknown_Doc_Command_Doc_Error_If_Enum_Constant_Documentation_Command_Is_Unrecognized)
+TEST_F(ProjectCheckTest, Unknown_Doc_Command_Doc_Warn_If_Enum_Constant_Documentation_Command_Is_Unrecognized)
 {
     auto enumeration = project_.addEnum("MyEnum", "1.proto", EntityDocs("My enumeration."));
     enumeration->addConstant("CONSTANT_0", 0, {{"Constant 1."}, {{"cmd1", {"value1"}}}});
     auto ecol = project_.check();
 
-    EXPECT_TRUE(ecol.find(DocErrc::Unknown_Doc_Command));
+    EXPECT_TRUE(ecol.find(DocWarn::Unknown_Doc_Command));
 }
 
-TEST_F(ProjectCheckTest, Default_Severity_Of_Errors_Is_SpecErrc_DocErrc_SpecWarn_StyleErrc)
+TEST_F(ProjectCheckTest, Default_Severity_Of_Errors_Is_SpecErrc_SpecWarn_DocWarn_StyleWarn)
 {
     {
         Project project;
         InitMinimalProject(&project);
         auto api = project.addApi();
 
-        auto ns = api->addNamespace("Namespace"); // non-conformat name (style error)
-        auto desc = ns->addStruct(                // unexpected file (spec error), undocumented entity (doc error)
+        auto ns = api->addNamespace("Namespace"); // non-conformat name (style warn)
+        auto desc = ns->addStruct(                // unexpected file (spec error), undocumented entity (doc warn)
             GetPredefinedStructName(StructTypeId::Namespace_Desc),
             "1.proto");
-        ns->addClass("class")->addStruct(GetPredefinedStructName(StructTypeId::Class_Desc),
-                                         "1.proto"); // unexpected file (spec error)
         desc->addStruct(
             "MyStruct", StructFlags::None, EntityDocs("My structure.")); // unexpected nested type (spec warn)
 
@@ -1392,29 +1390,13 @@ TEST_F(ProjectCheckTest, Default_Severity_Of_Errors_Is_SpecErrc_DocErrc_SpecWarn
         InitMinimalProject(&project);
         auto api = project.addApi();
 
-        auto ns = api->addNamespace("Namespace"); // non-conformat name (should be lowercase)
-        auto desc = ns->addStruct(                // undocumented entity
+        auto ns = api->addNamespace("Namespace"); // non-conformat name (style warn)
+        auto desc = ns->addStruct(                // undocumented entity (doc warn)
             GetPredefinedStructName(StructTypeId::Namespace_Desc),
             Namespace_Desc_File,
             StructFlags::None);
-        desc->addStruct("MyStruct", StructFlags::None, EntityDocs("My structure.")); // unexpected nested type
-
-        ErrorCollector ecol = project.check();
-
-        EXPECT_EQ(ecol.majorError()->code.category(), doc_error_category());
-    }
-
-    {
-        Project project;
-        InitMinimalProject(&project);
-        auto api = project.addApi();
-
-        auto ns = api->addNamespace("Namespace"); // non-conformat name (should be lowercase)
-        auto desc = ns->addStruct(GetPredefinedStructName(StructTypeId::Namespace_Desc),
-                                  Namespace_Desc_File,
-                                  StructFlags::None,
-                                  EntityDocs("Namespace."));
-        desc->addStruct("MyStruct", StructFlags::None, EntityDocs("My structure.")); // unexpected nested type
+        desc->addStruct(
+            "MyStruct", StructFlags::None, EntityDocs("My structure.")); // unexpected nested type (spec warn)
 
         ErrorCollector ecol = project.check();
 
@@ -1426,6 +1408,22 @@ TEST_F(ProjectCheckTest, Default_Severity_Of_Errors_Is_SpecErrc_DocErrc_SpecWarn
         InitMinimalProject(&project);
         auto api = project.addApi();
 
+        auto ns = api->addNamespace("Namespace"); // non-conformat name (style warn)
+        auto desc = ns->addStruct(                // undocumented entity (doc warn)
+            GetPredefinedStructName(StructTypeId::Namespace_Desc),
+            Namespace_Desc_File,
+            StructFlags::None);
+
+        ErrorCollector ecol = project.check();
+
+        EXPECT_EQ(ecol.majorError()->code.category(), doc_warn_category());
+    }
+
+    {
+        Project project;
+        InitMinimalProject(&project);
+        auto api = project.addApi();
+
         auto ns = api->addNamespace("Namespace"); // non-conformat name (should be lowercase)
         auto desc = ns->addStruct(GetPredefinedStructName(StructTypeId::Namespace_Desc),
                                   Namespace_Desc_File,
@@ -1434,7 +1432,7 @@ TEST_F(ProjectCheckTest, Default_Severity_Of_Errors_Is_SpecErrc_DocErrc_SpecWarn
 
         ErrorCollector ecol = project.check();
 
-        EXPECT_EQ(ecol.majorError()->code.category(), style_error_category());
+        EXPECT_EQ(ecol.majorError()->code.category(), style_warn_category());
     }
 }
 }} // namespace busrpc::test

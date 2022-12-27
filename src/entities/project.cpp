@@ -51,15 +51,15 @@ public:
     }
 };
 
-class DocErrorCategory: public std::error_category {
+class DocWarnCategory: public std::error_category {
 public:
-    const char* name() const noexcept override { return "doc error"; }
+    const char* name() const noexcept override { return "doc warn"; }
 
     std::string message(int code) const override
     {
-        using enum DocErrc;
+        using enum DocWarn;
 
-        switch (static_cast<DocErrc>(code)) {
+        switch (static_cast<DocWarn>(code)) {
         case Undocumented_Entity: return "Entity is not documented";
         case Unknown_Doc_Command: return "Unknown documentation command";
         default: return "Unknown error";
@@ -67,15 +67,15 @@ public:
     }
 };
 
-class StyleErrorCategory: public std::error_category {
+class StyleWarnCategory: public std::error_category {
 public:
-    const char* name() const noexcept override { return "style error"; }
+    const char* name() const noexcept override { return "style warn"; }
 
     std::string message(int code) const override
     {
-        using enum StyleErrc;
+        using enum StyleWarn;
 
-        switch (static_cast<StyleErrc>(code)) {
+        switch (static_cast<StyleWarn>(code)) {
         case Invalid_Name_Format: return "Entity name format is invalid";
         default: return "Unknown error";
         }
@@ -136,9 +136,8 @@ ErrorCollector Project::check() const
         }
 
         if (rhs.category() == spec_error_category() ||
-            (rhs.category() == doc_error_category() && lhs.category() != spec_error_category()) ||
-            (rhs.category() == spec_warn_category() && lhs.category() != spec_error_category() &&
-             lhs.category() != doc_error_category())) {
+            (rhs.category() == spec_warn_category() && lhs.category() != spec_error_category()) ||
+            (rhs.category() == doc_warn_category() && lhs.category() == style_warn_category())) {
             return true;
         }
 
@@ -377,7 +376,7 @@ void Project::checkNamespace(const Namespace* ns, ErrorCollector& ecol) const
     checkNamespaceDesc(ns, ecol);
 
     if (!IsLowercaseWithUnderscores(ns->name())) {
-        ecol.add(StyleErrc::Invalid_Name_Format,
+        ecol.add(StyleWarn::Invalid_Name_Format,
                  std::make_pair(GetEntityTypeIdStr(ns->type()), ns->dname()),
                  "name should consists of lowercase letters, digits and underscores");
     }
@@ -413,7 +412,7 @@ void Project::checkClass(const Class* cls, ErrorCollector& ecol) const
     checkObjectId(cls, ecol);
 
     if (!IsLowercaseWithUnderscores(cls->name())) {
-        ecol.add(StyleErrc::Invalid_Name_Format,
+        ecol.add(StyleWarn::Invalid_Name_Format,
                  std::make_pair(GetEntityTypeIdStr(cls->type()), cls->dname()),
                  "name should consists of lowercase letters, digits and underscores");
     }
@@ -469,7 +468,7 @@ void Project::checkMethod(const Method* method, ErrorCollector& ecol) const
     checkMethodDesc(method, ecol);
 
     if (!IsLowercaseWithUnderscores(method->name())) {
-        ecol.add(StyleErrc::Invalid_Name_Format,
+        ecol.add(StyleWarn::Invalid_Name_Format,
                  std::make_pair(GetEntityTypeIdStr(method->type()), method->dname()),
                  "name should consists of lowercase letters, digits and underscores");
     }
@@ -529,7 +528,7 @@ void Project::checkService(const Service* service, ErrorCollector& ecol) const
     checkServiceDeps(service, false, ecol);
 
     if (!IsLowercaseWithUnderscores(service->name())) {
-        ecol.add(StyleErrc::Invalid_Name_Format,
+        ecol.add(StyleWarn::Invalid_Name_Format,
                  std::make_pair(GetEntityTypeIdStr(service->type()), service->dname()),
                  "name should consists of lowercase letters, digits and underscores");
     }
@@ -660,7 +659,7 @@ void Project::checkStruct(const Struct* structure, ErrorCollector& ecol) const
     checkEntityDocumentation(structure, ecol, allowedDocCommands);
 
     if (!IsCamelCase(structure->name())) {
-        ecol.add(StyleErrc::Invalid_Name_Format,
+        ecol.add(StyleWarn::Invalid_Name_Format,
                  std::make_pair(GetEntityTypeIdStr(structure->type()), structure->dname()),
                  "name should consists of lower and uppercase letters formatted as CamelCase and digits");
     }
@@ -755,7 +754,7 @@ void Project::checkField(const Field* field, ErrorCollector& ecol) const
     checkEntityDocumentation(field, ecol, allowedDocCommands);
 
     if (!IsLowercaseWithUnderscores(field->name())) {
-        ecol.add(StyleErrc::Invalid_Name_Format,
+        ecol.add(StyleWarn::Invalid_Name_Format,
                  std::make_pair(GetEntityTypeIdStr(field->type()), field->dname()),
                  "name should consists of lowercase letters, digits and underscores");
     }
@@ -766,7 +765,7 @@ void Project::checkEnum(const Enum* enumeration, ErrorCollector& ecol) const
     checkEntityDocumentation(enumeration, ecol);
 
     if (!IsCamelCase(enumeration->name())) {
-        ecol.add(StyleErrc::Invalid_Name_Format,
+        ecol.add(StyleWarn::Invalid_Name_Format,
                  std::make_pair(GetEntityTypeIdStr(enumeration->type()), enumeration->dname()),
                  "name should consists of lower and uppercase letters formatted as CamelCase and digits");
     }
@@ -795,7 +794,7 @@ void Project::checkConstant(const Constant* constant, ErrorCollector& ecol) cons
     checkEntityDocumentation(constant, ecol);
 
     if (!IsUppercaseWithUnderscores(constant->name())) {
-        ecol.add(StyleErrc::Invalid_Name_Format,
+        ecol.add(StyleWarn::Invalid_Name_Format,
                  std::make_pair(GetEntityTypeIdStr(constant->type()), constant->dname()),
                  "name should consists of uppercase letters, digits and underscores");
     }
@@ -806,11 +805,11 @@ void Project::checkEntityDocumentation(const Entity* entity,
                                        const std::unordered_set<std::string>& allowedDocCommands) const
 {
     if (entity->docs().description().empty()) {
-        ecol.add(DocErrc::Undocumented_Entity, std::make_pair(GetEntityTypeIdStr(entity->type()), entity->dname()));
+        ecol.add(DocWarn::Undocumented_Entity, std::make_pair(GetEntityTypeIdStr(entity->type()), entity->dname()));
     } else {
         for (const auto& cmd: entity->docs().commands()) {
             if (allowedDocCommands.find(cmd.first) == allowedDocCommands.end()) {
-                ecol.add(DocErrc::Unknown_Doc_Command,
+                ecol.add(DocWarn::Unknown_Doc_Command,
                          std::make_pair(GetEntityTypeIdStr(entity->type()), entity->dname()),
                          std::make_pair("command", cmd.first));
             }
@@ -851,25 +850,25 @@ std::error_code make_error_code(SpecWarn e)
     return {static_cast<int>(e), spec_warn_category()};
 }
 
-const std::error_category& doc_error_category()
+const std::error_category& doc_warn_category()
 {
-    static const DocErrorCategory category;
+    static const DocWarnCategory category;
     return category;
 }
 
-std::error_code make_error_code(DocErrc e)
+std::error_code make_error_code(DocWarn e)
 {
-    return {static_cast<int>(e), doc_error_category()};
+    return {static_cast<int>(e), doc_warn_category()};
 }
 
-const std::error_category& style_error_category()
+const std::error_category& style_warn_category()
 {
-    static const StyleErrorCategory category;
+    static const StyleWarnCategory category;
     return category;
 }
 
-std::error_code make_error_code(StyleErrc e)
+std::error_code make_error_code(StyleWarn e)
 {
-    return {static_cast<int>(e), style_error_category()};
+    return {static_cast<int>(e), style_warn_category()};
 }
 } // namespace busrpc

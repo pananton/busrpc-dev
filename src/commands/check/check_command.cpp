@@ -14,12 +14,12 @@ public:
         using enum CheckErrc;
 
         switch (static_cast<CheckErrc>(code)) {
-        case File_Read_Failed: return "Failed to read file";
-        case Protobuf_Parsing_Failed: return "Failed to parse protobuf file";
-        case Protobuf_Style_Violated: return "Busrpc protobuf style violated";
-        case Undocumeted_Entity: return "Undocumented entities detected";
+        case Style_Violated: return "Busrpc protobuf style violated";
+        case Doc_Rule_Violated: return "Busrpc documentation rule violated";
         case Spec_Violated: return "Busrpc specification violated";
-        case Project_Dir_Does_Not_Exist: return "Busrpc project directory does not exist";
+        case Protobuf_Parsing_Failed: return "Failed to parse protobuf file";
+        case File_Read_Failed: return "Failed to read file";
+        case Invalid_Project_Dir: return "Invalid busrpc project directory";
         default: return "Unknown error";
         }
     }
@@ -29,12 +29,12 @@ public:
         using enum CheckErrc;
 
         switch (static_cast<CheckErrc>(code)) {
-        case File_Read_Failed: return condition == CommandError::File_Operation_Failed;
-        case Protobuf_Parsing_Failed: return condition == CommandError::Protobuf_Parsing_Failed;
-        case Protobuf_Style_Violated: return condition == CommandError::Spec_Violated;
-        case Undocumeted_Entity: return condition == CommandError::Spec_Violated;
+        case Style_Violated: return condition == CommandError::Spec_Violated;
+        case Doc_Rule_Violated: return condition == CommandError::Spec_Violated;
         case Spec_Violated: return condition == CommandError::Spec_Violated;
-        case Project_Dir_Does_Not_Exist: return condition == CommandError::Invalid_Argument;
+        case Protobuf_Parsing_Failed: return condition == CommandError::Protobuf_Parsing_Failed;
+        case File_Read_Failed: return condition == CommandError::File_Operation_Failed;
+        case Invalid_Project_Dir: return condition == CommandError::Invalid_Argument;
         default: return false;
         }
     }

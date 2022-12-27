@@ -14,12 +14,11 @@ public:
         using enum GenDocErrc;
 
         switch (static_cast<GenDocErrc>(code)) {
+        case Spec_Violated: return "Busrpc specification violated";
+        case Protobuf_Parsing_Failed: return "Failed to parse protobuf file";
         case File_Write_Failed: return "Failed to write file";
         case File_Read_Failed: return "Failed to read file";
-        case Create_Output_Dir_Failed: return "Failed to create output directory";
-        case Protobuf_Parsing_Failed: return "Failed to parse protobuf file";
-        case Spec_Violated: return "Busrpc specification is violated";
-        case Project_Dir_Does_Not_Exist: return "Busrpc project directory does not exist";
+        case Invalid_Project_Dir: return "Invalid busrpc project directory";
         default: return "Unknown error";
         }
     }
@@ -29,12 +28,11 @@ public:
         using enum GenDocErrc;
 
         switch (static_cast<GenDocErrc>(code)) {
+        case Spec_Violated: return condition == CommandError::Spec_Violated;
+        case Protobuf_Parsing_Failed: return condition == CommandError::Protobuf_Parsing_Failed;
         case File_Write_Failed: return condition == CommandError::File_Operation_Failed;
         case File_Read_Failed: return condition == CommandError::File_Operation_Failed;
-        case Create_Output_Dir_Failed: return condition == CommandError::File_Operation_Failed;
-        case Protobuf_Parsing_Failed: return condition == CommandError::Protobuf_Parsing_Failed;
-        case Spec_Violated: return condition == CommandError::Spec_Violated;
-        case Project_Dir_Does_Not_Exist: return condition == CommandError::Invalid_Argument;
+        case Invalid_Project_Dir: return condition == CommandError::Invalid_Argument;
         default: return false;
         }
     }
