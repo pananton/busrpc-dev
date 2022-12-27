@@ -29,13 +29,15 @@ enum class SpecErrc {
     Unexpected_Package = 3,    ///< Entity is defined in unexpected protobuf package (should match distinguished name).
     Missing_Builtin = 4,       ///< One of the busrpc built-in types is missing.
     Nonconforming_Builtin = 5, ///< One of the busrpc built-in types does not conform with the specification.
-    Missing_Descriptor = 6,    ///< Entity (namespace, class, method or service) does not have a descriptor.
+    No_Descriptor = 6,         ///< Entity (namespace, class, method or service) does not have a descriptor.
     Not_Static_Method = 7,     ///< Static class method is not marked as static.
     Not_Encodable_Type = 8,    ///< Entity must be encodable as specified in the busrpc specification.
     Not_Accessible_Type = 9,   ///< Type is not accessible in the current scope.
     Unknown_Type = 10,         ///< Type of structure field is unknown.
     Unexpected_Type = 11,      ///< Entity type of structure field is not as expected.
-    Unknown_Method = 12        ///< Service \c Implements or \c Invokes type references unknown method.
+    Empty_Enum = 12,           ///< Enumeration does not have any constants.
+    No_Zero_Value = 13,        ///< Enumeration does not contain zero value.
+    Unknown_Method = 14        ///< Service \c Implements or \c Invokes type references unknown method.
 };
 
 /// Busrpc [specification](https://github.com/pananton/busrpc-spec)-related warnings.

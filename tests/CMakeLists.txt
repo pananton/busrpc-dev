@@ -32,7 +32,7 @@ set(sources
     struct_entity_tests.cpp
     services_entity_tests.cpp
     service_entity_tests.cpp
-    project_validation_tests.cpp
+    project_check_tests.cpp
     parser_tests.cpp
     command_tests.cpp
     check_command_tests.cpp

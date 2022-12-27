@@ -34,7 +34,7 @@ Struct* AddStructsAndEnums(TEntity* entity)
                                   EntityDocs("Field 4."));
     }
 
-    entity->addEnum("Enum", "file.proto", EntityDocs("Enum."));
+    entity->addEnum("Enum", "file.proto", EntityDocs("Enum."))->addConstant("CONSTANT_0", 0, EntityDocs("Constant."));
 
     auto nestedStruct = topStruct->addStruct("NestedStruct", StructFlags::Hashed, EntityDocs("Nested struct."));
     nestedStruct->addScalarField("field1",
@@ -55,6 +55,7 @@ Struct* AddStructsAndEnums(TEntity* entity)
     }
 
     auto nestedEnum = topStruct->addEnum("NestedEnum", EntityDocs("Nested enum."));
+    nestedEnum->addConstant("CONSTANT_0", 0, EntityDocs("Constant 0."));
     nestedEnum->addConstant("CONSTANT_1", 1001, EntityDocs("Constant 1."));
 
     return topStruct;
@@ -322,12 +323,14 @@ TEST_F(ProjectCheckTest, Specification_Error_Codes_Have_Non_Empty_Descriptions)
     EXPECT_FALSE(spec_error_category().message(static_cast<int>(Unexpected_Package)).empty());
     EXPECT_FALSE(spec_error_category().message(static_cast<int>(Missing_Builtin)).empty());
     EXPECT_FALSE(spec_error_category().message(static_cast<int>(Nonconforming_Builtin)).empty());
-    EXPECT_FALSE(spec_error_category().message(static_cast<int>(Missing_Descriptor)).empty());
+    EXPECT_FALSE(spec_error_category().message(static_cast<int>(No_Descriptor)).empty());
     EXPECT_FALSE(spec_error_category().message(static_cast<int>(Not_Static_Method)).empty());
     EXPECT_FALSE(spec_error_category().message(static_cast<int>(Not_Encodable_Type)).empty());
     EXPECT_FALSE(spec_error_category().message(static_cast<int>(Not_Accessible_Type)).empty());
     EXPECT_FALSE(spec_error_category().message(static_cast<int>(Unknown_Type)).empty());
     EXPECT_FALSE(spec_error_category().message(static_cast<int>(Unexpected_Type)).empty());
+    EXPECT_FALSE(spec_error_category().message(static_cast<int>(Empty_Enum)).empty());
+    EXPECT_FALSE(spec_error_category().message(static_cast<int>(No_Zero_Value)).empty());
     EXPECT_FALSE(spec_error_category().message(static_cast<int>(Unknown_Method)).empty());
 }
 
@@ -419,7 +422,8 @@ TEST_F(ProjectCheckTest, Missing_Builtin_Spec_Error_If_Errc_Is_Defined_In_Unexpe
     AddCallMessage(&project);
     AddResultMessage(&project);
 
-    project.addEnum(Errc_Enum_Name, "1.proto");
+    auto enumeration = project.addEnum(Errc_Enum_Name, "1.proto");
+    enumeration->addConstant("CONSTANT_0", 0, EntityDocs("Constant."));
     auto ecol = project.check();
 
     EXPECT_TRUE(ecol.find(SpecErrc::Missing_Builtin));
@@ -786,21 +790,21 @@ TEST_F(ProjectCheckTest, Nonconforming_Builtin_Spec_Error_If_Result_Message_Has_
     EXPECT_TRUE(ecol.find(SpecErrc::Nonconforming_Builtin));
 }
 
-TEST_F(ProjectCheckTest, Missing_Descriptor_Spec_Error_If_Namespace_Does_Not_Have_Descriptor)
+TEST_F(ProjectCheckTest, No_Descriptor_Spec_Error_If_Namespace_Does_Not_Have_Descriptor)
 {
     api_->addNamespace("namespace");
     auto ecol = project_.check();
 
-    EXPECT_TRUE(ecol.find(SpecErrc::Missing_Descriptor));
+    EXPECT_TRUE(ecol.find(SpecErrc::No_Descriptor));
 }
 
-TEST_F(ProjectCheckTest, Missing_Descriptor_Spec_Error_If_Namespace_Descriptor_Is_Defined_In_Unexpected_File)
+TEST_F(ProjectCheckTest, No_Descriptor_Spec_Error_If_Namespace_Descriptor_Is_Defined_In_Unexpected_File)
 {
     auto ns = api_->addNamespace("namespace");
     ns->addStruct(GetPredefinedStructName(StructTypeId::Namespace_Desc), "1.proto");
     auto ecol = project_.check();
 
-    EXPECT_TRUE(ecol.find(SpecErrc::Missing_Descriptor));
+    EXPECT_TRUE(ecol.find(SpecErrc::No_Descriptor));
 }
 
 TEST_F(ProjectCheckTest, Unexpected_Nested_Entity_Spec_Warn_If_Namespace_Descriptor_Has_Unexpected_Nested_Struct)
@@ -815,7 +819,8 @@ TEST_F(ProjectCheckTest, Unexpected_Nested_Entity_Spec_Warn_If_Namespace_Descrip
 TEST_F(ProjectCheckTest, Unexpected_Nested_Entity_Spec_Warn_If_Namespace_Descriptor_Has_Unexpected_Nested_Enum)
 {
     auto ns = api_->addNamespace("namespace");
-    AddNamespaceDesc(ns)->addEnum("NestedEnum", EntityDocs("Nested enum."));
+    auto enumeration = AddNamespaceDesc(ns)->addEnum("NestedEnum", EntityDocs("Nested enum."));
+    enumeration->addConstant("CONSTANT_0", 0, EntityDocs("Constant."));
     auto ecol = project_.check();
 
     EXPECT_TRUE(ecol.find(SpecWarn::Unexpected_Nested_Entity));
@@ -840,21 +845,21 @@ TEST_F(ProjectCheckTest, Invalid_Name_Format_Style_Error_If_Namespace_Name_Is_No
     EXPECT_TRUE(ecol.find(StyleErrc::Invalid_Name_Format));
 }
 
-TEST_F(ProjectCheckTest, Missing_Descriptor_Spec_Error_If_Class_Does_Not_Have_Descriptor)
+TEST_F(ProjectCheckTest, No_Descriptor_Spec_Error_If_Class_Does_Not_Have_Descriptor)
 {
     AddNamespace(api_)->addClass("class");
     auto ecol = project_.check();
 
-    EXPECT_TRUE(ecol.find(SpecErrc::Missing_Descriptor));
+    EXPECT_TRUE(ecol.find(SpecErrc::No_Descriptor));
 }
 
-TEST_F(ProjectCheckTest, Missing_Descriptor_Spec_Error_If_Class_Descriptor_Is_Defined_In_Unexpected_File)
+TEST_F(ProjectCheckTest, No_Descriptor_Spec_Error_If_Class_Descriptor_Is_Defined_In_Unexpected_File)
 {
     auto cls = AddNamespace(api_)->addClass("class");
     cls->addStruct(GetPredefinedStructName(StructTypeId::Class_Desc), "1.proto");
     auto ecol = project_.check();
 
-    EXPECT_TRUE(ecol.find(SpecErrc::Missing_Descriptor));
+    EXPECT_TRUE(ecol.find(SpecErrc::No_Descriptor));
 }
 
 TEST_F(ProjectCheckTest, Not_Encodable_Type_Spec_Error_If_Class_Object_Id_Is_Not_Encodable)
@@ -880,7 +885,8 @@ TEST_F(ProjectCheckTest, Unexpected_Nested_Entity_Spec_Warn_If_Class_Descriptor_
 TEST_F(ProjectCheckTest, Unexpected_Nested_Entity_Spec_Warn_If_Class_Descriptor_Has_Unexpected_Nested_Enum)
 {
     auto cls = AddNamespace(api_)->addClass("class");
-    AddClassDesc(cls)->addEnum("NestedEnum", EntityDocs("Nested enum."));
+    auto enumeration = AddClassDesc(cls)->addEnum("NestedEnum", EntityDocs("Nested enum."));
+    enumeration->addConstant("CONSTANT_0", 0, EntityDocs("Constant."));
     auto ecol = project_.check();
 
     EXPECT_TRUE(ecol.find(SpecWarn::Unexpected_Nested_Entity));
@@ -904,21 +910,21 @@ TEST_F(ProjectCheckTest, Invalid_Name_Format_Style_Error_If_Class_Name_Is_Not_Lo
     EXPECT_TRUE(ecol.find(StyleErrc::Invalid_Name_Format));
 }
 
-TEST_F(ProjectCheckTest, Missing_Descriptor_Spec_Error_If_Method_Does_Not_Have_Descriptor)
+TEST_F(ProjectCheckTest, No_Descriptor_Spec_Error_If_Method_Does_Not_Have_Descriptor)
 {
     AddClass(AddNamespace(api_))->addMethod("method");
     auto ecol = project_.check();
 
-    EXPECT_TRUE(ecol.find(SpecErrc::Missing_Descriptor));
+    EXPECT_TRUE(ecol.find(SpecErrc::No_Descriptor));
 }
 
-TEST_F(ProjectCheckTest, Missing_Descriptor_Spec_Error_If_Method_Descriptor_Is_Defined_In_Unexpected_File)
+TEST_F(ProjectCheckTest, No_Descriptor_Spec_Error_If_Method_Descriptor_Is_Defined_In_Unexpected_File)
 {
     auto method = AddClass(AddNamespace(api_))->addMethod("method");
     method->addStruct(GetPredefinedStructName(StructTypeId::Method_Desc), "1.proto");
     auto ecol = project_.check();
 
-    EXPECT_TRUE(ecol.find(SpecErrc::Missing_Descriptor));
+    EXPECT_TRUE(ecol.find(SpecErrc::No_Descriptor));
 }
 
 TEST_F(ProjectCheckTest, Not_Static_Method_Spec_Error_If_Non_Static_Method_Is_Added_To_Static_Class)
@@ -941,7 +947,8 @@ TEST_F(ProjectCheckTest, Unexpected_Nested_Entity_Spec_Warn_If_Method_Descriptor
 TEST_F(ProjectCheckTest, Unexpected_Nested_Entity_Spec_Warn_If_Method_Descriptor_Has_Unexpected_Nested_Enum)
 {
     auto method = AddClass(AddNamespace(api_))->addMethod("method");
-    AddMethodDesc(method)->addEnum("NestedEnum", EntityDocs("Nested enum."));
+    auto enumeration = AddMethodDesc(method)->addEnum("NestedEnum", EntityDocs("Nested enum."));
+    enumeration->addConstant("CONSTANT_0", 0, EntityDocs("Constant."));
     auto ecol = project_.check();
 
     EXPECT_TRUE(ecol.find(SpecWarn::Unexpected_Nested_Entity));
@@ -966,21 +973,21 @@ TEST_F(ProjectCheckTest, Invalid_Name_Format_Style_Error_If_Method_Name_Is_Not_L
     EXPECT_TRUE(ecol.find(StyleErrc::Invalid_Name_Format));
 }
 
-TEST_F(ProjectCheckTest, Missing_Descriptor_Spec_Error_If_Service_Does_Not_Have_Descriptor)
+TEST_F(ProjectCheckTest, No_Descriptor_Spec_Error_If_Service_Does_Not_Have_Descriptor)
 {
     services_->addService("service");
     auto ecol = project_.check();
 
-    EXPECT_TRUE(ecol.find(SpecErrc::Missing_Descriptor));
+    EXPECT_TRUE(ecol.find(SpecErrc::No_Descriptor));
 }
 
-TEST_F(ProjectCheckTest, Missing_Descriptor_Spec_Error_If_Service_Descriptor_Is_Defined_In_Unexpected_File)
+TEST_F(ProjectCheckTest, No_Descriptor_Spec_Error_If_Service_Descriptor_Is_Defined_In_Unexpected_File)
 {
     auto service = services_->addService("service");
     service->addStruct(GetPredefinedStructName(StructTypeId::Service_Desc), "1.proto");
     auto ecol = project_.check();
 
-    EXPECT_TRUE(ecol.find(SpecErrc::Missing_Descriptor));
+    EXPECT_TRUE(ecol.find(SpecErrc::No_Descriptor));
 }
 
 TEST_F(ProjectCheckTest,
@@ -1049,7 +1056,8 @@ TEST_F(ProjectCheckTest, Unexpected_Nested_Entity_Spec_Warn_If_Service_Descripto
 TEST_F(ProjectCheckTest, Unexpected_Nested_Entity_Spec_Warn_If_Service_Descriptor_Has_Unexpected_Nested_Enum)
 {
     auto service = services_->addService("service");
-    AddServiceDesc(service)->addEnum("UnexpectedEnum", EntityDocs("Unexpected nested enum."));
+    auto enumeration = AddServiceDesc(service)->addEnum("UnexpectedEnum", EntityDocs("Unexpected nested enum."));
+    enumeration->addConstant("CONSTANT_0", 0, EntityDocs("Constant."));
     auto ecol = project_.check();
 
     EXPECT_TRUE(ecol.find(SpecWarn::Unexpected_Nested_Entity));
@@ -1072,6 +1080,24 @@ TEST_F(ProjectCheckTest, Invalid_Name_Format_Style_Error_If_Service_Name_Is_Not_
     auto ecol = project_.check();
 
     EXPECT_TRUE(ecol.find(StyleErrc::Invalid_Name_Format));
+}
+
+TEST_F(ProjectCheckTest, Empty_Enum_Spec_Error_If_Enum_Does_Not_Have_Constants)
+{
+    api_->addEnum("MyEnum", "1.proto");
+    auto ecol = project_.check();
+
+    EXPECT_TRUE(ecol.find(SpecErrc::Empty_Enum));
+}
+
+TEST_F(ProjectCheckTest, No_Zero_Value_Spec_Error_If_Enum_Does_Not_Have_Constant_With_Zero_Value)
+{
+    auto enumeration = api_->addEnum("MyEnum", "1.proto");
+    enumeration->addConstant("MY_ENUM_1", 1);
+    enumeration->addConstant("MY_ENUM_2", 2);
+    auto ecol = project_.check();
+
+    EXPECT_TRUE(ecol.find(SpecErrc::No_Zero_Value));
 }
 
 TEST_F(ProjectCheckTest, Unknown_Type_Spec_Error_If_Struct_Type_Of_The_Field_Is_Unknown)
@@ -1113,6 +1139,7 @@ TEST_F(ProjectCheckTest, Unknown_Type_Spec_Error_If_Enum_Value_Type_Of_The_Map_F
 TEST_F(ProjectCheckTest, Unexpected_Type_Spec_Error_If_Struct_Type_Of_The_Field_Is_Not_Struct_Entity)
 {
     auto enumeration = project_.addEnum("MyEnum", "1.proto");
+    enumeration->addConstant("CONSTANT_0", 0, EntityDocs("Constant."));
     auto structure = project_.addStruct("MyStruct", "1.proto");
     structure->addStructField("field1", 1, enumeration->dname());
     auto ecol = project_.check();
@@ -1133,6 +1160,7 @@ TEST_F(ProjectCheckTest, Unexpected_Type_Spec_Error_If_Enum_Type_Of_The_Field_Is
 TEST_F(ProjectCheckTest, Unexpected_Type_Spec_Error_If_Struct_Value_Type_Of_The_Map_Field_Is_Not_Struct_Entity)
 {
     auto enumeration = project_.addEnum("MyEnum", "1.proto");
+    enumeration->addConstant("CONSTANT_0", 0, EntityDocs("Constant."));
     auto structure = project_.addStruct("MyStruct", "1.proto");
     structure->addMapField("field1", 1, FieldTypeId::Int32, FieldTypeId::Message, enumeration->dname());
     auto ecol = project_.check();
@@ -1241,7 +1269,8 @@ TEST_F(ProjectCheckTest, Invalid_Name_Format_Style_Error_If_Struct_Name_Is_Not_C
 
 TEST_F(ProjectCheckTest, Invalid_Name_Format_Style_Error_If_Enum_Name_Is_Not_CamelCase)
 {
-    project_. addEnum("MY_ENUM", "1.proto");
+    auto enumeration = project_.addEnum("MY_ENUM", "1.proto");
+    enumeration->addConstant("CONSTANT_0", 0, EntityDocs("Constant."));
     auto ecol = project_.check();
 
     EXPECT_TRUE(ecol.find(StyleErrc::Invalid_Name_Format));
@@ -1259,7 +1288,7 @@ TEST_F(ProjectCheckTest, Invalid_Name_Format_Style_Error_If_Struct_Field_Name_Is
 TEST_F(ProjectCheckTest, Invalid_Name_Format_Style_Error_If_Enum_Constant_Name_Is_Not_Uppercase_With_Underscores)
 {
     auto enumeration = project_.addEnum("MyEnum", "1.proto");
-    enumeration->addConstant("TESt_CONSTANT", 1001);
+    enumeration->addConstant("TESt_CONSTANT", 0);
     auto ecol = project_.check();
 
     EXPECT_TRUE(ecol.find(StyleErrc::Invalid_Name_Format));
@@ -1275,7 +1304,8 @@ TEST_F(ProjectCheckTest, Undocumented_Entity_Doc_Error_If_Struct_Is_Not_Document
 
 TEST_F(ProjectCheckTest, Undocumented_Entity_Doc_Error_If_Enum_Is_Not_Documented)
 {
-    project_.addEnum("MyEnum", "1.proto");
+    auto enumeration = project_.addEnum("MyEnum", "1.proto");
+    enumeration->addConstant("CONSTANT_0", 0, EntityDocs("Constant."));
     auto ecol = project_.check();
 
     EXPECT_TRUE(ecol.find(DocErrc::Undocumented_Entity));
@@ -1293,7 +1323,7 @@ TEST_F(ProjectCheckTest, Undocumented_Entity_Doc_Error_If_Struct_Field_Is_Not_Do
 TEST_F(ProjectCheckTest, Undocumented_Entity_Doc_Error_If_Enum_Constant_Is_Not_Documented)
 {
     auto enumeration = project_.addEnum("MyEnum", "1.proto", EntityDocs("My enumeration."));
-    enumeration->addConstant("CONSTANT_1", 1);
+    enumeration->addConstant("CONSTANT_0", 0);
     auto ecol = project_.check();
 
     EXPECT_TRUE(ecol.find(DocErrc::Undocumented_Entity));
@@ -1309,7 +1339,8 @@ TEST_F(ProjectCheckTest, Unknown_Doc_Command_Doc_Error_If_Struct_Documentation_C
 
 TEST_F(ProjectCheckTest, Unknown_Doc_Command_Doc_Error_If_Enum_Documentation_Command_Is_Unrecognized)
 {
-    project_.addEnum("MyEnum", "1.proto", {{"My enumeration."}, {{"cmd1", {"value1"}}}});
+    auto enumeration = project_.addEnum("MyEnum", "1.proto", {{"My enumeration."}, {{"cmd1", {"value1"}}}});
+    enumeration->addConstant("CONSTANT_0", 0, EntityDocs("Constant."));
     auto ecol = project_.check();
 
     EXPECT_TRUE(ecol.find(DocErrc::Unknown_Doc_Command));
@@ -1328,7 +1359,7 @@ TEST_F(ProjectCheckTest, Unknown_Doc_Command_Doc_Error_If_Struct_Field_Documenta
 TEST_F(ProjectCheckTest, Unknown_Doc_Command_Doc_Error_If_Enum_Constant_Documentation_Command_Is_Unrecognized)
 {
     auto enumeration = project_.addEnum("MyEnum", "1.proto", EntityDocs("My enumeration."));
-    enumeration->addConstant("CONSTANT_1", 1001, {{"Constant 1."}, {{"cmd1", {"value1"}}}});
+    enumeration->addConstant("CONSTANT_0", 0, {{"Constant 1."}, {{"cmd1", {"value1"}}}});
     auto ecol = project_.check();
 
     EXPECT_TRUE(ecol.find(DocErrc::Unknown_Doc_Command));

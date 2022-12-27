@@ -22,12 +22,14 @@ public:
         case Unexpected_Package: return "Entity is defined in unexpected protobuf package";
         case Missing_Builtin: return "Busrpc built-in type could not be found";
         case Nonconforming_Builtin: return "Busrpc built-in type does not conform with specification";
-        case Missing_Descriptor: return "Descriptor could not be found";
+        case No_Descriptor: return "Descriptor could not be found";
         case Not_Static_Method: return "Method is not static";
         case Not_Encodable_Type: return "Type is not encodable";
         case Not_Accessible_Type: return "Type is not accessible in the current scope";
         case Unknown_Type: return "Unknown structure field type";
         case Unexpected_Type: return "Unexpected structure field type";
+        case Empty_Enum: return "Enumeration does not have any constants";
+        case No_Zero_Value: return "Enumeration does not contain zero value";
         case Unknown_Method: return "Unknown method";
         default: return "Unknown error";
         }
@@ -393,9 +395,9 @@ void Project::checkNamespaceDesc(const Namespace* ns, ErrorCollector& ecol) cons
     auto desc = ns->descriptor();
 
     if (!desc) {
-        ecol.add(SpecErrc::Missing_Descriptor, std::make_pair(GetEntityTypeIdStr(ns->type()), ns->dname()));
+        ecol.add(SpecErrc::No_Descriptor, std::make_pair(GetEntityTypeIdStr(ns->type()), ns->dname()));
     } else if (desc->file().filename() != Namespace_Desc_File) {
-        ecol.add(SpecErrc::Missing_Descriptor,
+        ecol.add(SpecErrc::No_Descriptor,
                  std::make_pair(GetEntityTypeIdStr(ns->type()), ns->dname()),
                  "descriptor should be defined inside '" + std::string(Namespace_Desc_File) + "' file");
     } else if (!desc->fields().empty() || !desc->structs().empty() || !desc->enums().empty()) {
@@ -429,9 +431,9 @@ void Project::checkClassDesc(const Class* cls, ErrorCollector& ecol) const
     auto desc = cls->descriptor();
 
     if (!desc) {
-        ecol.add(SpecErrc::Missing_Descriptor, std::make_pair(GetEntityTypeIdStr(cls->type()), cls->dname()));
+        ecol.add(SpecErrc::No_Descriptor, std::make_pair(GetEntityTypeIdStr(cls->type()), cls->dname()));
     } else if (desc->file().filename() != Class_Desc_File) {
-        ecol.add(SpecErrc::Missing_Descriptor,
+        ecol.add(SpecErrc::No_Descriptor,
                  std::make_pair(GetEntityTypeIdStr(cls->type()), cls->dname()),
                  "descriptor should be defined inside '" + std::string(Class_Desc_File) + "' file");
     } else {
@@ -481,9 +483,9 @@ void Project::checkMethodDesc(const Method* method, ErrorCollector& ecol) const
     auto desc = method->descriptor();
 
     if (!desc) {
-        ecol.add(SpecErrc::Missing_Descriptor, std::make_pair(GetEntityTypeIdStr(method->type()), method->dname()));
+        ecol.add(SpecErrc::No_Descriptor, std::make_pair(GetEntityTypeIdStr(method->type()), method->dname()));
     } else if (desc->file().filename() != Method_Desc_File) {
-        ecol.add(SpecErrc::Missing_Descriptor,
+        ecol.add(SpecErrc::No_Descriptor,
                  std::make_pair(GetEntityTypeIdStr(method->type()), method->dname()),
                  "descriptor should be defined inside '" + std::string(Method_Desc_File) + "' file");
     } else if (method->parent()->descriptor() && method->parent()->isStatic() && !method->isStatic()) {
@@ -541,9 +543,9 @@ void Project::checkServiceDesc(const Service* service, ErrorCollector& ecol) con
     auto desc = service->descriptor();
 
     if (!desc) {
-        ecol.add(SpecErrc::Missing_Descriptor, std::make_pair(GetEntityTypeIdStr(service->type()), service->dname()));
+        ecol.add(SpecErrc::No_Descriptor, std::make_pair(GetEntityTypeIdStr(service->type()), service->dname()));
     } else if (desc->file().filename() != Service_Desc_File) {
-        ecol.add(SpecErrc::Missing_Descriptor,
+        ecol.add(SpecErrc::No_Descriptor,
                  std::make_pair(GetEntityTypeIdStr(service->type()), service->dname()),
                  "descriptor should be defined inside '" + std::string(Service_Desc_File) + "' file");
     } else {
@@ -769,8 +771,23 @@ void Project::checkEnum(const Enum* enumeration, ErrorCollector& ecol) const
                  "name should consists of lower and uppercase letters formatted as CamelCase and digits");
     }
 
+    if (enumeration->constants().empty()) {
+        ecol.add(SpecErrc::Empty_Enum, std::make_pair(GetEntityTypeIdStr(enumeration->type()), enumeration->dname()));
+    }
+
+    bool hasZero = false;
+
     for (const auto& constant: enumeration->constants()) {
+        if (constant->value() == 0) {
+            hasZero = true;
+        }
+
         checkConstant(constant, ecol);
+    }
+
+    if (!hasZero) {
+        ecol.add(SpecErrc::No_Zero_Value,
+                 std::make_pair(GetEntityTypeIdStr(enumeration->type()), enumeration->dname()));
     }
 }
 void Project::checkConstant(const Constant* constant, ErrorCollector& ecol) const
