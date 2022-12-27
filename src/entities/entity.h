@@ -30,15 +30,14 @@ public:
     /// \warning If vector representing documentation command value is empty, then constructor will add empty string
     ///          as a command value.
     /// \note Brief description is the first item of the \a description.
-    /// \note Leading and trailing empty lines or lines consisting of whitespaces only in the \a description are
-    ///       skipped. Also leading and trailing whitespaces in the command values are trimmed.
+    /// \note Leading and trailing empty/whitespace-only lines in the \a description are skipped. Also leading and
+    ///       trailing whitespaces in the command values are trimmed.
     EntityDocs(const std::vector<std::string>& description = {},
                std::map<std::string, std::vector<std::string>> commands = {});
 
     /// Create entity documentation from the protobuf file block comment.
     /// \note Parameter \a blockComment should not contain characters, which start a comment line (like '//', etc.).
-    /// \note Leading and trailing empty lines or lines consisting of whitespaces only in the parsed description
-    ///       are skipped.
+    /// \note Leading and trailing empty/whitespace-only lines in the parsed description are skipped.
     explicit EntityDocs(const std::string& blockComment);
 
     /// Entity description.

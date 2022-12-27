@@ -722,7 +722,7 @@ void Project::checkField(const Field* field, ErrorCollector& ecol) const
         if (!field->dir().string().starts_with(nonScalarFieldTypeEntity->dir().string())) {
             ecol.add(SpecErrc::Not_Accessible_Type,
                      std::make_pair(GetEntityTypeIdStr(field->type()), field->dname()),
-                     "referenced type '" + nonScalarFieldTypeName + "'is not accessible in the current scope");
+                     "referenced type '" + nonScalarFieldTypeName + "'");
         }
     }
 

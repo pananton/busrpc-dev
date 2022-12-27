@@ -157,7 +157,7 @@ ProjectPtr Parser::parse(ErrorCollector& ecol) const
     try {
         InitCanonicalPathToExistingDirectory(projectPath, projectDir_.string());
 
-        if (protobufRoot_.empty()) {
+        if (!protobufRoot_.empty()) {
             InitCanonicalPathToExistingDirectory(protobufPath, protobufRoot_.string());
         }
     } catch (const std::filesystem::filesystem_error&) { }
@@ -183,7 +183,11 @@ ProjectPtr Parser::parse(ErrorCollector& ecol) const
         &sourceTree, ecol.getProtobufCollector() ? ecol.getProtobufCollector() : &protobufCollector);
 
     parseDir(importer, projectPtr.get(), ecol);
-    projectPtr->check(ecol);
+
+    if (!ecol) {
+        projectPtr->check(ecol);
+    }
+
     return projectPtr;
 }
 
@@ -223,23 +227,25 @@ void Parser::parseDir(google::protobuf::compiler::Importer& importer,
 {
     std::error_code ec;
     std::filesystem::directory_iterator dirIt(projectDir_ / entity->dir(), ec);
-    std::filesystem::directory_iterator it = dirIt;
+    std::set<std::string> subdirs;
 
-    while (it != std::filesystem::directory_iterator() && !ec) {
-        if (it->is_regular_file() && it->path().extension() == ".proto") {
-            std::string filename = (entity->dir() / it->path().filename()).generic_string();
-            const protobuf::FileDescriptor* fileDesc = importer.Import(filename.c_str());
+    while (dirIt != std::filesystem::directory_iterator() && !ec) {
+        if (dirIt->is_regular_file() && dirIt->path().extension() == ".proto") {
+            std::string relPath = (entity->dir() / dirIt->path().filename()).generic_string();
+            const protobuf::FileDescriptor* fileDesc = importer.Import(relPath.c_str());
             protobuf::FileDescriptorProto fileDescProto;
             bool hasErrors = true;
 
             if (fileDesc) {
-                std::ifstream file(std::filesystem::absolute(filename).string().c_str());
+                std::ifstream file((projectDir_ / relPath).string().c_str());
 
                 if (file.is_open()) {
                     protobuf::io::IstreamInputStream in(&file);
                     protobuf::io::Tokenizer tokenizer(&in, nullptr);
                     protobuf::compiler::Parser parser;
-                    hasErrors = parser.Parse(&tokenizer, &fileDescProto);
+                    hasErrors = !parser.Parse(&tokenizer, &fileDescProto);
+                } else {
+                    ecol.add(ParserErrc::Read_Failed, std::make_pair("file", relPath), "failed to open file");
                 }
             }
 
@@ -247,39 +253,34 @@ void Parser::parseDir(google::protobuf::compiler::Importer& importer,
                 // any error should be already added to collector by the importer object
                 parseFile(fileDesc, &fileDescProto, entity, ecol);
             }
+        } else if (dirIt->is_directory()) {
+            subdirs.insert((--(dirIt->path().end()))->string());
         }
 
-        it.increment(ec);
+        dirIt.increment(ec);
     }
 
-    it = dirIt;
+    for (const auto& subdir: subdirs) {
+        GeneralCompositeEntity* nestedEntity = nullptr;
 
-    while (it != std::filesystem::directory_iterator() && !ec) {
-        if (it->is_directory()) {
-            std::string subdirName = (--(it->path().end()))->string();
-            GeneralCompositeEntity* nestedEntity = nullptr;
-
-            try {
-                nestedEntity = visitSubdirectory(entity, ecol, subdirName);
-            } catch (const name_conflict_error&) {
-                ecol.add(SpecErrc::Multiple_Definitions,
-                         std::make_pair(GetEntityTypeIdStr(entity->type()), entity->dname()),
-                         "nested entity '" + subdirName + "'is defined more than once");
-            } catch (const entity_error& e) {
-                ecol.add(SpecErrc::Invalid_Entity,
-                         std::make_pair(GetEntityTypeIdStr(entity->type()), entity->dname()),
-                         "failed to create nested entity '" + subdirName + "', exception caught (" + e.what() + ")");
-            }
-
-            if (nestedEntity) {
-                parseDir(importer, nestedEntity, ecol);
-            }
+        try {
+            nestedEntity = visitSubdirectory(entity, ecol, subdir);
+        } catch (const name_conflict_error&) {
+            ecol.add(SpecErrc::Multiple_Definitions,
+                     std::make_pair(GetEntityTypeIdStr(entity->type()), entity->dname()),
+                     "nested entity '" + subdir + "'is defined more than once");
+        } catch (const entity_error& e) {
+            ecol.add(SpecErrc::Invalid_Entity,
+                     std::make_pair(GetEntityTypeIdStr(entity->type()), entity->dname()),
+                     "failed to create nested entity '" + subdir + "', exception caught (" + e.what() + ")");
         }
 
-        it.increment(ec);
+        if (nestedEntity) {
+            parseDir(importer, nestedEntity, ecol);
+        }
     }
 
-    if (!ec) {
+    if (ec) {
         ecol.add(
             ParserErrc::Read_Failed, std::make_pair("dir", entity->dir()), "can't iterate through directory content");
         return;
@@ -366,7 +367,11 @@ void Parser::addStruct(GeneralCompositeEntity* entity,
                        const google::protobuf::DescriptorProto* descProto,
                        const std::string& filename) const
 {
-    google::protobuf::SourceLocation source;
+    if (desc->name() == "NestedTestStruct") {
+        int a = 0;
+        ++a;
+    }
+    protobuf::SourceLocation source;
     desc->GetSourceLocation(&source);
     StructFlags flags = StructFlags::None;
 
@@ -393,7 +398,7 @@ void Parser::initStruct(Struct* structure,
     for (int i = 0; i < desc->field_count(); ++i) {
         auto fieldDesc = desc->field(i);
         const protobuf::FieldDescriptorProto* fieldDescProto =
-            FindDescriptorProto<protobuf::FieldDescriptorProto>(descProto->field(), desc->name());
+            FindDescriptorProto<protobuf::FieldDescriptorProto>(descProto->field(), desc->field(i)->name());
 
         assert(fieldDescProto);
         addField(structure, fieldDesc, fieldDescProto);
@@ -404,12 +409,14 @@ void Parser::initStruct(Struct* structure,
     }
 
     for (int i = 0; i < desc->nested_type_count(); ++i) {
-        auto structDesc = desc->nested_type(i);
-        const protobuf::DescriptorProto* structDescProto =
-            FindDescriptorProto<protobuf::DescriptorProto>(descProto->nested_type(), structDesc->name());
+        auto nestedDesc = desc->nested_type(i);
 
-        assert(structDescProto);
-        addStruct(structure, structDesc, structDescProto);
+        if (!nestedDesc->options().map_entry()) {
+            const protobuf::DescriptorProto* nestedDescProto =
+                FindDescriptorProto<protobuf::DescriptorProto>(descProto->nested_type(), nestedDesc->name());
+            assert(nestedDescProto);
+            addStruct(structure, nestedDesc, nestedDescProto);
+        }
     }
 }
 
@@ -417,6 +424,10 @@ void Parser::addField(Struct* structure,
                       const google::protobuf::FieldDescriptor* desc,
                       const google::protobuf::FieldDescriptorProto* descProto) const
 {
+    if (structure->name() == "NestedTestStruct") {
+        int a = 0;
+        ++a;
+    }
     google::protobuf::SourceLocation source;
     desc->GetSourceLocation(&source);
     FieldFlags flags = FieldFlags::None;
@@ -427,19 +438,24 @@ void Parser::addField(Struct* structure,
 
         if (opt.name().size() == 1 && opt.name(0).name_part() == Field_Option_Observable &&
             opt.has_identifier_value()) {
+
             if (opt.identifier_value() == "true") {
                 flags |= FieldFlags::Observable;
             }
         } else if (opt.name().size() == 1 && opt.name(0).name_part() == Field_Option_Hashed &&
                    opt.has_identifier_value()) {
-            flags |= FieldFlags::Hashed;
+
+            if (opt.identifier_value() == "true") {
+                flags |= FieldFlags::Hashed;
+            }
         } else if (opt.name().size() == 1 && opt.name(0).name_part() == Field_Option_Default_Value &&
                    opt.has_string_value()) {
+
             defaultValue = opt.string_value();
         }
     }
 
-    if (desc->is_optional()) {
+    if (desc->has_optional_keyword()) {
         flags |= FieldFlags::Optional;
     }
 
@@ -455,7 +471,7 @@ void Parser::addField(Struct* structure,
                                   desc->number(),
                                   *fieldType,
                                   flags,
-                                  desc->containing_oneof()->name(),
+                                  desc->real_containing_oneof() ? desc->real_containing_oneof()->name() : "",
                                   defaultValue,
                                   EntityDocs(source.leading_comments));
     } else if (*fieldType == FieldTypeId::Message) {
@@ -464,7 +480,7 @@ void Parser::addField(Struct* structure,
                                       desc->number(),
                                       desc->message_type()->full_name(),
                                       flags,
-                                      desc->containing_oneof()->name(),
+                                      desc->real_containing_oneof() ? desc->real_containing_oneof()->name() : "",
                                       EntityDocs(source.leading_comments));
         } else {
             auto keyType = ToBusrpcType(desc->message_type()->map_key()->type());
@@ -484,7 +500,7 @@ void Parser::addField(Struct* structure,
                                 desc->number(),
                                 desc->enum_type()->full_name(),
                                 flags,
-                                desc->containing_oneof()->name(),
+                                desc->real_containing_oneof() ? desc->real_containing_oneof()->name() : "",
                                 EntityDocs(source.leading_comments));
     }
 }
