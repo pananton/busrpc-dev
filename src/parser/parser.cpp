@@ -116,7 +116,7 @@ const TDescriptorProto* FindDescriptorProto(const protobuf::RepeatedPtrField<TDe
 }
 } // namespace
 
-std::pair<ProjectPtr, ErrorCollector> Parser::parse() const
+std::pair<ProjectPtr, ErrorCollector> Parser::parse(std::vector<const std::error_category*> ignoredCategories) const
 {
     SeverityOrder orderFunc = [](std::error_code lhs, std::error_code rhs) {
         if (lhs.category() == rhs.category()) {
@@ -138,7 +138,7 @@ std::pair<ProjectPtr, ErrorCollector> Parser::parse() const
         return false;
     };
 
-    ErrorCollector ecol(ParserErrc::Protobuf_Error, std::move(orderFunc));
+    ErrorCollector ecol(ParserErrc::Protobuf_Error, std::move(orderFunc), std::move(ignoredCategories));
     auto projectPtr = parse(ecol);
     return std::make_pair(projectPtr, std::move(ecol));
 }
@@ -158,10 +158,7 @@ ProjectPtr Parser::parse(ErrorCollector& ecol) const
         }
     } catch (const std::filesystem::filesystem_error&) { }
 
-    if (projectPath.empty()) {
-        ecol.add(ParserErrc::Read_Failed, std::make_pair("dir", projectDir_));
-        return projectPtr;
-    } else if (!std::filesystem::is_regular_file(projectPath / Busrpc_Builtin_File)) {
+    if (projectPath.empty() || !std::filesystem::is_regular_file(projectPath / Busrpc_Builtin_File)) {
         ecol.add(ParserErrc::Invalid_Project_Dir, std::make_pair("dir", projectDir_));
         return projectPtr;
     }

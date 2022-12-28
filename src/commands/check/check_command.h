@@ -51,32 +51,50 @@ class CheckArgs {
 public:
     /// Create \c check command arguments.
     CheckArgs(std::string projectDir = {},
-              bool skipDocsChecks = false,
-              bool skipStyleChecks = false,
+              std::string protobufRootDir = {},
+              bool ignoreSpecWarnings = false,
+              bool ignoreDocWarnings = false,
+              bool ignoreStyleWarnings = false,
               bool warningAsError = false):
         projectDir_(std::move(projectDir)),
-        skipDocsChecks_(skipDocsChecks),
-        skipStyleChecks_(skipStyleChecks),
+        protobufRootDir_(std::move(protobufRootDir)),
+        ignoreSpecWarnings_(ignoreSpecWarnings),
+        ignoreDocWarnings_(ignoreDocWarnings),
+        ignoreStyleWarnings_(ignoreStyleWarnings),
         warningAsError_(warningAsError)
     { }
 
-    /// Busrpc project directory (the one containing 'api/' and 'services/' subdirectories).
+    /// Busrpc project directory.
     /// \note If empty, working directory is assumed.
     const std::string& projectDir() const noexcept { return projectDir_; }
 
-    /// Flag indicating whether documentation rules check should be skipped.
-    bool skipDocsChecks() const noexcept { return skipDocsChecks_; }
+    /// Root directory for protobuf built-in '.proto' files ('google/protobuf/descriptor.proto', etc.).
+    /// \note On *nix systems, '/usr/include' and '/usr/include/local' are implicitly added to the list of directories
+    ///       where to search built-in protobuf '.proto' files. However, this directories are only searched if
+    ///       file was not found in the command's protobuf root directory.
+    const std::string& protobufRootDir() const noexcept { return protobufRootDir_; }
 
-    /// Flag indicating whether documentation rules check should be skipped.
-    bool skipStyleChecks() const noexcept { return skipStyleChecks_; }
+    /// Flag indicating whether busrpc specification warnings should be ignored.
+    /// \note Ignored warnings are not printed to the command output and do not affect it's final result.
+    bool ignoreSpecWarnings() const noexcept { return ignoreSpecWarnings_; }
+
+    /// Flag indicating whether warnings related to the project documentation should be ignored.
+    /// \note Ignored warnings are not printed to the command output and do not affect it's final result.
+    bool ignoreDocWarnings() const noexcept { return ignoreDocWarnings_; }
+
+    /// Flag indicating whether warnings related to project protobuf style should be ignored.
+    /// \note Ignored warnings are not printed to the command output and do not affect command result.
+    bool ignoreStyleWarnings() const noexcept { return ignoreStyleWarnings_; }
 
     /// Flag indicating whether warnings should be treated as errors.
     bool warningAsError() const noexcept { return warningAsError_; }
 
 private:
     std::string projectDir_;
-    bool skipDocsChecks_;
-    bool skipStyleChecks_;
+    std::string protobufRootDir_;
+    bool ignoreSpecWarnings_;
+    bool ignoreDocWarnings_;
+    bool ignoreStyleWarnings_;
     bool warningAsError_;
 };
 

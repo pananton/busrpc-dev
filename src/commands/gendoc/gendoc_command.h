@@ -68,7 +68,7 @@ public:
     /// Format of the documentation.
     GenDocFormat format() const noexcept { return format_; }
 
-    /// Busrpc project directory (the one containing 'api/' and 'services/' subdirectories).
+    /// Busrpc project directory.
     /// \note If empty, working directory is assumed.
     const std::string& projectDir() const noexcept { return projectDir_; }
 

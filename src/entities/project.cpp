@@ -128,7 +128,7 @@ const Entity* Project::find(const std::string& dname) const
     return it != entityDirectory_.end() ? it->second : nullptr;
 }
 
-ErrorCollector Project::check() const
+ErrorCollector Project::check(std::vector<const std::error_category*> ignoredCategories) const
 {
     SeverityOrder orderFunc = [](std::error_code lhs, std::error_code rhs) {
         if (lhs.category() == rhs.category()) {
@@ -144,7 +144,7 @@ ErrorCollector Project::check() const
         return false;
     };
 
-    ErrorCollector ecol(std::move(orderFunc));
+    ErrorCollector ecol(std::move(orderFunc), std::move(ignoredCategories));
     check(ecol);
     return ecol;
 }

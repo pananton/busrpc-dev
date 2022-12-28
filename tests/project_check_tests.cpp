@@ -297,8 +297,8 @@ class ProjectCheckTest: public ::testing::Test {
 protected:
     void SetUp() override
     {
+        InitMinimalProject(&project_);
         api_ = project_.addApi();
-        InitApi(api_);
         services_ = project_.addServices();
     }
 
@@ -1434,5 +1434,13 @@ TEST_F(ProjectCheckTest, Default_Severity_Of_Errors_Is_SpecErrc_SpecWarn_DocWarn
 
         EXPECT_EQ(ecol.majorError()->code.category(), style_warn_category());
     }
+}
+
+TEST_F(ProjectCheckTest, Empty_Struct_Can_Be_Marked_As_Hashed)
+{
+    auto structure = project_.addStruct("MyStruct", "1.proto", StructFlags::Hashed, EntityDocs("Structure."));
+    auto ecol = project_.check();
+
+    EXPECT_FALSE(ecol);
 }
 }} // namespace busrpc::test

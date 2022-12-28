@@ -77,16 +77,7 @@ TEST(ImportsCommandTest, Command_Outputs_Nothing_If_Invoked_Wo_Files)
     EXPECT_TRUE(err.str().empty());
 }
 
-TEST(ImportsCommandTest, Command_Fails_If_Invoked_Wo_Files_And_Invalid_Project_Dir)
-{
-    std::ostringstream err;
-
-    EXPECT_COMMAND_EXCEPTION(ImportsCommand({{}, "missing_project_dir"}).execute(std::nullopt, err),
-                             ImportsErrc::Invalid_Project_Dir);
-    EXPECT_FALSE(err.str().empty());
-}
-
-TEST(ImportsCommandTest, Command_Fails_If_Project_Dir_Does_Not_Exist)
+TEST(ImportsCommandTest, Invalid_Project_Dir_Error_If_Project_Dir_Does_Not_Exist)
 {
     std::ostringstream err;
 
@@ -95,7 +86,16 @@ TEST(ImportsCommandTest, Command_Fails_If_Project_Dir_Does_Not_Exist)
     EXPECT_FALSE(err.str().empty());
 }
 
-TEST(ImportsCommandTest, Command_Fails_If_Some_File_Does_Not_Exist)
+TEST(ImportsCommandTest, Invalid_Project_Dir_Error_If_Invoked_Wo_Files_And_Nonexistent_Project_Dir)
+{
+    std::ostringstream err;
+
+    EXPECT_COMMAND_EXCEPTION(ImportsCommand({{}, "missing_project_dir"}).execute(std::nullopt, err),
+                             ImportsErrc::Invalid_Project_Dir);
+    EXPECT_FALSE(err.str().empty());
+}
+
+TEST(ImportsCommandTest, File_Not_Found_Error_If_Some_File_Does_Not_Exist)
 {
     std::ostringstream err;
     TmpDir tmp;
@@ -108,7 +108,7 @@ TEST(ImportsCommandTest, Command_Fails_If_Some_File_Does_Not_Exist)
     EXPECT_FALSE(err.str().empty());
 }
 
-TEST(ImportsCommandTest, Command_Fails_If_Some_File_Is_Outside_The_Project_Dir)
+TEST(ImportsCommandTest, File_Not_Found_Error_If_Some_File_Is_Outside_The_Project_Dir)
 {
     std::ostringstream err;
     TmpDir tmp;
@@ -123,7 +123,7 @@ TEST(ImportsCommandTest, Command_Fails_If_Some_File_Is_Outside_The_Project_Dir)
     EXPECT_FALSE(err.str().empty());
 }
 
-TEST(ImportsCommandTest, Command_Fails_If_Some_File_Is_Not_Parsed)
+TEST(ImportsCommandTest, Protobuf_Parsing_Failed_Error_If_Some_File_Is_Not_Parsed)
 {
     std::ostringstream err;
     TmpDir tmp;
@@ -219,7 +219,7 @@ TEST(ImportsCommandTest, Command_Succeeds_If_Same_File_Specified_Multiple_Times)
     EXPECT_EQ(output[1], "file2.proto");
 }
 
-TEST(ImportsCommandTest, Command_Ignores_Imported_System_Files)
+TEST(ImportsCommandTest, Command_Ignores_Imported_Builtin_Protobuf_Files)
 {
     std::ostringstream out, err;
     TmpDir tmp;
@@ -303,6 +303,7 @@ TEST(ImportsCommandTest, Command_Tries_To_Proceed_After_Error)
     EXPECT_EQ(output[0], "file1.proto");
     EXPECT_EQ(output[1], "file2.proto");
 }
+
 TEST(ImportsCommandTest, App_Runs_Command_If_Command_Name_Is_Specified_As_Subcommand)
 {
     std::ostringstream out, err;
@@ -320,8 +321,15 @@ TEST(ImportsCommandTest, App_Runs_Command_If_Command_Name_Is_Specified_As_Subcom
     CLI::App app;
     InitApp(app, out, err);
 
-    int argc = 6;
-    const char* argv[] = {"busrpc", GetCommandName(CommandId::Imports), "-r", "tmp", "file1.proto", "file2.proto"};
+    int argc = 8;
+    const char* argv[] = {"busrpc",
+                          GetCommandName(CommandId::Imports),
+                          "-r",
+                          "tmp",
+                          "-p",
+                          BUSRPC_TESTS_PROTOBUF_ROOT,
+                          "file1.proto",
+                          "file2.proto"};
 
     EXPECT_NO_THROW(app.parse(argc, argv));
     EXPECT_TRUE(err.str().empty());

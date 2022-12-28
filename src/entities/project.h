@@ -10,6 +10,7 @@
 #include <system_error>
 #include <unordered_map>
 #include <unordered_set>
+#include <vector>
 
 /// \file project.h Project entity.
 
@@ -127,9 +128,11 @@ public:
     Services* addServices();
 
     /// Check project for conformance with busrpc specification.
+    /// \note Parameter \a ignoredCategories contains categories of errors (for example, doc or style warnings)
+    ///       that should be ignored by the error collector.
     /// \note Uses default error collector, which assumes the following priorities of the error codes:
     ///       <tt>SpecErrc > SpecWarn > DocWarn > StyleWarn</tt>
-    ErrorCollector check() const;
+    ErrorCollector check(std::vector<const std::error_category*> ignoredCategories = {}) const;
 
     /// Check project for conformance with busrpc specification.
     void check(ErrorCollector& errorCollector) const;

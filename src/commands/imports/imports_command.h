@@ -54,7 +54,7 @@ public:
     /// Files which imports to output (should be nested in the busrpc project directory).
     const std::vector<std::string>& files() const noexcept { return files_; }
 
-    /// Busrpc project directory (the one containing 'api/' and 'services/' subdirectories).
+    /// Busrpc project directory.
     /// \note If empty, working directory is assumed.
     const std::string& projectDir() const noexcept { return projectDir_; }
 

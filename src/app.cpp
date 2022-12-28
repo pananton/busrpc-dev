@@ -20,8 +20,10 @@ namespace {
 
 struct CheckOptions {
     std::string projectDir = {};
-    bool skipDocsChecks = false;
-    bool skipStyleChecks = false;
+    std::string protobufRoot = {};
+    bool ignoreSpecWarnings = false;
+    bool ignoreDocWarnings = false;
+    bool ignoreStyleWarnings = false;
     bool warningAsError = false;
 };
 
@@ -53,7 +55,7 @@ auto CreateInvoker(std::ostream& out, std::ostream& err)
 void AddProjectDirOption(CLI::App& app, std::string& projectDir)
 {
     app.add_option("-r,--root", projectDir)
-        ->description("Busrpc project directory (the one containing 'api/' and 'services/' subdirectories)")
+        ->description("Busrpc project directory (the one containing 'busrpc.proto' file)")
         ->envname("BUSRPC_PROJECT_DIR")
         ->check(CLI::ExistingDirectory);
 }
@@ -87,15 +89,19 @@ void DefineCommand(CLI::App& app, const std::function<void(CheckArgs)>& callback
 
     app.final_callback([callback, optsPtr]() {
         callback({std::move(optsPtr->projectDir),
-                  optsPtr->skipDocsChecks,
-                  optsPtr->skipStyleChecks,
+                  std::move(optsPtr->protobufRoot),
+                  optsPtr->ignoreSpecWarnings,
+                  optsPtr->ignoreDocWarnings,
+                  optsPtr->ignoreStyleWarnings,
                   optsPtr->warningAsError});
     });
 
     AddProjectDirOption(app, optsPtr->projectDir);
+    AddProtobufRootOption(app, optsPtr->protobufRoot);
 
-    app.add_flag("--skip-docs", optsPtr->skipDocsChecks, "Skip API documentation checks");
-    app.add_flag("--skip-style", optsPtr->skipStyleChecks, "Skip API protobuf style checks");
+    app.add_flag("--ignore-spec", optsPtr->ignoreSpecWarnings, "Ignore busrpc specification warnings");
+    app.add_flag("--ignore-doc", optsPtr->ignoreDocWarnings, "Ignore documentation warnings");
+    app.add_flag("--ignore-style", optsPtr->ignoreStyleWarnings, "Ignore style warnings");
     app.add_flag("-w,--warning-as-error", optsPtr->warningAsError, "Treat warnings as errors");
 }
 

@@ -6,6 +6,7 @@
 #include <filesystem>
 #include <string>
 #include <system_error>
+#include <vector>
 
 /// \file parser.h Parser for a busrpc project directory.
 
@@ -43,8 +44,7 @@ std::error_code make_error_code(ParserErrc errc);
 class Parser {
 public:
     /// Create parser for \a projectDir.
-    /// \note Project directory is the directory which contains \a busrpc.proto file and \a api/ and \a services/
-    ///       subdirectories.
+    /// \note Project directory is the directory which contains 'busrpc.proto' file.
     /// \note Paremeter \a protobufRoot allows to specify where to search for built-in \a .proto files provided by
     ///       the protobuf library (for example, 'google/protobuf/descriptor.proto', etc.). On *nix systems parser
     ///       additionally searches for built-in \a .proto files in '/usr/include' and '/usr/local/include' if
@@ -62,11 +62,13 @@ public:
     const std::filesystem::path& protobufRoot() const noexcept { return protobufRoot_; }
 
     /// Parse project directory and build \ref Project.
-    /// \note Parser does not stop working when error is encountered, which means that returned project may be
-    ///       incomplete if errors are found.
+    /// \warning Parser does not stop working when error is encountered, which means that returned project may be
+    ///          incomplete if errors are found.
+    /// \note Parameter \a ignoredCategories contains categories of errors (for example, doc or style warnings)
+    ///       that should be ignored by the error collector.
     ///  \note Uses default error collector, which assumes the following priorities of the error codes:
     ///        <tt>ParserErrc > SpecErrc > SpecWarn > DocWarn > StyleWarn</tt>
-    std::pair<ProjectPtr, ErrorCollector> parse() const;
+    std::pair<ProjectPtr, ErrorCollector> parse(std::vector<const std::error_category*> ignoredCategories = {}) const;
 
     /// Parse project directory and build \ref Project.
     /// \note Parser does not stop working when error is encountered, which means that returned project may be

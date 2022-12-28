@@ -1,7 +1,9 @@
 #include "app.h"
 #include "commands/check/check_command.h"
 #include "commands/help/help_command.h"
+#include "tests_configure.h"
 #include "utils/common.h"
+#include "utils/project_utils.h"
 
 #include <CLI/CLI.hpp>
 #include <gtest/gtest.h>
@@ -59,6 +61,235 @@ TEST(CheckCommandTest, Help_Is_Defined_For_The_Command)
 
     EXPECT_NO_THROW(helpCmd.execute(out, err));
     EXPECT_TRUE(IsHelpMessage(out.str(), CommandId::Check));
+    EXPECT_TRUE(err.str().empty());
+}
+
+TEST(CheckCommandTest, Command_Succeeds_For_Valid_Project_And_Outputs_Success_Message)
+{
+    std::ostringstream out, err;
+    TmpDir tmp;
+    CreateMinimalProject(tmp);
+
+    EXPECT_NO_THROW(CheckCommand({"tmp", BUSRPC_TESTS_PROTOBUF_ROOT}).execute(out, err));
+    EXPECT_FALSE(out.str().empty());
+    EXPECT_TRUE(err.str().empty());
+}
+
+TEST(CheckCommandTest, Invalid_Project_Dir_If_Project_Dir_Does_Not_Exist)
+{
+    std::ostringstream err;
+
+    EXPECT_COMMAND_EXCEPTION(CheckCommand({"missing_project_dir"}).execute(std::nullopt, err),
+                             CheckErrc::Invalid_Project_Dir);
+    EXPECT_FALSE(err.str().empty());
+}
+
+TEST(CheckCommandTest, Invalid_Project_Dir_If_Project_Dir_Does_Not_Represent_Valid_Busrpc_Project_Dir)
+{
+    std::ostringstream err;
+    TmpDir tmp;
+
+    EXPECT_COMMAND_EXCEPTION(CheckCommand({"tmp", BUSRPC_TESTS_PROTOBUF_ROOT}).execute(std::nullopt, err),
+                             CheckErrc::Invalid_Project_Dir);
+    EXPECT_FALSE(err.str().empty());
+}
+
+TEST(CheckCommandTest, Protobuf_Parsing_Failed_Error_If_Some_File_Is_Not_Parsed)
+{
+    std::ostringstream err;
+    TmpDir tmp;
+    CreateMinimalProject(tmp);
+    tmp.writeFile("invalid.proto", "syntax =");
+
+    EXPECT_COMMAND_EXCEPTION(CheckCommand({"tmp", BUSRPC_TESTS_PROTOBUF_ROOT}).execute(std::nullopt, err),
+                             CheckErrc::Protobuf_Parsing_Failed);
+    EXPECT_FALSE(err.str().empty());
+}
+
+TEST(CheckCommandTest, Spec_Violated_Error_If_Spec_Error_Detected)
+{
+    std::ostringstream err;
+    TmpDir tmp;
+    CreateMinimalProject(tmp);
+
+    std::string invalidType = "syntax = \"proto3\";\n"
+                              "package busrpc.aaa;\n"
+                              "message MyStruct {}";
+    tmp.writeFile("file.proto", invalidType);
+
+    EXPECT_COMMAND_EXCEPTION(CheckCommand({"tmp", BUSRPC_TESTS_PROTOBUF_ROOT}).execute(std::nullopt, err),
+                             CheckErrc::Spec_Violated);
+    EXPECT_FALSE(err.str().empty());
+}
+
+TEST(CheckCommandTest, Command_Succeeds_If_Spec_Warning_Detected_And_Warnings_Are_Not_Errors)
+{
+    std::ostringstream out, err;
+    TmpDir tmp;
+    CreateMinimalProject(tmp);
+    tmp.createDir("unexpected_dir");
+
+    EXPECT_NO_THROW(CheckCommand({"tmp", BUSRPC_TESTS_PROTOBUF_ROOT}).execute(out, err));
+    EXPECT_FALSE(out.str().empty());
+    EXPECT_FALSE(err.str().empty());
+}
+
+TEST(CheckCommandTest, Spec_Violated_Error_If_Specification_Warning_Detected_And_Warnings_Are_Errors)
+{
+    std::ostringstream err;
+    TmpDir tmp;
+    CreateMinimalProject(tmp);
+    tmp.createDir("unexpected_dir");
+
+    EXPECT_COMMAND_EXCEPTION(
+        CheckCommand({"tmp", BUSRPC_TESTS_PROTOBUF_ROOT, false, false, false, true}).execute(std::nullopt, err),
+        CheckErrc::Spec_Violated);
+    EXPECT_FALSE(err.str().empty());
+}
+
+TEST(CheckCommandTest, Command_Succeeds_If_Spec_Warning_Detected_Warnings_Are_Errors_But_Spec_Warnings_Are_Ignored)
+{
+    std::ostringstream out, err;
+    TmpDir tmp;
+    CreateMinimalProject(tmp);
+    tmp.createDir("unexpected_dir");
+
+    EXPECT_NO_THROW(CheckCommand({"tmp", BUSRPC_TESTS_PROTOBUF_ROOT, true, false, false, true}).execute(out, err));
+    EXPECT_FALSE(out.str().empty());
+    EXPECT_TRUE(err.str().empty());
+}
+
+TEST(CheckCommandTest, Command_Succeeds_If_Doc_Warning_Detected_And_Warnings_Are_Not_Errors)
+{
+    std::ostringstream out, err;
+    TmpDir tmp;
+    CreateMinimalProject(tmp);
+
+    std::string undocumentedStruct = "syntax = \"proto3\";\n"
+                                     "package busrpc;\n"
+                                     "message MyStruct {}";
+    tmp.writeFile("file.proto", undocumentedStruct);
+
+    EXPECT_NO_THROW(CheckCommand({"tmp", BUSRPC_TESTS_PROTOBUF_ROOT}).execute(out, err));
+    EXPECT_FALSE(out.str().empty());
+    EXPECT_FALSE(err.str().empty());
+}
+
+TEST(CheckCommandTest, Doc_Rule_Violated_Error_If_Doc_Warning_Detected_And_Warnings_Are_Errors)
+{
+    std::ostringstream err;
+    TmpDir tmp;
+    CreateMinimalProject(tmp);
+
+    std::string undocumentedStruct = "syntax = \"proto3\";\n"
+                                     "package busrpc;\n"
+                                     "message MyStruct {}";
+    tmp.writeFile("file.proto", undocumentedStruct);
+
+    EXPECT_COMMAND_EXCEPTION(
+        CheckCommand({"tmp", BUSRPC_TESTS_PROTOBUF_ROOT, false, false, false, true}).execute(std::nullopt, err),
+        CheckErrc::Doc_Rule_Violated);
+    EXPECT_FALSE(err.str().empty());
+}
+
+TEST(CheckCommandTest, Command_Succeeds_If_Doc_Warning_Detected_Warnings_Are_Errors_But_Doc_Warnings_Are_Ignored)
+{
+    std::ostringstream out, err;
+    TmpDir tmp;
+    CreateMinimalProject(tmp);
+
+    std::string undocumentedStruct = "syntax = \"proto3\";\n"
+                                     "package busrpc;\n"
+                                     "message MyStruct {}";
+    tmp.writeFile("file.proto", undocumentedStruct);
+
+    EXPECT_NO_THROW(CheckCommand({"tmp", BUSRPC_TESTS_PROTOBUF_ROOT, false, true, false, true}).execute(out, err));
+    EXPECT_FALSE(out.str().empty());
+    EXPECT_TRUE(err.str().empty());
+}
+
+TEST(CheckCommandTest, Command_Succeeds_If_Style_Warning_Detected_And_Warnings_Are_Not_Errors)
+{
+    std::ostringstream out, err;
+    TmpDir tmp;
+    CreateMinimalProject(tmp);
+
+    std::string structWithNonconformingName = "syntax = \"proto3\";\n"
+                                              "package busrpc;\n"
+                                              "// Structure.\n"
+                                              "message my_struct {}";
+    tmp.writeFile("file.proto", structWithNonconformingName);
+
+    EXPECT_NO_THROW(CheckCommand({"tmp", BUSRPC_TESTS_PROTOBUF_ROOT}).execute(out, err));
+    EXPECT_FALSE(out.str().empty());
+    EXPECT_FALSE(err.str().empty());
+}
+
+TEST(CheckCommandTest, Style_Violated_Error_If_Style_Warning_Detected_And_Warnings_Are_Errors)
+{
+    std::ostringstream err;
+    TmpDir tmp;
+    CreateMinimalProject(tmp);
+
+    std::string structWithNonconformingName = "syntax = \"proto3\";\n"
+                                              "package busrpc;\n"
+                                              "// Structure.\n"
+                                              "message my_struct {}";
+    tmp.writeFile("file.proto", structWithNonconformingName);
+
+    EXPECT_COMMAND_EXCEPTION(
+        CheckCommand({"tmp", BUSRPC_TESTS_PROTOBUF_ROOT, false, false, false, true}).execute(std::nullopt, err),
+        CheckErrc::Style_Violated);
+    EXPECT_FALSE(err.str().empty());
+}
+
+TEST(CheckCommandTest, Command_Succeeds_If_Style_Warning_Detected_Warnings_Are_Errors_But_Style_Warnings_Are_Ignored)
+{
+    std::ostringstream out, err;
+    TmpDir tmp;
+    CreateMinimalProject(tmp);
+
+    std::string structWithNonconformingName = "syntax = \"proto3\";\n"
+                                              "package busrpc;\n"
+                                              "// Structure.\n"
+                                              "message my_struct {}";
+    tmp.writeFile("file.proto", structWithNonconformingName);
+
+    EXPECT_NO_THROW(CheckCommand({"tmp", BUSRPC_TESTS_PROTOBUF_ROOT, false, false, true, true}).execute(out, err));
+    EXPECT_FALSE(out.str().empty());
+    EXPECT_TRUE(err.str().empty());
+}
+
+TEST(CheckCommandTest, App_Runs_Command_If_Command_Name_Is_Specified_As_Subcommand)
+{
+    std::ostringstream out, err;
+    TmpDir tmp;
+    CreateMinimalProject(tmp);
+
+    std::string testStruct = "syntax = \"proto3\";\n"
+                             "package busrpc;\n"
+                             "message my_struct {}";
+
+    tmp.createDir("unexpected_dir");         // specification warning
+    tmp.writeFile("file.proto", testStruct); // documentation and style warning
+
+    CLI::App app;
+    InitApp(app, out, err);
+
+    int argc = 10;
+    const char* argv[] = {"busrpc",
+                          GetCommandName(CommandId::Check),
+                          "-r",
+                          "tmp",
+                          "-p",
+                          BUSRPC_TESTS_PROTOBUF_ROOT,
+                          "--ignore-spec",
+                          "--ignore-doc",
+                          "--ignore-style",
+                          "-w"};
+
+    EXPECT_NO_THROW(app.parse(argc, argv));
+    EXPECT_FALSE(out.str().empty());
     EXPECT_TRUE(err.str().empty());
 }
 }} // namespace busrpc::test

@@ -1,6 +1,10 @@
 #include "commands/check/check_command.h"
+#include "parser/parser.h"
 
+#include <cassert>
 #include <string>
+#include <system_error>
+#include <vector>
 
 namespace busrpc {
 
@@ -41,9 +45,60 @@ public:
 };
 } // namespace
 
-std::error_code CheckCommand::tryExecuteImpl(std::ostream&, std::ostream&) const
+std::error_code CheckCommand::tryExecuteImpl(std::ostream& out, std::ostream& err) const
 {
-    return {0, check_error_category()};
+    std::vector<const std::error_category*> ignoredCategories;
+
+    if (args().ignoreSpecWarnings()) {
+        ignoredCategories.push_back(&spec_warn_category());
+    }
+
+    if (args().ignoreDocWarnings()) {
+        ignoredCategories.push_back(&doc_warn_category());
+    }
+
+    if (args().ignoreStyleWarnings()) {
+        ignoredCategories.push_back(&style_warn_category());
+    }
+
+    Parser parser(args().projectDir(), args().protobufRootDir());
+    ErrorCollector ecol = parser.parse(std::move(ignoredCategories)).second;
+    std::error_code result(0, check_error_category());
+
+    if (ecol) {
+        err << ecol;
+        auto majorError = ecol.majorError().value();
+
+        if (majorError.code.category() == parser_error_category()) {
+            if (ecol.find(ParserErrc::Invalid_Project_Dir)) {
+                result = CheckErrc::Invalid_Project_Dir;
+            } else if (ecol.find(ParserErrc::Read_Failed)) {
+                result = CheckErrc::File_Read_Failed;
+            } else {
+                result = CheckErrc::Protobuf_Parsing_Failed;
+            }
+        } else if (majorError.code.category() == spec_error_category()) {
+            result = CheckErrc::Spec_Violated;
+        } else if (args().warningAsError()) {
+            if (majorError.code.category() == spec_warn_category()) {
+                result = CheckErrc::Spec_Violated;
+            } else if (majorError.code.category() == doc_warn_category()) {
+                result = CheckErrc::Doc_Rule_Violated;
+            } else {
+                assert(majorError.code.category() == style_warn_category());
+                result = CheckErrc::Style_Violated;
+            }
+        }
+    }
+
+    if (!result) {
+        out << ("Busrpc project in '" + parser.projectDir().string() + "' directory passed all required checks")
+            << std::endl;
+    } else {
+        err << ("Busrpc project in '" + parser.projectDir().string() + "' directory failed some checks") << std::endl;
+    }
+
+    return result;
 }
 
 const std::error_category& check_error_category()
