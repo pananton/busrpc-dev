@@ -1409,7 +1409,7 @@ TEST_F(ProjectCheckTest, Default_Severity_Of_Errors_Is_SpecErrc_SpecWarn_DocWarn
         auto api = project.addApi();
 
         auto ns = api->addNamespace("Namespace"); // non-conformat name (style warn)
-        auto desc = ns->addStruct(                // undocumented entity (doc warn)
+        ns->addStruct(                            // undocumented entity (doc warn)
             GetPredefinedStructName(StructTypeId::Namespace_Desc),
             Namespace_Desc_File,
             StructFlags::None);
@@ -1425,10 +1425,10 @@ TEST_F(ProjectCheckTest, Default_Severity_Of_Errors_Is_SpecErrc_SpecWarn_DocWarn
         auto api = project.addApi();
 
         auto ns = api->addNamespace("Namespace"); // non-conformat name (should be lowercase)
-        auto desc = ns->addStruct(GetPredefinedStructName(StructTypeId::Namespace_Desc),
-                                  Namespace_Desc_File,
-                                  StructFlags::None,
-                                  EntityDocs("Namespace."));
+        ns->addStruct(GetPredefinedStructName(StructTypeId::Namespace_Desc),
+                      Namespace_Desc_File,
+                      StructFlags::None,
+                      EntityDocs("Namespace."));
 
         ErrorCollector ecol = project.check();
 
@@ -1438,7 +1438,7 @@ TEST_F(ProjectCheckTest, Default_Severity_Of_Errors_Is_SpecErrc_SpecWarn_DocWarn
 
 TEST_F(ProjectCheckTest, Empty_Struct_Can_Be_Marked_As_Hashed)
 {
-    auto structure = project_.addStruct("MyStruct", "1.proto", StructFlags::Hashed, EntityDocs("Structure."));
+    project_.addStruct("MyStruct", "1.proto", StructFlags::Hashed, EntityDocs("Structure."));
     auto ecol = project_.check();
 
     EXPECT_FALSE(ecol);

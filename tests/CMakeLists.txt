@@ -2,13 +2,13 @@
 # testing framework
 #----------------------------------------------------------------------------------------------------------------------
 
-if(NOT DEFINED BUSRPC_GTEST_TAG)
-    set(BUSRPC_GTEST_TAG 58d77fa8070e8cec2dc1ed015d66b454c8d78850 # v1.12.1
-        CACHE STRING "Tag or commit hash of GTest testing framework to be fetched" FORCE)
+if(NOT DEFINED BUSRPC_GTEST_VERSION)
+    set(BUSRPC_GTEST_VERSION "1.12.1"
+        CACHE STRING "Version of GTest testing framework to be fetched" FORCE)
 endif()
 
 include("${PROJECT_SOURCE_DIR}/cmake/FetchGtest.cmake")
-fetch_gtest(${BUSRPC_GTEST_TAG})
+fetch_gtest(${BUSRPC_GTEST_VERSION})
 
 #----------------------------------------------------------------------------------------------------------------------
 # tests sources

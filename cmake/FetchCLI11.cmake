@@ -2,12 +2,11 @@
 
 include(FetchContent)
 
-function(fetch_cli11 tag)
-  message(STATUS "Fetching CLI11 library...")
+function(fetch_cli11 version)
+  message(STATUS "Fetching CLI11 library ${version}...")
   FetchContent_Declare(
       cli11
-      GIT_REPOSITORY https://github.com/CLIUtils/CLI11
-      GIT_TAG        ${tag})
+      URL https://github.com/CLIUtils/CLI11/archive/refs/tags/v${version}.tar.gz)
 
   FetchContent_MakeAvailable(cli11)
   message(STATUS "CLI11 library added")

@@ -2,12 +2,11 @@
 
 include(FetchContent)
 
-function(fetch_gtest tag)
-    message(STATUS "Fetching GTest...")
+function(fetch_gtest version)
+    message(STATUS "Fetching GTest ${version}...")
     FetchContent_Declare(
         googletest
-        GIT_REPOSITORY https://github.com/google/googletest
-        GIT_TAG ${tag})
+        URL https://github.com/google/googletest/archive/refs/tags/release-${version}.tar.gz)
 
     set(BUILD_SHARED_LIBS OFF)
     set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)

@@ -299,7 +299,6 @@ void Parser::parseFile(const protobuf::FileDescriptor* fileDesc,
 
     for (int i = 0; i < fileDesc->enum_type_count(); ++i) {
         auto enumDesc = fileDesc->enum_type(i);
-        Enum* enumeration = nullptr;
 
         try {
             addEnum(entity, fileDesc->enum_type(i), filename);
@@ -318,7 +317,6 @@ void Parser::parseFile(const protobuf::FileDescriptor* fileDesc,
         auto structDesc = fileDesc->message_type(i);
         const protobuf::DescriptorProto* structDescProto =
             FindDescriptorProto<protobuf::DescriptorProto>(fileDescProto->message_type(), structDesc->name());
-        Struct* structure = nullptr;
 
         assert(structDescProto);
 

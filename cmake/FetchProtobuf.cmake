@@ -2,12 +2,11 @@
 
 include(FetchContent)
 
-function(fetch_protobuf tag)
-    message(STATUS "Fetching Protobuf library...")
+function(fetch_protobuf version)
+    message(STATUS "Fetching Protobuf library ${version}...")
     FetchContent_Declare(
         protobuf
-        GIT_REPOSITORY https://github.com/protocolbuffers/protobuf.git
-        GIT_TAG ${tag})
+        URL https://github.com/protocolbuffers/protobuf/archive/refs/tags/v${version}.tar.gz)
 
     set(BUILD_SHARED_LIBS OFF)
     set(protobuf_BUILD_TESTS OFF CACHE INTERNAL "")
