@@ -116,7 +116,7 @@ constexpr std::optional<CommandId> GetCommandId(const char* commandName)
 enum class EntityTypeId {
     Project = 1,             ///< Project (top-level entity).
     Api = 2,                 ///< Project API.
-    Services = 3,            ///< Project services.
+    Implementation = 3,      ///< Project API implementation.
     Namespace = 4,           ///< Busrpc namespace.
     Class = 5,               ///< Busrpc class.
     Method = 6,              ///< Busrpc method.
@@ -136,7 +136,7 @@ constexpr const char* GetEntityTypeIdStr(EntityTypeId id)
     switch (id) {
     case EntityTypeId::Project: return "project";
     case EntityTypeId::Api: return "api";
-    case EntityTypeId::Services: return "services";
+    case EntityTypeId::Implementation: return "implementation";
     case EntityTypeId::Namespace: return "namespace";
     case EntityTypeId::Class: return "class";
     case EntityTypeId::Method: return "method";

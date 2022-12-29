@@ -1,7 +1,7 @@
 #pragma once
 
 #include "entities/entity.h"
-#include "entities/services.h"
+#include "entities/implementation.h"
 #include "entities/struct.h"
 
 #include <map>
@@ -13,7 +13,7 @@
 
 namespace busrpc {
 
-class Services;
+class Implementation;
 class Service;
 
 /// Method implemented or invoked by the service.
@@ -98,11 +98,11 @@ public:
     using GeneralCompositeEntity::addStruct;
     using GeneralCompositeEntity::addEnum;
 
-    /// Entity representing all services.
-    const Services* parent() const noexcept;
+    /// Entity representing API implementation.
+    const Implementation* parent() const noexcept;
 
-    /// Entity representing all services.
-    Services* parent() noexcept;
+    /// Entity representing API implementation.
+    Implementation* parent() noexcept;
 
     /// Service descriptor.
     const Struct* descriptor() const noexcept { return descriptor_; }

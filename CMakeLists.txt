@@ -102,6 +102,8 @@ set(sources
     src/entities/enum.cpp
     src/entities/field.h
     src/entities/field.cpp
+    src/entities/implementation.h
+    src/entities/implementation.cpp
     src/entities/method.h
     src/entities/method.cpp
     src/entities/namespace.h
@@ -110,8 +112,6 @@ set(sources
     src/entities/project.cpp
     src/entities/service.h
     src/entities/service.cpp
-    src/entities/services.h
-    src/entities/services.cpp
     src/entities/struct.h
     src/entities/struct.cpp
     src/generators/generator.h

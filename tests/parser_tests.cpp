@@ -149,11 +149,11 @@ TEST(ParserTest, Parser_Correctly_Parses_Test_Project)
     }
 
     {
-        auto services = project->services();
+        auto implementation = project->implementation();
 
-        ASSERT_TRUE(services);
-        EXPECT_EQ(services->services().size(), 1);
-        ASSERT_NE(services->services().find("service"), services->services().end());
+        ASSERT_TRUE(implementation);
+        EXPECT_EQ(implementation->services().size(), 1);
+        ASSERT_NE(implementation->services().find("service"), implementation->services().end());
     }
 
     {
@@ -163,7 +163,7 @@ TEST(ParserTest, Parser_Correctly_Parses_Test_Project)
         auto onewayMethod = *(cls->methods().find("oneway_method"));
         auto onewayStaticMethod = *(cls->methods().find("oneway_static_method"));
         auto staticMethod = *(static_cls->methods().find("static_method"));
-        auto service = *(project->services()->services().find("service"));
+        auto service = *(project->implementation()->services().find("service"));
 
         EXPECT_EQ(service->author(), "John Doe");
         EXPECT_EQ(service->email(), "jdoe@company.com");
@@ -435,7 +435,7 @@ TEST(ParserTest, Parser_Correctly_Parses_Test_Project)
             case EntityTypeId::Namespace:
             case EntityTypeId::Class:
             case EntityTypeId::Method:
-            case EntityTypeId::Services:
+            case EntityTypeId::Implementation:
             case EntityTypeId::Service: checkEntity(static_cast<const GeneralCompositeEntity*>(nested));
             default: break; ;
             }
@@ -477,7 +477,7 @@ TEST(ParserTest, Unexpected_Nested_Entity_Spec_Warn_If_Directory_Is_Found_In_Ser
 {
     TmpDir tmp;
     CreateTestProject(tmp);
-    tmp.createDir("services/service/some_dir");
+    tmp.createDir(Implementation_Entity_Name + std::string("service/some_dir"));
     Parser parser(tmp.path(), BUSRPC_TESTS_PROTOBUF_ROOT);
 
     EXPECT_TRUE(parser.parse().second.find(SpecWarn::Unexpected_Nested_Entity));

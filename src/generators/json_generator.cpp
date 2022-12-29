@@ -21,23 +21,27 @@ void AddNestedStructsAndEnums(json& obj,
                               bool onlyGeneral = true,
                               bool doNotAddErrc = false)
 {
+    obj["enums"] = nullptr;
+
     for (const auto& enumeration: entity.enums()) {
         if (!doNotAddErrc || enumeration->name() != Errc_Enum_Name) {
-            obj["enums"][enumeration->name()].push_back(*enumeration);
+            obj["enums"][enumeration->name()] = *enumeration;
         }
     }
 
+    obj["structs"] = nullptr;
+
     for (const auto& structure: entity.structs()) {
         if (structure->structType() == StructTypeId::General || !onlyGeneral) {
-            obj["structs"][structure->name()].push_back(*structure);
+            obj["structs"][structure->name()] = *structure;
         }
     }
 }
 } // namespace
 
-void JsonGenerator::generate(const Project* project) const
+void JsonGenerator::generate(const Project& project) const
 {
-    json doc = *project;
+    json doc = project;
     out_ << doc;
 }
 
@@ -77,10 +81,10 @@ void to_json(json& obj, const Project& project)
         obj["api"] = nullptr;
     }
 
-    if (project.services()) {
-        obj["services"] = *project.services();
+    if (project.implementation()) {
+        obj["implementation"] = *project.implementation();
     } else {
-        obj["services"] = nullptr;
+        obj["implementation"] = nullptr;
     }
 
     AddNestedStructsAndEnums(obj, project, true, true);
@@ -89,9 +93,10 @@ void to_json(json& obj, const Project& project)
 void to_json(json& obj, const Api& api)
 {
     AddCommonEntityData(obj, api);
+    obj["namespaces"] = nullptr;
 
     for (const auto& ns: api.namespaces()) {
-        obj["namespaces"][ns->name()].push_back(*ns);
+        obj["namespaces"][ns->name()] = *ns;
     }
 
     AddNestedStructsAndEnums(obj, api);
@@ -100,9 +105,10 @@ void to_json(json& obj, const Api& api)
 void to_json(json& obj, const Namespace& ns)
 {
     AddCommonEntityData(obj, ns);
+    obj["classes"] = nullptr;
 
     for (const auto& cls: ns.classes()) {
-        obj["classes"][cls->name()].push_back(*cls);
+        obj["classes"][cls->name()] = *cls;
     }
 
     AddNestedStructsAndEnums(obj, ns);
@@ -119,9 +125,10 @@ void to_json(json& obj, const Class& cls)
     }
 
     obj["isStatic"] = cls.isStatic();
+    obj["methods"] = nullptr;
 
     for (const auto& method: cls.methods()) {
-        obj["methods"][method->name()].push_back(*method);
+        obj["methods"][method->name()] = *method;
     }
 
     AddNestedStructsAndEnums(obj, cls);
@@ -151,15 +158,16 @@ void to_json(json& obj, const Method& method)
     AddNestedStructsAndEnums(obj, method);
 }
 
-void to_json(json& obj, const Services& services)
+void to_json(json& obj, const Implementation& implementation)
 {
-    AddCommonEntityData(obj, services);
+    AddCommonEntityData(obj, implementation);
+    obj["services"] = nullptr;
 
-    for (const auto& service: services.services()) {
-        obj["services"][service->name()].push_back(*service);
+    for (const auto& service: implementation.services()) {
+        obj["services"][service->name()] = *service;
     }
 
-    AddNestedStructsAndEnums(obj, services);
+    AddNestedStructsAndEnums(obj, implementation);
 }
 
 void to_json(json& obj, const Service& service)
@@ -176,12 +184,16 @@ void to_json(json& obj, const Service& service)
     obj["email"] = service.email();
     obj["url"] = service.url();
 
+    obj["implements"] = nullptr;
+
     for (const auto& implMethod: service.implementedMethods()) {
-        obj["implements"].push_back(implMethod);
+        obj["implements"][implMethod.dname()] = implMethod;
     }
 
+    obj["invokes"] = nullptr;
+
     for (const auto& invkMethod: service.invokedMethods()) {
-        obj["invokes"].push_back(invkMethod);
+        obj["invokes"][invkMethod.dname()] = invkMethod;
     }
 
     AddNestedStructsAndEnums(obj, service);
@@ -194,12 +206,10 @@ void to_json(json& obj, const ImplementedMethod& implMethod)
 
     if (implMethod.acceptedObjectId()) {
         obj["acceptedObjectId"] = *implMethod.acceptedObjectId();
-    } else {
-        obj["acceptedObjectId"] = nullptr;
     }
 
     for (const auto& acceptedParam: implMethod.acceptedParams()) {
-        obj["acceptedParams"].push_back(std::make_pair(acceptedParam.first, acceptedParam.second));
+        obj["acceptedParams"][acceptedParam.first] = acceptedParam.second;
     }
 }
 
@@ -217,9 +227,10 @@ void to_json(json& obj, const Struct& structure)
     obj["file"] = structure.file().generic_string();
     obj["isHashed"] = structure.isHashed();
     obj["isEncodable"] = structure.isEncodable();
+    obj["fields"] = nullptr;
 
     for (const auto& field: structure.fields()) {
-        obj["fields"][field->name()].push_back(*field);
+        obj["fields"][field->name()] = *field;
     }
 
     AddNestedStructsAndEnums(obj, structure, false);
@@ -230,20 +241,20 @@ void to_json(json& obj, const Field& field)
     AddCommonEntityData(obj, field);
 
     obj["number"] = field.number();
-    obj["fieldType"] = field.fieldTypeName();
-    obj["isMap"] = field.fieldType() == FieldTypeId::Map;
+    obj["fieldTypeName"] = field.fieldTypeName();
     obj["isOptional"] = field.isOptional();
     obj["isRepeated"] = field.isRepeated();
     obj["isObservable"] = field.isObservable();
     obj["isHashed"] = field.isHashed();
     obj["oneofName"] = field.oneofName();
     obj["defaultValue"] = field.defaultValue();
+    obj["isMap"] = field.fieldType() == FieldTypeId::Map;
 
     if (field.fieldType() == FieldTypeId::Map) {
         const auto& mapField = static_cast<const MapField&>(field);
 
-        obj["keyType"] = mapField.keyTypeName();
-        obj["valueType"] = mapField.valueTypeName();
+        obj["keyTypeName"] = mapField.keyTypeName();
+        obj["valueTypeName"] = mapField.valueTypeName();
     }
 }
 
@@ -253,9 +264,10 @@ void to_json(json& obj, const Enum& enumeration)
 
     obj["package"] = enumeration.package();
     obj["file"] = enumeration.file().generic_string();
+    obj["constants"] = nullptr;
 
     for (const auto& constant: enumeration.constants()) {
-        obj["constants"][constant->name()].push_back(*constant);
+        obj["constants"][constant->name()] = *constant;
     }
 }
 
@@ -269,6 +281,7 @@ void to_json(json& obj, const EntityDocs& docs)
 {
     obj["brief"] = docs.brief();
     obj["description"] = docs.description();
+    obj["commands"] = nullptr;
 
     for (const auto& command: docs.commands()) {
         obj["commands"][command.first] = command.second;

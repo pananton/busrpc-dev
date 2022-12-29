@@ -59,18 +59,18 @@ void ImplementedMethod::parseDocCommands()
 Service::Service(CompositeEntity* services, const std::string& name):
     GeneralCompositeEntity(services, EntityTypeId::Service, name)
 {
-    assert(dynamic_cast<Services*>(this->parent()));
+    assert(dynamic_cast<Implementation*>(this->parent()));
     setNestedEntityAddedCallback([this](Entity* entity) { onNestedEntityAdded(entity); });
 }
 
-const Services* Service::parent() const noexcept
+const Implementation* Service::parent() const noexcept
 {
-    return static_cast<const Services*>(GeneralCompositeEntity::parent());
+    return static_cast<const Implementation*>(GeneralCompositeEntity::parent());
 }
 
-Services* Service::parent() noexcept
+Implementation* Service::parent() noexcept
 {
-    return static_cast<Services*>(GeneralCompositeEntity::parent());
+    return static_cast<Implementation*>(GeneralCompositeEntity::parent());
 }
 
 void Service::onNestedEntityAdded(Entity* entity)

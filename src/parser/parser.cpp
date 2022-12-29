@@ -43,8 +43,8 @@ Enum* CreateEnum(GeneralCompositeEntity* entity,
         return static_cast<Namespace*>(entity)->addEnum(name, filename, EntityDocs(blockComment));
     case EntityTypeId::Class: return static_cast<Class*>(entity)->addEnum(name, filename, EntityDocs(blockComment));
     case EntityTypeId::Method: return static_cast<Method*>(entity)->addEnum(name, filename, EntityDocs(blockComment));
-    case EntityTypeId::Services:
-        return static_cast<Services*>(entity)->addEnum(name, filename, EntityDocs(blockComment));
+    case EntityTypeId::Implementation:
+        return static_cast<Implementation*>(entity)->addEnum(name, filename, EntityDocs(blockComment));
     case EntityTypeId::Service: return static_cast<Service*>(entity)->addEnum(name, filename, EntityDocs(blockComment));
     case EntityTypeId::Struct: return static_cast<Struct*>(entity)->addEnum(name, EntityDocs(blockComment));
     default: return nullptr;
@@ -68,8 +68,8 @@ Struct* CreateStruct(GeneralCompositeEntity* entity,
         return static_cast<Class*>(entity)->addStruct(name, filename, flags, EntityDocs(blockComment));
     case EntityTypeId::Method:
         return static_cast<Method*>(entity)->addStruct(name, filename, flags, EntityDocs(blockComment));
-    case EntityTypeId::Services:
-        return static_cast<Services*>(entity)->addStruct(name, filename, flags, EntityDocs(blockComment));
+    case EntityTypeId::Implementation:
+        return static_cast<Implementation*>(entity)->addStruct(name, filename, flags, EntityDocs(blockComment));
     case EntityTypeId::Service:
         return static_cast<Service*>(entity)->addStruct(name, filename, flags, EntityDocs(blockComment));
     case EntityTypeId::Struct: return static_cast<Struct*>(entity)->addStruct(name, flags, EntityDocs(blockComment));
@@ -197,8 +197,8 @@ GeneralCompositeEntity* Parser::visitSubdirectory(GeneralCompositeEntity* parent
         {
             if (subdirName == Api_Entity_Name) {
                 return static_cast<Project*>(parent)->addApi();
-            } else if (subdirName == Services_Entity_Name) {
-                return static_cast<Project*>(parent)->addServices();
+            } else if (subdirName == Implementation_Entity_Name) {
+                return static_cast<Project*>(parent)->addImplementation();
             }
 
             break;
@@ -206,7 +206,7 @@ GeneralCompositeEntity* Parser::visitSubdirectory(GeneralCompositeEntity* parent
     case EntityTypeId::Api: return static_cast<Api*>(parent)->addNamespace(subdirName);
     case EntityTypeId::Namespace: return static_cast<Namespace*>(parent)->addClass(subdirName);
     case EntityTypeId::Class: return static_cast<Class*>(parent)->addMethod(subdirName);
-    case EntityTypeId::Services: return static_cast<Services*>(parent)->addService(subdirName);
+    case EntityTypeId::Implementation: return static_cast<Implementation*>(parent)->addService(subdirName);
     default: break;
     }
 

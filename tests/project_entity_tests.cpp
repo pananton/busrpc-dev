@@ -15,7 +15,7 @@ protected:
     {
         project_ = std::make_shared<Project>(Test_Root);
         api_ = project_->addApi();
-        services_ = project_->addServices();
+        implementation_ = project_->addImplementation();
 
         ns1_ = api_->addNamespace("ns1");
         ns2_ = api_->addNamespace("ns2");
@@ -32,15 +32,15 @@ protected:
         nestedStruct1_->addScalarField("field1", 1, FieldTypeId::Bool);
         nestedEnum1_ = struct1_->addEnum("NestedEnum1");
 
-        servicesStruct1_ = services_->addStruct("Struct1", "file3.proto");
-        service_ = services_->addService("service");
+        implementationStruct1_ = implementation_->addStruct("Struct1", "file3.proto");
+        service_ = implementation_->addService("service");
         serviceEnum1_ = service_->addEnum("Enum1", "file4.proto");
     }
 
 protected:
     std::shared_ptr<Project> project_;
     Api* api_ = nullptr;
-    Services* services_ = nullptr;
+    Implementation* implementation_ = nullptr;
 
     // api types
 
@@ -59,7 +59,7 @@ protected:
     // services types
 
     Service* service_ = nullptr;
-    Struct* servicesStruct1_ = nullptr;
+    Struct* implementationStruct1_ = nullptr;
     Enum* serviceEnum1_ = nullptr;
 };
 
@@ -83,7 +83,7 @@ TEST_F(ProjectEntityTest, Ctor_Does_Not_Initialize_Builtins_Api_And_Services)
     EXPECT_FALSE(Project().callMessage());
     EXPECT_FALSE(Project().resultMessage());
     EXPECT_FALSE(Project().api());
-    EXPECT_FALSE(Project().services());
+    EXPECT_FALSE(Project().implementation());
 }
 
 TEST_F(ProjectEntityTest, Adding_Errc_Enum_Sets_Api_Error_Code_Type)
@@ -130,19 +130,19 @@ TEST_F(ProjectEntityTest, addApi_Initializes_Api_Entity)
     EXPECT_EQ(api, project.api());
 }
 
-TEST_F(ProjectEntityTest, addServices_Initializes_Services_Entity)
+TEST_F(ProjectEntityTest, addImplementation_Initializes_Implementation_Entity)
 {
     Project project;
-    Services* services = nullptr;
+    Implementation* implementation = nullptr;
 
-    EXPECT_TRUE(services = project.addServices());
-    EXPECT_EQ(services, project.services());
+    EXPECT_TRUE(implementation = project.addImplementation());
+    EXPECT_EQ(implementation, project.implementation());
 }
 
 TEST_F(ProjectEntityTest, find_Returns_Correct_Entity_If_It_Exists)
 {
     std::string apiPrefix = std::string(Project_Entity_Name) + "." + Api_Entity_Name + ".";
-    std::string svcPrefix = std::string(Project_Entity_Name) + "." + Services_Entity_Name + ".";
+    std::string svcPrefix = std::string(Project_Entity_Name) + "." + Implementation_Entity_Name + ".";
 
     EXPECT_EQ(project_->find(std::string(Project_Entity_Name)), project_.get());
     EXPECT_EQ(project_->find(std::string(Project_Entity_Name) + "." + Errc_Enum_Name), project_->errc());
@@ -151,7 +151,7 @@ TEST_F(ProjectEntityTest, find_Returns_Correct_Entity_If_It_Exists)
         project_->callMessage());
 
     EXPECT_EQ(project_->find(std::string(Project_Entity_Name) + "." + Api_Entity_Name), api_);
-    EXPECT_EQ(project_->find(std::string(Project_Entity_Name) + "." + Services_Entity_Name), services_);
+    EXPECT_EQ(project_->find(std::string(Project_Entity_Name) + "." + Implementation_Entity_Name), implementation_);
 
     EXPECT_EQ(project_->find(apiPrefix + "ns1"), ns1_);
     EXPECT_EQ(project_->find(apiPrefix + "ns2"), ns2_);
@@ -165,7 +165,7 @@ TEST_F(ProjectEntityTest, find_Returns_Correct_Entity_If_It_Exists)
     EXPECT_EQ(project_->find(apiPrefix + "ns2.Struct1.NestedStruct1"), nestedStruct1_);
     EXPECT_EQ(project_->find(apiPrefix + "ns2.Struct1.NestedEnum1"), nestedEnum1_);
 
-    EXPECT_EQ(project_->find(svcPrefix + "Struct1"), servicesStruct1_);
+    EXPECT_EQ(project_->find(svcPrefix + "Struct1"), implementationStruct1_);
     EXPECT_EQ(project_->find(svcPrefix + "service"), service_);
     EXPECT_EQ(project_->find(svcPrefix + "service.Enum1"), serviceEnum1_);
 }

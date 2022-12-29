@@ -13,8 +13,8 @@ namespace busrpc {
 class Project;
 class Service;
 
-/// Entity representing all project services.
-class Services: public GeneralCompositeEntity {
+/// Entity representing project API implementation details.
+class Implementation: public GeneralCompositeEntity {
 public:
     using GeneralCompositeEntity::addStruct;
     using GeneralCompositeEntity::addEnum;
@@ -26,7 +26,7 @@ public:
     Project* parent() noexcept;
 
     /// Project services.
-    const EntityContainer<Service>& services() const noexcept { return services_; }
+    const EntityContainer<Service>& services() const noexcept { return implementation_; }
 
     /// Add service.
     /// \throws name_conflict_error if nested entity with the same name already exists
@@ -34,11 +34,11 @@ public:
 
 protected:
     /// Create services entity.
-    explicit Services(CompositeEntity* project);
+    explicit Implementation(CompositeEntity* project);
 
 private:
     friend class CompositeEntity;
 
-    EntityContainer<Service> services_;
+    EntityContainer<Service> implementation_;
 };
 } // namespace busrpc

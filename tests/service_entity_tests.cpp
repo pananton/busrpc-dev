@@ -13,14 +13,14 @@ class ServiceEntityTest: public ::testing::Test {
 protected:
     void SetUp() override
     {
-        auto services = project_.addServices();
-        services_ = services;
-        service_ = services->addService("service");
+        auto implementation = project_.addImplementation();
+        implementation_ = implementation;
+        service_ = implementation->addService("service");
     }
 
 protected:
     Project project_;
-    const Services* services_ = nullptr;
+    const Implementation* implementation_ = nullptr;
     Service* service_ = nullptr;
 };
 
@@ -28,13 +28,13 @@ TEST_F(ServiceEntityTest, Service_Entity_Is_Correctly_Initialized_When_Created_B
 {
     EXPECT_EQ(service_->type(), EntityTypeId::Service);
     EXPECT_EQ(service_->name(), "service");
-    EXPECT_EQ(service_->dir(), std::filesystem::path(Services_Entity_Name) / "service");
-    EXPECT_EQ(service_->dname(), std::string(Project_Entity_Name) + "." + Services_Entity_Name + ".service");
+    EXPECT_EQ(service_->dir(), std::filesystem::path(Implementation_Entity_Name) / "service");
+    EXPECT_EQ(service_->dname(), std::string(Project_Entity_Name) + "." + Implementation_Entity_Name + ".service");
     EXPECT_TRUE(service_->docs().description().empty());
     EXPECT_TRUE(service_->docs().brief().empty());
     EXPECT_TRUE(service_->docs().commands().empty());
-    EXPECT_EQ(service_->parent(), services_);
-    EXPECT_EQ(static_cast<const Service*>(service_)->parent(), services_);
+    EXPECT_EQ(service_->parent(), implementation_);
+    EXPECT_EQ(static_cast<const Service*>(service_)->parent(), implementation_);
     EXPECT_FALSE(service_->descriptor());
     EXPECT_FALSE(service_->config());
     EXPECT_TRUE(service_->implementedMethods().empty());

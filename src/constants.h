@@ -28,8 +28,8 @@ inline constexpr const char* Project_Entity_Name = "busrpc";
 /// Predefined \ref Api entity name.
 inline constexpr const char* Api_Entity_Name = "api";
 
-/// Predefined \ref Services entity name.
-inline constexpr const char* Services_Entity_Name = "services";
+/// Predefined \ref Implementation entity name.
+inline constexpr const char* Implementation_Entity_Name = "implementation";
 
 /// Predefined field name for the error code in the exception type.
 inline constexpr const char* Exception_Code_Field_Name = "code";
@@ -64,8 +64,8 @@ inline constexpr const char* Project_Entity_Description = "Busrpc project.";
 /// Predefined \ref Api description.
 inline constexpr const char* Api_Entity_Description = "Busrpc project API.";
 
-/// Predefined \ref Services description.
-inline constexpr const char* Services_Entity_Description = "Busrpc project services.";
+/// Predefined \ref Implementation description.
+inline constexpr const char* Implementation_Entity_Description = "Busrpc project API implementation.";
 
 /// Predefined name for the busrpc API error code enumeration.
 inline constexpr const char* Errc_Enum_Name = "Errc";

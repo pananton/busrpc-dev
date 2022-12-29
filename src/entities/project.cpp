@@ -99,11 +99,11 @@ Api* Project::addApi()
     return api;
 }
 
-Services* Project::addServices()
+Implementation* Project::addImplementation()
 {
-    Services* services = addNestedEntity<Services>();
-    services_ = services;
-    return services;
+    Implementation* implementation = addNestedEntity<Implementation>();
+    implementation_ = implementation;
+    return implementation;
 }
 
 const Entity* Project::find(const std::string& dname) const
@@ -163,8 +163,8 @@ void Project::check(ErrorCollector& ecol) const
         checkApi(api_, ecol);
     }
 
-    if (services_) {
-        checkServices(services_, ecol);
+    if (implementation_) {
+        checkImplementation(implementation_, ecol);
     }
 }
 
@@ -511,12 +511,12 @@ void Project::checkMethodDesc(const Method* method, ErrorCollector& ecol) const
     }
 }
 
-void Project::checkServices(const Services* services, ErrorCollector& ecol) const
+void Project::checkImplementation(const Implementation* implementation, ErrorCollector& ecol) const
 {
-    checkNestedStructs(services, ecol);
-    checkNestedEnums(services, ecol);
+    checkNestedStructs(implementation, ecol);
+    checkNestedEnums(implementation, ecol);
 
-    for (const auto& service: services->services()) {
+    for (const auto& service: implementation->services()) {
         checkService(service, ecol);
     }
 }

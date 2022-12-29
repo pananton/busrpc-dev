@@ -96,7 +96,7 @@ TEST_F(StructEntityTest, Method_Static_Marker_Has_Default_Description)
 TEST_F(StructEntityTest, Service_Config_Struct_Has_Default_Description)
 {
     Project project;
-    auto service = project.addServices()->addService("service");
+    auto service = project.addImplementation()->addService("service");
     auto desc = service->addStruct(GetPredefinedStructName(StructTypeId::Service_Desc), Service_Desc_File);
     auto config = desc->addStruct(GetPredefinedStructName(StructTypeId::Service_Config));
 
@@ -107,7 +107,7 @@ TEST_F(StructEntityTest, Service_Config_Struct_Has_Default_Description)
 TEST_F(StructEntityTest, Service_Implements_Struct_Has_Default_Description)
 {
     Project project;
-    auto service = project.addServices()->addService("service");
+    auto service = project.addImplementation()->addService("service");
     auto desc = service->addStruct(GetPredefinedStructName(StructTypeId::Service_Desc), Service_Desc_File);
     auto implements = desc->addStruct(GetPredefinedStructName(StructTypeId::Service_Implements));
 
@@ -118,7 +118,7 @@ TEST_F(StructEntityTest, Service_Implements_Struct_Has_Default_Description)
 TEST_F(StructEntityTest, Service_Invokes_Struct_Has_Default_Description)
 {
     Project project;
-    auto service = project.addServices()->addService("service");
+    auto service = project.addImplementation()->addService("service");
     auto desc = service->addStruct(GetPredefinedStructName(StructTypeId::Service_Desc), Service_Desc_File);
     auto invokes = desc->addStruct(GetPredefinedStructName(StructTypeId::Service_Invokes));
 
@@ -129,7 +129,7 @@ TEST_F(StructEntityTest, Service_Invokes_Struct_Has_Default_Description)
 TEST_F(StructEntityTest, Default_Struct_Description_Does_Not_Overwrite_Explicitly_Set_Description)
 {
     Project project;
-    auto service = project.addServices()->addService("service");
+    auto service = project.addImplementation()->addService("service");
     auto desc = service->addStruct(GetPredefinedStructName(StructTypeId::Service_Desc), Service_Desc_File);
     auto implements = desc->addStruct(GetPredefinedStructName(StructTypeId::Service_Implements),
                                       StructFlags::None,
@@ -146,7 +146,7 @@ TEST_F(StructEntityTest, Default_Struct_Description_Does_Not_Overwrite_Explicitl
 TEST_F(StructEntityTest, Default_Struct_Description_Is_Merged_With_Explicitly_Set_Doc_Commands)
 {
     Project project;
-    auto service = project.addServices()->addService("service");
+    auto service = project.addImplementation()->addService("service");
     auto desc = service->addStruct(GetPredefinedStructName(StructTypeId::Service_Desc), Service_Desc_File);
     auto implements = desc->addStruct(GetPredefinedStructName(StructTypeId::Service_Implements),
                                       StructFlags::None,

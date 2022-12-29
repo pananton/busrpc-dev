@@ -17,7 +17,7 @@ public:
     JsonGenerator(std::ostream& out): out_(out) { }
 
     /// Generate and output JSON document containing busrpc project documentation.
-    void generate(const Project* project) const override;
+    void generate(const Project& project) const override;
 
 private:
     std::ostream& out_;
@@ -39,7 +39,7 @@ void to_json(nlohmann::json& obj, const Class& cls);
 void to_json(nlohmann::json& obj, const Method& method);
 
 /// Convert \ref Services to json.
-void to_json(nlohmann::json& obj, const Services& services);
+void to_json(nlohmann::json& obj, const Implementation& implementation);
 
 /// Convert \ref Service to json.
 void to_json(nlohmann::json& obj, const Service& service);

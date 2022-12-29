@@ -2,7 +2,7 @@
 
 #include "entities/api.h"
 #include "entities/entity.h"
-#include "entities/services.h"
+#include "entities/implementation.h"
 #include "error_collector.h"
 
 #include <filesystem>
@@ -20,7 +20,7 @@ class Api;
 class Namespace;
 class Class;
 class Method;
-class Services;
+class Implementation;
 class Service;
 
 /// Busrpc [specification](https://github.com/pananton/busrpc-spec)-related error codes.
@@ -110,9 +110,9 @@ public:
     /// Project API.
     const Api* api() const noexcept { return api_; }
 
-    /// Project services.
+    /// Project API implementation.
     /// \throws name_conflict_error if api entity is already added.
-    const Services* services() const noexcept { return services_; }
+    const Implementation* implementation() const noexcept { return implementation_; }
 
     /// Find entity in the project by the distinguished name \a dname.
     /// \note Distinguished names of all entities start with a common prefix "busrpc". This prefix may be omitted
@@ -120,12 +120,12 @@ public:
     const Entity* find(const std::string& dname) const;
 
     /// Add project API.
-    /// \throws name_conflict_error if API entity is already added.
+    /// \throws name_conflict_error if entity is already added.
     Api* addApi();
 
-    /// Add project services.
-    /// \throws name_conflict_error if services entity is already added.
-    Services* addServices();
+    /// Add project API implementation.
+    /// \throws name_conflict_error if entity is already added.
+    Implementation* addImplementation();
 
     /// Check project for conformance with busrpc specification.
     /// \note Parameter \a ignoredCategories contains categories of errors (for example, doc or style warnings)
@@ -157,7 +157,7 @@ private:
     void checkMethod(const Method* method, ErrorCollector& ecol) const;
     void checkMethodDesc(const Method* method, ErrorCollector& ecol) const;
 
-    void checkServices(const Services* services, ErrorCollector& ecol) const;
+    void checkImplementation(const Implementation* implementation, ErrorCollector& ecol) const;
     void checkService(const Service* service, ErrorCollector& ecol) const;
     void checkServiceDesc(const Service* service, ErrorCollector& ecol) const;
     void checkServiceDeps(const Service* service, bool checkImplemented, ErrorCollector& ecol) const;
@@ -183,7 +183,7 @@ private:
     const Struct* resultMessage_ = nullptr;
 
     const Api* api_ = nullptr;
-    const Services* services_ = nullptr;
+    const Implementation* implementation_ = nullptr;
 
     std::unordered_map<std::string, const Entity*> entityDirectory_;
 };

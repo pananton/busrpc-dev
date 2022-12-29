@@ -2,6 +2,241 @@
 
 namespace busrpc { namespace test {
 
+Enum* AddErrc(Project* project)
+{
+    auto errc = project->addEnum(Errc_Enum_Name, Busrpc_Builtin_File, EntityDocs("Exception error code."));
+    errc->addConstant("ERRC_UNEXPECTED", 0, EntityDocs("Unexpected error."));
+    errc->addConstant("ERRC_INTERNAL", 10, EntityDocs("Internal error."));
+    return errc;
+}
+
+Struct* AddException(Project* project)
+{
+    auto exception = project->addStruct(GetPredefinedStructName(StructTypeId::Exception),
+                                        Busrpc_Builtin_File,
+                                        StructFlags::None,
+                                        EntityDocs("Method exception."));
+    exception->addEnumField(
+        Exception_Code_Field_Name, 5, project->dname() + ".Errc", FieldFlags::None, "", EntityDocs("Exception code."));
+    return exception;
+}
+
+Struct* AddCallMessage(Project* project)
+{
+    auto call = project->addStruct(GetPredefinedStructName(StructTypeId::Call_Message),
+                                   Busrpc_Builtin_File,
+                                   StructFlags::None,
+                                   EntityDocs("Call message."));
+    call->addScalarField(Call_Message_Object_Id_Field_Name,
+                         5,
+                         FieldTypeId::Bytes,
+                         FieldFlags::Optional,
+                         "",
+                         "",
+                         EntityDocs("Object identifier."));
+    call->addScalarField(Call_Message_Params_Field_Name,
+                         6,
+                         FieldTypeId::Bytes,
+                         FieldFlags::Optional,
+                         "",
+                         "",
+                         EntityDocs("Method parameters."));
+    return call;
+}
+
+Struct* AddResultMessage(Project* project)
+{
+    auto result = project->addStruct(GetPredefinedStructName(StructTypeId::Result_Message),
+                                     Busrpc_Builtin_File,
+                                     StructFlags::None,
+                                     EntityDocs("Call message."));
+    result->addScalarField(Result_Message_Retval_Field_Name,
+                           5,
+                           FieldTypeId::Bytes,
+                           FieldFlags::None,
+                           "Result",
+                           "",
+                           EntityDocs("Method return value."));
+    result->addStructField(Result_Message_Exception_Field_Name,
+                           6,
+                           project->dname() + ".Exception",
+                           FieldFlags::None,
+                           "Result",
+                           EntityDocs("Method exception."));
+    return result;
+}
+
+Namespace* AddNamespace(Api* api)
+{
+    auto ns = api->addNamespace("namespace");
+    AddNamespaceDesc(ns);
+    AddStructsAndEnums(ns);
+    return ns;
+}
+
+Struct* AddNamespaceDesc(Namespace* ns)
+{
+    return ns->addStruct(GetPredefinedStructName(StructTypeId::Namespace_Desc),
+                         Namespace_Desc_File,
+                         StructFlags::None,
+                         EntityDocs("My namespace."));
+}
+
+Class* AddClass(Namespace* ns, bool isStatic)
+{
+    auto cls = ns->addClass("class");
+    AddClassDesc(cls, isStatic);
+    AddStructsAndEnums(cls);
+    return cls;
+}
+
+Struct* AddClassDesc(Class* cls, bool isStatic)
+{
+    auto desc = cls->addStruct(
+        GetPredefinedStructName(StructTypeId::Class_Desc), Class_Desc_File, StructFlags::None, EntityDocs("My class."));
+
+    if (!isStatic) {
+        auto oid = desc->addStruct(GetPredefinedStructName(StructTypeId::Class_Object_Id), StructFlags::Hashed);
+
+        oid->addScalarField("field1", 1, FieldTypeId::Int32, FieldFlags::None, "", "", EntityDocs("Field1."));
+        oid->addScalarField("field2",
+                            2,
+                            FieldTypeId::String,
+                            FieldFlags::Optional | FieldFlags::Observable | FieldFlags::Hashed,
+                            "",
+                            "",
+                            EntityDocs("Field2."));
+    }
+
+    return desc;
+}
+
+Method* AddMethod(Class* cls, bool isStatic, bool hasParams, bool hasRetval)
+{
+    auto method = cls->addMethod("method");
+    AddMethodDesc(method, isStatic, hasParams, hasRetval);
+    AddStructsAndEnums(method);
+    return method;
+}
+
+Struct* AddMethodDesc(Method* method, bool isStatic, bool hasParams, bool hasRetval)
+{
+    auto desc = method->addStruct(GetPredefinedStructName(StructTypeId::Method_Desc),
+                                  Method_Desc_File,
+                                  StructFlags::None,
+                                  EntityDocs({"My method."}, {{"pre", {"precondition"}}, {"post", {"postcondition"}}}));
+
+    if (isStatic) {
+        desc->addStruct(GetPredefinedStructName(StructTypeId::Method_Static_Marker),
+                        StructFlags::None,
+                        EntityDocs("Static marker."));
+    }
+
+    if (hasParams) {
+        auto params = desc->addStruct(GetPredefinedStructName(StructTypeId::Method_Params));
+        params->addScalarField("field1",
+                               1,
+                               FieldTypeId::String,
+                               FieldFlags::Optional | FieldFlags::Observable | FieldFlags::Hashed,
+                               "",
+                               "",
+                               EntityDocs("Field 1."));
+    }
+
+    if (hasRetval) {
+        auto retval = desc->addStruct(GetPredefinedStructName(StructTypeId::Method_Retval));
+        retval->addScalarField("field1",
+                               1,
+                               FieldTypeId::Int32,
+                               FieldFlags::Optional | FieldFlags::Observable | FieldFlags::Hashed,
+                               "",
+                               "",
+                               EntityDocs("Field 1."));
+    }
+
+    return desc;
+}
+
+Service* AddService(Implementation* implementation, bool hasConfig, bool hasImplements, bool hasInvokes)
+{
+    auto service = implementation->addService("service");
+    AddServiceDesc(service, hasConfig, hasImplements, hasInvokes);
+    AddStructsAndEnums(service);
+    return service;
+}
+
+Struct* AddServiceDesc(Service* service, bool hasConfig, bool hasImplements, bool hasInvokes)
+{
+    EntityDocs serviceDesc({"Service."},
+                           {{doc_cmd::Service_Author, {"John Doe"}},
+                            {doc_cmd::Service_Email, {"john@company.com"}},
+                            {doc_cmd::Service_Url, {"company.com"}}});
+    auto desc = service->addStruct(GetPredefinedStructName(StructTypeId::Service_Desc),
+                                   Service_Desc_File,
+                                   StructFlags::None,
+                                   std::move(serviceDesc));
+
+    if (hasConfig) {
+        auto config = desc->addStruct(GetPredefinedStructName(StructTypeId::Service_Config));
+        config->addScalarField("field1",
+                               1,
+                               FieldTypeId::Int32,
+                               FieldFlags::Optional | FieldFlags::Observable | FieldFlags::Hashed,
+                               "",
+                               "1001",
+                               EntityDocs("Field 1."));
+        config->addScalarField(
+            "field2", 2, FieldTypeId::String, FieldFlags::None, "oneofName", "", EntityDocs("Field 2."));
+    }
+
+    if (hasImplements) {
+        EntityDocs implementedMethodDesc({"Implemented method."}, {{doc_cmd::Accepted_Value, {"@object_id 1"}}});
+        auto implements = desc->addStruct(GetPredefinedStructName(StructTypeId::Service_Implements), StructFlags::None);
+        implements->addStructField("method1",
+                                   1,
+                                   std::string(Project_Entity_Name) + "." + Api_Entity_Name +
+                                       ".namespace.class.method." + GetPredefinedStructName(StructTypeId::Method_Desc),
+                                   FieldFlags::Repeated,
+                                   "",
+                                   std::move(implementedMethodDesc));
+    }
+
+    if (hasInvokes) {
+        auto invokes = desc->addStruct(GetPredefinedStructName(StructTypeId::Service_Invokes));
+        invokes->addStructField("method1",
+                                1,
+                                std::string(Project_Entity_Name) + "." + Api_Entity_Name + ".namespace.class.method." +
+                                    GetPredefinedStructName(StructTypeId::Method_Desc),
+                                FieldFlags::None,
+                                "oneofName",
+                                EntityDocs("Invoked method 1."));
+    }
+
+    return desc;
+}
+
+Api* AddApi(Project* project)
+{
+    auto api = project->addApi();
+    AddStructsAndEnums(api);
+    return api;
+}
+
+Implementation* AddImplementation(Project* project)
+{
+    auto impl = project->addImplementation();
+    AddStructsAndEnums(impl);
+    return impl;
+}
+
+void InitMinimalProject(Project* project)
+{
+    AddErrc(project);
+    AddException(project);
+    AddCallMessage(project);
+    AddResultMessage(project);
+}
+
 std::string GetFileHeader(const std::string& packageName, const std::vector<std::string>& imports, bool doNotImportMain)
 {
     std::string header = "syntax = \"proto3\";\n"
@@ -293,17 +528,17 @@ void CreateTestProject(TmpDir& projectDir)
                          GetFileHeader("busrpc.api.namespace.static_class.static_method") + GetTestEnum() +
                              GetTestStruct());
 
-    projectDir.writeFile("services/services_types.proto",
-                         GetFileHeader("busrpc.services") + GetTestEnum() + GetTestStruct());
+    projectDir.writeFile("implementation/implementation_types.proto",
+                         GetFileHeader("busrpc.implementation") + GetTestEnum() + GetTestStruct());
 
-    projectDir.writeFile("services/service/service.proto",
-                         GetFileHeader("busrpc.services.service",
+    projectDir.writeFile("implementation/service/service.proto",
+                         GetFileHeader("busrpc.implementation.service",
                                        {"api/namespace/class/method/method.proto",
                                         "api/namespace/class/oneway_method/method.proto",
                                         "api/namespace/class/oneway_static_method/method.proto",
                                         "api/namespace/static_class/static_method/method.proto"}) +
                              GetServiceDescriptor());
-    projectDir.writeFile("services/service/service_types.proto",
-                         GetFileHeader("busrpc.services.service") + GetTestEnum() + GetTestStruct());
+    projectDir.writeFile("implementation/service/service_types.proto",
+                         GetFileHeader("busrpc.implementation.service") + GetTestEnum() + GetTestStruct());
 }
 }} // namespace busrpc::test

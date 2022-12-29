@@ -1,297 +1,17 @@
 #include "entities/project.h"
+#include "utils/project_utils.h"
 
 #include <gtest/gtest.h>
 
 namespace busrpc { namespace test {
-
-template<typename TEntity>
-Struct* AddStructsAndEnums(TEntity* entity)
-{
-    auto parent = entity->parent();
-
-    auto topStruct = entity->addStruct("Struct", "file.proto", StructFlags::None, EntityDocs("Struct."));
-    topStruct->addScalarField("field1",
-                              1,
-                              FieldTypeId::Int32,
-                              FieldFlags::Observable | FieldFlags::Hashed,
-                              "",
-                              "1001",
-                              EntityDocs("Field 1."));
-    topStruct->addStructField("field2", 2, "google.protobuf.Any", FieldFlags::None, "", EntityDocs("Field 2"));
-
-    if (parent) {
-        topStruct->addMapField("field3",
-                               3,
-                               FieldTypeId::String,
-                               FieldTypeId::Message,
-                               parent->dname() + ".Struct",
-                               EntityDocs("Field 3."));
-        topStruct->addStructField("field4",
-                                  4,
-                                  parent->dname() + ".Struct.NestedStruct",
-                                  FieldFlags::Optional | FieldFlags::Observable | FieldFlags::Hashed,
-                                  "",
-                                  EntityDocs("Field 4."));
-    }
-
-    entity->addEnum("Enum", "file.proto", EntityDocs("Enum."))->addConstant("CONSTANT_0", 0, EntityDocs("Constant."));
-
-    auto nestedStruct = topStruct->addStruct("NestedStruct", StructFlags::Hashed, EntityDocs("Nested struct."));
-    nestedStruct->addScalarField("field1",
-                                 1,
-                                 FieldTypeId::Bytes,
-                                 FieldFlags::Optional | FieldFlags::Observable | FieldFlags::Hashed,
-                                 "",
-                                 "",
-                                 EntityDocs("Field 1."));
-
-    if (parent) {
-        nestedStruct->addEnumField("field2",
-                                   2,
-                                   parent->dname() + ".Struct.NestedEnum",
-                                   FieldFlags::Optional | FieldFlags::Observable | FieldFlags::Hashed,
-                                   "",
-                                   EntityDocs("Field 2."));
-    }
-
-    auto nestedEnum = topStruct->addEnum("NestedEnum", EntityDocs("Nested enum."));
-    nestedEnum->addConstant("CONSTANT_0", 0, EntityDocs("Constant 0."));
-    nestedEnum->addConstant("CONSTANT_1", 1001, EntityDocs("Constant 1."));
-
-    return topStruct;
-}
-
-Enum* AddErrc(Project* project)
-{
-    auto errc = project->addEnum(Errc_Enum_Name, Busrpc_Builtin_File, EntityDocs("Exception error code."));
-    errc->addConstant("ERRC_UNEXPECTED", 0, EntityDocs("Unexpected error."));
-    errc->addConstant("ERRC_INTERNAL", 10, EntityDocs("Internal error."));
-    return errc;
-}
-
-Struct* AddException(Project* project)
-{
-    auto exception = project->addStruct(GetPredefinedStructName(StructTypeId::Exception),
-                                        Busrpc_Builtin_File,
-                                        StructFlags::None,
-                                        EntityDocs("Method exception."));
-    exception->addEnumField(
-        Exception_Code_Field_Name, 5, project->dname() + ".Errc", FieldFlags::None, "", EntityDocs("Exception code."));
-    return exception;
-}
-
-Struct* AddCallMessage(Project* project)
-{
-    auto call = project->addStruct(GetPredefinedStructName(StructTypeId::Call_Message),
-                                   Busrpc_Builtin_File,
-                                   StructFlags::None,
-                                   EntityDocs("Call message."));
-    call->addScalarField(Call_Message_Object_Id_Field_Name,
-                         5,
-                         FieldTypeId::Bytes,
-                         FieldFlags::Optional,
-                         "",
-                         "",
-                         EntityDocs("Object identifier."));
-    call->addScalarField(Call_Message_Params_Field_Name,
-                         6,
-                         FieldTypeId::Bytes,
-                         FieldFlags::Optional,
-                         "",
-                         "",
-                         EntityDocs("Method parameters."));
-    return call;
-}
-
-Struct* AddResultMessage(Project* project)
-{
-    auto result = project->addStruct(GetPredefinedStructName(StructTypeId::Result_Message),
-                                     Busrpc_Builtin_File,
-                                     StructFlags::None,
-                                     EntityDocs("Call message."));
-    result->addScalarField(Result_Message_Retval_Field_Name,
-                           5,
-                           FieldTypeId::Bytes,
-                           FieldFlags::None,
-                           "Result",
-                           "",
-                           EntityDocs("Method return value."));
-    result->addStructField(Result_Message_Exception_Field_Name,
-                           6,
-                           project->dname() + ".Exception",
-                           FieldFlags::None,
-                           "Result",
-                           EntityDocs("Method exception."));
-    return result;
-}
-
-Struct* AddNamespaceDesc(Namespace* ns)
-{
-    return ns->addStruct(GetPredefinedStructName(StructTypeId::Namespace_Desc),
-                         Namespace_Desc_File,
-                         StructFlags::None,
-                         EntityDocs("My namespace."));
-}
-
-Namespace* AddNamespace(Api* api)
-{
-    auto ns = api->addNamespace("namespace");
-    AddNamespaceDesc(ns);
-    AddStructsAndEnums(ns);
-    return ns;
-}
-
-Struct* AddClassDesc(Class* cls, bool isStatic = false)
-{
-    auto desc = cls->addStruct(
-        GetPredefinedStructName(StructTypeId::Class_Desc), Class_Desc_File, StructFlags::None, EntityDocs("My class."));
-
-    if (!isStatic) {
-        auto oid = desc->addStruct(GetPredefinedStructName(StructTypeId::Class_Object_Id), StructFlags::Hashed);
-
-        oid->addScalarField("field1", 1, FieldTypeId::Int32, FieldFlags::None, "", "", EntityDocs("Field1."));
-        oid->addScalarField("field2",
-                            2,
-                            FieldTypeId::String,
-                            FieldFlags::Optional | FieldFlags::Observable | FieldFlags::Hashed,
-                            "",
-                            "",
-                            EntityDocs("Field2."));
-    }
-
-    return desc;
-}
-
-Class* AddClass(Namespace* ns, bool isStatic = false)
-{
-    auto cls = ns->addClass("class");
-    AddClassDesc(cls, isStatic);
-    AddStructsAndEnums(cls);
-    return cls;
-}
-
-Struct* AddMethodDesc(Method* method, bool isStatic = false)
-{
-    auto desc = method->addStruct(GetPredefinedStructName(StructTypeId::Method_Desc),
-                                  Method_Desc_File,
-                                  StructFlags::None,
-                                  EntityDocs({"My method."}, {{"pre", {"precondition"}}, {"post", {"postcondition"}}}));
-
-    if (isStatic) {
-        desc->addStruct(GetPredefinedStructName(StructTypeId::Method_Static_Marker),
-                        StructFlags::None,
-                        EntityDocs("Static marker."));
-    }
-
-    auto params = desc->addStruct(GetPredefinedStructName(StructTypeId::Method_Params));
-    params->addScalarField("field1",
-                           1,
-                           FieldTypeId::String,
-                           FieldFlags::Optional | FieldFlags::Observable | FieldFlags::Hashed,
-                           "",
-                           "",
-                           EntityDocs("Field 1."));
-
-    auto retval = desc->addStruct(GetPredefinedStructName(StructTypeId::Method_Retval));
-    retval->addScalarField("field1",
-                           1,
-                           FieldTypeId::Int32,
-                           FieldFlags::Optional | FieldFlags::Observable | FieldFlags::Hashed,
-                           "",
-                           "",
-                           EntityDocs("Field 1."));
-
-    return desc;
-}
-
-Method* AddMethod(Class* cls, bool isStatic = false)
-{
-    auto method = cls->addMethod("method");
-    AddMethodDesc(method, isStatic);
-    AddStructsAndEnums(method);
-    return method;
-}
-
-Struct* AddServiceDesc(Service* service)
-{
-    EntityDocs serviceDesc({"Service."},
-                           {{doc_cmd::Service_Author, {"John Doe"}},
-                            {doc_cmd::Service_Email, {"john@company.com"}},
-                            {doc_cmd::Service_Url, {"company.com"}}});
-    EntityDocs implementedMethodDesc({"Implemented method."}, {{doc_cmd::Accepted_Value, {"@object_id 1"}}});
-
-    auto desc = service->addStruct(GetPredefinedStructName(StructTypeId::Service_Desc),
-                                   Service_Desc_File,
-                                   StructFlags::None,
-                                   std::move(serviceDesc));
-
-    auto config = desc->addStruct(GetPredefinedStructName(StructTypeId::Service_Config));
-    config->addScalarField("field1",
-                           1,
-                           FieldTypeId::Int32,
-                           FieldFlags::Optional | FieldFlags::Observable | FieldFlags::Hashed,
-                           "",
-                           "1001",
-                           EntityDocs("Field 1."));
-    config->addScalarField("field2", 2, FieldTypeId::String, FieldFlags::None, "oneofName", "", EntityDocs("Field 2."));
-
-    auto implements = desc->addStruct(GetPredefinedStructName(StructTypeId::Service_Implements), StructFlags::None);
-    implements->addStructField("method1",
-                               1,
-                               std::string(Project_Entity_Name) + "." + Api_Entity_Name + ".namespace.class.method." +
-                                   GetPredefinedStructName(StructTypeId::Method_Desc),
-                               FieldFlags::Repeated,
-                               "",
-                               std::move(implementedMethodDesc));
-
-    auto invokes = desc->addStruct(GetPredefinedStructName(StructTypeId::Service_Invokes));
-    invokes->addStructField("method1",
-                            1,
-                            std::string(Project_Entity_Name) + "." + Api_Entity_Name + ".namespace.class.method." +
-                                GetPredefinedStructName(StructTypeId::Method_Desc),
-                            FieldFlags::None,
-                            "oneofName",
-                            EntityDocs("Invoked method 1."));
-
-    return desc;
-}
-
-Service* AddService(Services* services)
-{
-    auto service = services->addService("service");
-    AddServiceDesc(service);
-    AddStructsAndEnums(service);
-    return service;
-}
-
-void InitMinimalProject(Project* project)
-{
-    AddErrc(project);
-    AddException(project);
-    AddCallMessage(project);
-    AddResultMessage(project);
-}
-
-void InitApi(Api* api)
-{
-    AddStructsAndEnums(api);
-}
-
-void InitServices(Services* services)
-{
-    AddService(services);
-    AddStructsAndEnums(services);
-}
 
 void InitProject(Project* project)
 {
     InitMinimalProject(project);
     AddStructsAndEnums(project);
 
-    auto api = project->addApi();
-    InitApi(api);
-    AddMethod(AddClass(AddNamespace(api)));
-    InitServices(project->addServices());
+    AddMethod(AddClass(AddNamespace(AddApi(project))));
+    AddImplementation(project);
 }
 
 class ProjectCheckTest: public ::testing::Test {
@@ -300,13 +20,13 @@ protected:
     {
         InitMinimalProject(&project_);
         api_ = project_.addApi();
-        services_ = project_.addServices();
+        implementation_ = project_.addImplementation();
     }
 
 protected:
     Project project_;
     Api* api_ = nullptr;
-    Services* services_ = nullptr;
+    Implementation* implementation_ = nullptr;
 };
 
 TEST_F(ProjectCheckTest, Spec_Error_Category_Name_Is_Not_Empty)
@@ -976,7 +696,7 @@ TEST_F(ProjectCheckTest, Invalid_Name_Format_Style_Warn_If_Method_Name_Is_Not_Lo
 
 TEST_F(ProjectCheckTest, No_Descriptor_Spec_Error_If_Service_Does_Not_Have_Descriptor)
 {
-    services_->addService("service");
+    implementation_->addService("service");
     auto ecol = project_.check();
 
     EXPECT_TRUE(ecol.find(SpecErrc::No_Descriptor));
@@ -984,7 +704,7 @@ TEST_F(ProjectCheckTest, No_Descriptor_Spec_Error_If_Service_Does_Not_Have_Descr
 
 TEST_F(ProjectCheckTest, No_Descriptor_Spec_Error_If_Service_Descriptor_Is_Defined_In_Unexpected_File)
 {
-    auto service = services_->addService("service");
+    auto service = implementation_->addService("service");
     service->addStruct(GetPredefinedStructName(StructTypeId::Service_Desc), "1.proto");
     auto ecol = project_.check();
 
@@ -994,7 +714,7 @@ TEST_F(ProjectCheckTest, No_Descriptor_Spec_Error_If_Service_Descriptor_Is_Defin
 TEST_F(ProjectCheckTest,
        Unknown_Method_Spec_Error_If_Service_Implements_Contains_Field_Whose_Type_Is_Not_Existing_Method_Descriptor)
 {
-    auto service = services_->addService("service");
+    auto service = implementation_->addService("service");
     auto desc = service->addStruct(GetPredefinedStructName(StructTypeId::Service_Desc), Service_Desc_File);
     auto implements = desc->addStruct(GetPredefinedStructName(StructTypeId::Service_Implements));
     implements->addScalarField("field1", 1, FieldTypeId::Int32);
@@ -1006,7 +726,7 @@ TEST_F(ProjectCheckTest,
 TEST_F(ProjectCheckTest,
        Unknown_Method_Spec_Error_If_Service_Invokes_Contains_Field_Whose_Type_Is_Not_Existing_Method_Descriptor)
 {
-    auto service = services_->addService("service");
+    auto service = implementation_->addService("service");
     auto desc = service->addStruct(GetPredefinedStructName(StructTypeId::Service_Desc), Service_Desc_File);
     auto invokes = desc->addStruct(GetPredefinedStructName(StructTypeId::Service_Invokes));
     invokes->addScalarField("field1", 1, FieldTypeId::Int32);
@@ -1018,7 +738,7 @@ TEST_F(ProjectCheckTest,
 TEST_F(ProjectCheckTest, Multiple_Definitions_Spec_Error_If_Service_Implements_References_Same_Method_More_Than_Once)
 {
     auto method = AddMethod(AddClass(AddNamespace(api_)));
-    auto service = services_->addService("service");
+    auto service = implementation_->addService("service");
     auto desc = service->addStruct(GetPredefinedStructName(StructTypeId::Service_Desc), Service_Desc_File);
 
     auto implements = desc->addStruct(GetPredefinedStructName(StructTypeId::Service_Implements));
@@ -1033,7 +753,7 @@ TEST_F(ProjectCheckTest, Multiple_Definitions_Spec_Error_If_Service_Implements_R
 TEST_F(ProjectCheckTest, Multiple_Definitions_Spec_Error_If_Service_Invokes_References_Same_Method_More_Than_Once)
 {
     auto method = AddMethod(AddClass(AddNamespace(api_)));
-    auto service = services_->addService("service");
+    auto service = implementation_->addService("service");
     auto desc = service->addStruct(GetPredefinedStructName(StructTypeId::Service_Desc), Service_Desc_File);
 
     auto invokes = desc->addStruct(GetPredefinedStructName(StructTypeId::Service_Invokes));
@@ -1047,7 +767,7 @@ TEST_F(ProjectCheckTest, Multiple_Definitions_Spec_Error_If_Service_Invokes_Refe
 
 TEST_F(ProjectCheckTest, Unexpected_Nested_Entity_Spec_Warn_If_Service_Descriptor_Has_Unexpected_Nested_Struct)
 {
-    auto service = services_->addService("service");
+    auto service = implementation_->addService("service");
     AddServiceDesc(service)->addStruct("UnexpectedStruct", StructFlags::None, EntityDocs("Unexpected nested struct."));
     auto ecol = project_.check();
 
@@ -1056,7 +776,7 @@ TEST_F(ProjectCheckTest, Unexpected_Nested_Entity_Spec_Warn_If_Service_Descripto
 
 TEST_F(ProjectCheckTest, Unexpected_Nested_Entity_Spec_Warn_If_Service_Descriptor_Has_Unexpected_Nested_Enum)
 {
-    auto service = services_->addService("service");
+    auto service = implementation_->addService("service");
     auto enumeration = AddServiceDesc(service)->addEnum("UnexpectedEnum", EntityDocs("Unexpected nested enum."));
     enumeration->addConstant("CONSTANT_0", 0, EntityDocs("Constant."));
     auto ecol = project_.check();
@@ -1066,7 +786,7 @@ TEST_F(ProjectCheckTest, Unexpected_Nested_Entity_Spec_Warn_If_Service_Descripto
 
 TEST_F(ProjectCheckTest, Unexpected_Nested_Entity_Spec_Warn_If_Service_Descriptor_Has_Unexpected_Fields)
 {
-    auto service = services_->addService("service");
+    auto service = implementation_->addService("service");
     AddServiceDesc(service)->addScalarField(
         "field", 1, FieldTypeId::Int32, FieldFlags::None, "", "", EntityDocs("Field."));
     auto ecol = project_.check();
@@ -1076,7 +796,7 @@ TEST_F(ProjectCheckTest, Unexpected_Nested_Entity_Spec_Warn_If_Service_Descripto
 
 TEST_F(ProjectCheckTest, Invalid_Name_Format_Style_Warn_If_Service_Name_Is_Not_Lowercase_With_Underscores)
 {
-    auto service = services_->addService("Service");
+    auto service = implementation_->addService("Service");
     AddServiceDesc(service);
     auto ecol = project_.check();
 

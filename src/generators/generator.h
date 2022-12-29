@@ -11,7 +11,7 @@ namespace busrpc {
 class DocGenerator {
 public:
     /// Generate documentation for \ref project.
-    virtual void generate(const Project* project) const = 0;
+    virtual void generate(const Project& project) const = 0;
 
     /// Default virtual destructor.
     virtual ~DocGenerator() = default;
