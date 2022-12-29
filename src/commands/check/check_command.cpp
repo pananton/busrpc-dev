@@ -68,7 +68,7 @@ std::error_code CheckCommand::tryExecuteImpl(std::ostream& out, std::ostream& er
 
     if (ecol) {
         err << ecol;
-        auto majorError = ecol.majorError().value();
+        ErrorCollector::ErrorInfo majorError = ecol.majorError().value();
 
         if (majorError.code.category() == parser_error_category()) {
             if (ecol.find(ParserErrc::Invalid_Project_Dir)) {
@@ -80,13 +80,18 @@ std::error_code CheckCommand::tryExecuteImpl(std::ostream& out, std::ostream& er
             }
         } else if (majorError.code.category() == spec_error_category()) {
             result = CheckErrc::Spec_Violated;
-        } else if (args().warningAsError()) {
-            if (majorError.code.category() == spec_warn_category()) {
+        } else if (majorError.code.category() == spec_warn_category()) {
+            if (args().warningAsError()) {
                 result = CheckErrc::Spec_Violated;
-            } else if (majorError.code.category() == doc_warn_category()) {
+            }
+        } else if (majorError.code.category() == doc_warn_category()) {
+            if (args().warningAsError()) {
                 result = CheckErrc::Doc_Rule_Violated;
-            } else {
-                assert(majorError.code.category() == style_warn_category());
+            }
+        } else {
+            assert(majorError.code.category() == style_warn_category());
+
+            if (args().warningAsError()) {
                 result = CheckErrc::Style_Violated;
             }
         }

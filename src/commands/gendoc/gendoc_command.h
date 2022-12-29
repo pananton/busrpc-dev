@@ -2,6 +2,7 @@
 
 #include "commands/command.h"
 
+#include <filesystem>
 #include <functional>
 #include <string>
 #include <system_error>
@@ -23,11 +24,11 @@ enum class GenDocErrc {
     /// Failed to parse protobuf file.
     Protobuf_Parsing_Failed = 2,
 
-    /// Failed to write generated documentation to the output directory.
-    File_Write_Failed = 3,
-
     /// Failed to read a source file for documentation.
-    File_Read_Failed = 4,
+    File_Read_Failed = 3,
+
+    /// Failed to write generated documentation to the output directory.
+    File_Write_Failed = 4,
 
     /// Busrpc project directory does not exist or does not represent a valid project directory.
     Invalid_Project_Dir = 5
@@ -59,10 +60,14 @@ constexpr const char* GetGenDocFormatStr(GenDocFormat lang)
 class GenDocArgs {
 public:
     /// Create \c gendoc command arguments.
-    GenDocArgs(GenDocFormat format, std::string projectDir = {}, std::string outputDir = {}):
+    GenDocArgs(GenDocFormat format = GenDocFormat::Json,
+               std::filesystem::path projectDir = std::filesystem::current_path(),
+               std::filesystem::path outputDir = std::filesystem::current_path(),
+               std::filesystem::path protobufRootDir = {}):
         format_(format),
         projectDir_(std::move(projectDir)),
-        outputDir_(std::move(outputDir))
+        outputDir_(std::move(outputDir)),
+        protobufRootDir_(std::move(protobufRootDir))
     { }
 
     /// Format of the documentation.
@@ -70,16 +75,24 @@ public:
 
     /// Busrpc project directory.
     /// \note If empty, working directory is assumed.
-    const std::string& projectDir() const noexcept { return projectDir_; }
+    const std::filesystem::path& projectDir() const noexcept { return projectDir_; }
 
     /// Output directory where to write documentation files.
     /// \note If empty, 'docs/' subdirectory of the working directory is assumed.
-    const std::string& outputDir() const noexcept { return outputDir_; }
+    const std::filesystem::path& outputDir() const noexcept { return outputDir_; }
+
+    /// Root directory for protobuf built-in '.proto' files ('google/protobuf/descriptor.proto', etc.).
+    /// \note This parameter is needed to parse protobuf file when building busrpc project documentation.
+    /// \note On *nix systems, '/usr/include' and '/usr/include/local' are implicitly added to the list of directories
+    ///       where to search built-in protobuf '.proto' files. However, this directories are only searched if
+    ///       file was not found in the command's protobuf root directory.
+    const std::filesystem::path& protobufRootDir() const noexcept { return protobufRootDir_; }
 
 private:
     GenDocFormat format_;
-    std::string projectDir_;
-    std::string outputDir_;
+    std::filesystem::path projectDir_;
+    std::filesystem::path outputDir_;
+    std::filesystem::path protobufRootDir_;
 };
 
 /// Generate API documentation.

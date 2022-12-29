@@ -31,6 +31,7 @@ struct GenDocOptions {
     std::string format = {};
     std::string projectDir = {};
     std::string outputDir = {};
+    std::string protobufRoot = {};
 };
 
 struct HelpOptions {
@@ -121,15 +122,17 @@ void DefineCommand(CLI::App& app, const std::function<void(GenDocArgs)>& callbac
 
         assert(format != static_cast<GenDocFormat>(0));
 
-        callback({format, std::move(optsPtr->projectDir), std::move(optsPtr->outputDir)});
+        callback(
+            {format, std::move(optsPtr->projectDir), std::move(optsPtr->outputDir), std::move(optsPtr->protobufRoot)});
     });
 
     app.add_option("--format", optsPtr->format, "Documentation format")
-        ->required(true)
+        ->default_val(GetGenDocFormatStr(GenDocFormat::Json))
         ->check(CLI::IsMember(std::set<std::string>{GetGenDocFormatStr(GenDocFormat::Json)}));
 
     AddProjectDirOption(app, optsPtr->projectDir);
     AddOutputDirOption(app, optsPtr->outputDir);
+    AddProtobufRootOption(app, optsPtr->protobufRoot);
 }
 
 void DefineCommand(CLI::App& app, const std::function<void(HelpArgs)>& callback)

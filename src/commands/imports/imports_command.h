@@ -2,6 +2,7 @@
 
 #include "commands/command.h"
 
+#include <filesystem>
 #include <functional>
 #include <string>
 #include <system_error>
@@ -42,8 +43,8 @@ class ImportsArgs {
 public:
     /// Create \c imports command arguments.
     ImportsArgs(std::vector<std::string> files = {},
-                std::string projectDir = {},
-                std::string protobufRoot = {},
+                std::filesystem::path projectDir = std::filesystem::current_path(),
+                std::filesystem::path protobufRoot = {},
                 bool onlyDeps = false):
         files_(std::move(files)),
         projectDir_(std::move(projectDir)),
@@ -56,20 +57,20 @@ public:
 
     /// Busrpc project directory.
     /// \note If empty, working directory is assumed.
-    const std::string& projectDir() const noexcept { return projectDir_; }
+    const std::filesystem::path& projectDir() const noexcept { return projectDir_; }
 
     /// Root directory for protobuf built-in '.proto' files.
     /// \note This is the root directory for such files as 'google/protobuf/descriptor.proto',
     ///       'google/protobuf/any.proto', etc.
-    const std::string& protobufRoot() const noexcept { return protobufRoot_; }
+    const std::filesystem::path& protobufRoot() const noexcept { return protobufRoot_; }
 
     /// Flag indicating whether \ref files themselves should not be outputted.
     bool onlyDeps() const noexcept { return onlyDeps_; }
 
 private:
     std::vector<std::string> files_;
-    std::string projectDir_;
-    std::string protobufRoot_;
+    std::filesystem::path projectDir_;
+    std::filesystem::path protobufRoot_;
     bool onlyDeps_;
 };
 

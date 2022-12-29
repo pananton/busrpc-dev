@@ -2,6 +2,7 @@
 
 #include "commands/command.h"
 
+#include <filesystem>
 #include <functional>
 #include <string>
 #include <system_error>
@@ -50,8 +51,8 @@ std::error_code make_error_code(CheckErrc errc);
 class CheckArgs {
 public:
     /// Create \c check command arguments.
-    CheckArgs(std::string projectDir = {},
-              std::string protobufRootDir = {},
+    CheckArgs(std::filesystem::path projectDir = std::filesystem::current_path(),
+              std::filesystem::path protobufRootDir = {},
               bool ignoreSpecWarnings = false,
               bool ignoreDocWarnings = false,
               bool ignoreStyleWarnings = false,
@@ -66,13 +67,13 @@ public:
 
     /// Busrpc project directory.
     /// \note If empty, working directory is assumed.
-    const std::string& projectDir() const noexcept { return projectDir_; }
+    const std::filesystem::path& projectDir() const noexcept { return projectDir_; }
 
     /// Root directory for protobuf built-in '.proto' files ('google/protobuf/descriptor.proto', etc.).
     /// \note On *nix systems, '/usr/include' and '/usr/include/local' are implicitly added to the list of directories
     ///       where to search built-in protobuf '.proto' files. However, this directories are only searched if
     ///       file was not found in the command's protobuf root directory.
-    const std::string& protobufRootDir() const noexcept { return protobufRootDir_; }
+    const std::filesystem::path& protobufRootDir() const noexcept { return protobufRootDir_; }
 
     /// Flag indicating whether busrpc specification warnings should be ignored.
     /// \note Ignored warnings are not printed to the command output and do not affect it's final result.
@@ -90,8 +91,8 @@ public:
     bool warningAsError() const noexcept { return warningAsError_; }
 
 private:
-    std::string projectDir_;
-    std::string protobufRootDir_;
+    std::filesystem::path projectDir_;
+    std::filesystem::path protobufRootDir_;
     bool ignoreSpecWarnings_;
     bool ignoreDocWarnings_;
     bool ignoreStyleWarnings_;

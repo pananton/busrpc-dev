@@ -22,6 +22,9 @@ inline constexpr const char* Method_Desc_File = "method.proto";
 /// Name of the protobuf file, which should contain service descriptor.
 inline constexpr const char* Service_Desc_File = "service.proto";
 
+/// Name of the file with busrpc project JSON documentation.
+inline constexpr const char* Json_Doc_File = "busrpc-project.json";
+
 /// Predefined \ref Project entity name.
 inline constexpr const char* Project_Entity_Name = "busrpc";
 

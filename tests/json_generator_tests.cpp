@@ -258,7 +258,7 @@ TEST(JsonGeneratorTest, Expected_Documentation_Is_Generated_For_Api_With_Namespa
     Project project;
     auto api = AddApi(&project);
     api->addNamespace("namespace");
-    auto jsonApi = GetGeneratedJson(project)["api"];
+    json jsonApi = GetGeneratedJson(project)["api"];
 
     ASSERT_TRUE(jsonApi.contains("namespaces"));
     EXPECT_TRUE(jsonApi["namespaces"].contains("namespace"));
@@ -284,7 +284,7 @@ TEST(JsonGeneratorTest, Expected_Documentation_Is_Generated_For_Namespace_With_C
     Project project;
     auto ns = AddNamespace(AddApi(&project));
     ns->addClass("class");
-    auto jsonNamespace = GetGeneratedJson(project)["api"]["namespaces"]["namespace"];
+    json jsonNamespace = GetGeneratedJson(project)["api"]["namespaces"]["namespace"];
 
     ASSERT_TRUE(jsonNamespace.contains("classes"));
     ASSERT_TRUE(jsonNamespace["classes"].contains("class"));
@@ -314,7 +314,7 @@ TEST(JsonGeneratorTest, Expected_Documentation_Is_Generated_For_Class_With_Metho
     Project project;
     auto cls = AddClass(AddNamespace(AddApi(&project)));
     cls->addMethod("method");
-    auto jsonClass = GetGeneratedJson(project)["api"]["namespaces"]["namespace"]["classes"]["class"];
+    json jsonClass = GetGeneratedJson(project)["api"]["namespaces"]["namespace"]["classes"]["class"];
 
     ASSERT_TRUE(jsonClass.contains(GetPredefinedStructName(StructTypeId::Class_Object_Id)));
     ASSERT_TRUE(jsonClass.contains("isStatic"));
@@ -332,7 +332,7 @@ TEST(JsonGeneratorTest, Expected_Documentation_Is_Generated_For_Static_Class_Wit
     Project project;
     auto cls = AddClass(AddNamespace(AddApi(&project)), true);
     cls->addMethod("method");
-    auto jsonClass = GetGeneratedJson(project)["api"]["namespaces"]["namespace"]["classes"]["class"];
+    json jsonClass = GetGeneratedJson(project)["api"]["namespaces"]["namespace"]["classes"]["class"];
 
     ASSERT_TRUE(jsonClass.contains(GetPredefinedStructName(StructTypeId::Class_Object_Id)));
     ASSERT_TRUE(jsonClass.contains("isStatic"));
@@ -371,7 +371,7 @@ TEST(JsonGeneratorTest, Expected_Documentation_Is_Generated_For_Method_With_Stru
 {
     Project project;
     auto method = AddMethod(AddClass(AddNamespace(AddApi(&project))));
-    auto jsonMethod =
+    json jsonMethod =
         GetGeneratedJson(project)["api"]["namespaces"]["namespace"]["classes"]["class"]["methods"]["method"];
 
     ASSERT_TRUE(jsonMethod.contains(GetPredefinedStructName(StructTypeId::Method_Params)));
@@ -421,7 +421,7 @@ TEST(JsonGeneratorTest, Expected_Documentation_Is_Generated_For_Empty_Implementa
 {
     Project project;
     auto impl = project.addImplementation();
-    auto jsonImpl = GetGeneratedJson(project)["implementation"];
+    json jsonImpl = GetGeneratedJson(project)["implementation"];
 
     ASSERT_TRUE(jsonImpl.contains("services"));
     EXPECT_TRUE(jsonImpl["services"].is_null());

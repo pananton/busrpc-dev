@@ -85,10 +85,10 @@ std::error_code ImportsCommand::tryExecuteImpl(std::ostream& out, std::ostream& 
     std::filesystem::path protobufPath;
 
     try {
-        InitCanonicalPathToExistingDirectory(projectPath, args().projectDir());
+        InitCanonicalPathToExistingDirectory(projectPath, args().projectDir().string());
 
         if (!args().protobufRoot().empty()) {
-            InitCanonicalPathToExistingDirectory(protobufPath, args().protobufRoot());
+            InitCanonicalPathToExistingDirectory(protobufPath, args().protobufRoot().string());
         }
     } catch (const std::filesystem::filesystem_error&) { }
 

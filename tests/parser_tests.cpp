@@ -177,8 +177,8 @@ TEST(ParserTest, Parser_Correctly_Parses_Test_Project)
         ASSERT_NE(service->invokedMethods().find(onewayMethod->dname()), service->invokedMethods().end());
         ASSERT_NE(service->invokedMethods().find(onewayStaticMethod->dname()), service->invokedMethods().end());
 
-        auto implMethod = *(service->implementedMethods().find(method->dname()));
-        auto implStaticMethod = *(service->implementedMethods().find(staticMethod->dname()));
+        const auto& implMethod = *(service->implementedMethods().find(method->dname()));
+        const auto& implStaticMethod = *(service->implementedMethods().find(staticMethod->dname()));
 
         EXPECT_EQ(implMethod.docs().brief(), " Method 1.");
         EXPECT_EQ(implMethod.docs().description().size(), 1);
@@ -202,8 +202,8 @@ TEST(ParserTest, Parser_Correctly_Parses_Test_Project)
         ASSERT_NE(implStaticMethod.acceptedParams().find("param2"), implStaticMethod.acceptedParams().end());
         EXPECT_EQ(implStaticMethod.acceptedParams().find("param2")->second, "value2");
 
-        auto invkMethod = *(service->invokedMethods().find(onewayMethod->dname()));
-        auto invkStaticMethod = *(service->invokedMethods().find(onewayStaticMethod->dname()));
+        const auto& invkMethod = *(service->invokedMethods().find(onewayMethod->dname()));
+        const auto& invkStaticMethod = *(service->invokedMethods().find(onewayStaticMethod->dname()));
 
         EXPECT_EQ(invkMethod.docs().brief(), " Method 1.");
         ASSERT_EQ(invkMethod.docs().description().size(), 2);
@@ -491,7 +491,7 @@ TEST(ParserTest, Unexpected_Directories_Are_Ignored_By_Parser)
     tmp.writeFile("CallMessage/file.proto", "invalid protobuf file");
     Parser parser(tmp.path(), BUSRPC_TESTS_PROTOBUF_ROOT);
 
-    auto ecol = parser.parse().second;
+    ErrorCollector ecol = parser.parse().second;
 
     EXPECT_FALSE(ecol.find(ParserErrc::Protobuf_Error));
 }

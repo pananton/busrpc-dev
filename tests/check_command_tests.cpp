@@ -122,7 +122,7 @@ TEST(CheckCommandTest, Spec_Violated_Error_If_Spec_Error_Detected)
     EXPECT_FALSE(err.str().empty());
 }
 
-TEST(CheckCommandTest, Command_Succeeds_If_Spec_Warning_Detected_And_Warnings_Are_Not_Errors)
+TEST(CheckCommandTest, Command_Succeeds_If_Spec_Warn_Detected_And_Warnings_Are_Not_Errors)
 {
     std::ostringstream out, err;
     TmpDir tmp;
@@ -134,7 +134,7 @@ TEST(CheckCommandTest, Command_Succeeds_If_Spec_Warning_Detected_And_Warnings_Ar
     EXPECT_FALSE(err.str().empty());
 }
 
-TEST(CheckCommandTest, Spec_Violated_Error_If_Specification_Warning_Detected_And_Warnings_Are_Errors)
+TEST(CheckCommandTest, Spec_Violated_Error_If_Spec_Warn_Detected_And_Warnings_Are_Errors)
 {
     std::ostringstream err;
     TmpDir tmp;
@@ -147,7 +147,7 @@ TEST(CheckCommandTest, Spec_Violated_Error_If_Specification_Warning_Detected_And
     EXPECT_FALSE(err.str().empty());
 }
 
-TEST(CheckCommandTest, Command_Succeeds_If_Spec_Warning_Detected_Warnings_Are_Errors_But_Spec_Warnings_Are_Ignored)
+TEST(CheckCommandTest, Command_Succeeds_If_Spec_Warn_Detected_Warnings_Are_Errors_But_Spec_Warnings_Are_Ignored)
 {
     std::ostringstream out, err;
     TmpDir tmp;
@@ -159,7 +159,7 @@ TEST(CheckCommandTest, Command_Succeeds_If_Spec_Warning_Detected_Warnings_Are_Er
     EXPECT_TRUE(err.str().empty());
 }
 
-TEST(CheckCommandTest, Command_Succeeds_If_Doc_Warning_Detected_And_Warnings_Are_Not_Errors)
+TEST(CheckCommandTest, Command_Succeeds_If_Doc_Warn_Detected_And_Warnings_Are_Not_Errors)
 {
     std::ostringstream out, err;
     TmpDir tmp;
@@ -175,7 +175,7 @@ TEST(CheckCommandTest, Command_Succeeds_If_Doc_Warning_Detected_And_Warnings_Are
     EXPECT_FALSE(err.str().empty());
 }
 
-TEST(CheckCommandTest, Doc_Rule_Violated_Error_If_Doc_Warning_Detected_And_Warnings_Are_Errors)
+TEST(CheckCommandTest, Doc_Rule_Violated_Error_If_Doc_Warn_Detected_And_Warnings_Are_Errors)
 {
     std::ostringstream err;
     TmpDir tmp;
@@ -192,7 +192,7 @@ TEST(CheckCommandTest, Doc_Rule_Violated_Error_If_Doc_Warning_Detected_And_Warni
     EXPECT_FALSE(err.str().empty());
 }
 
-TEST(CheckCommandTest, Command_Succeeds_If_Doc_Warning_Detected_Warnings_Are_Errors_But_Doc_Warnings_Are_Ignored)
+TEST(CheckCommandTest, Command_Succeeds_If_Doc_Warn_Detected_Warnings_Are_Errors_But_Doc_Warnings_Are_Ignored)
 {
     std::ostringstream out, err;
     TmpDir tmp;
@@ -208,7 +208,7 @@ TEST(CheckCommandTest, Command_Succeeds_If_Doc_Warning_Detected_Warnings_Are_Err
     EXPECT_TRUE(err.str().empty());
 }
 
-TEST(CheckCommandTest, Command_Succeeds_If_Style_Warning_Detected_And_Warnings_Are_Not_Errors)
+TEST(CheckCommandTest, Command_Succeeds_If_Style_Warn_Detected_And_Warnings_Are_Not_Errors)
 {
     std::ostringstream out, err;
     TmpDir tmp;
@@ -225,7 +225,7 @@ TEST(CheckCommandTest, Command_Succeeds_If_Style_Warning_Detected_And_Warnings_A
     EXPECT_FALSE(err.str().empty());
 }
 
-TEST(CheckCommandTest, Style_Violated_Error_If_Style_Warning_Detected_And_Warnings_Are_Errors)
+TEST(CheckCommandTest, Style_Violated_Error_If_Style_Warn_Detected_And_Warnings_Are_Errors)
 {
     std::ostringstream err;
     TmpDir tmp;
@@ -243,7 +243,7 @@ TEST(CheckCommandTest, Style_Violated_Error_If_Style_Warning_Detected_And_Warnin
     EXPECT_FALSE(err.str().empty());
 }
 
-TEST(CheckCommandTest, Command_Succeeds_If_Style_Warning_Detected_Warnings_Are_Errors_But_Style_Warnings_Are_Ignored)
+TEST(CheckCommandTest, Command_Succeeds_If_Style_Warn_Detected_Warnings_Are_Errors_But_Style_Warnings_Are_Ignored)
 {
     std::ostringstream out, err;
     TmpDir tmp;
