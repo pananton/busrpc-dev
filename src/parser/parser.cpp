@@ -11,6 +11,7 @@
 namespace protobuf = google::protobuf;
 
 namespace busrpc {
+
 namespace {
 
 class ParserErrorCategory: public std::error_category {

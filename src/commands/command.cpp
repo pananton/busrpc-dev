@@ -5,6 +5,7 @@
 namespace busrpc {
 
 namespace {
+
 struct CommandErrorCategory: std::error_category {
     const char* name() const noexcept override { return "command"; }
 

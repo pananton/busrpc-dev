@@ -8,6 +8,7 @@
 namespace busrpc {
 
 namespace {
+
 class HelpErrorCategory: public std::error_category {
 public:
     const char* name() const noexcept override { return "help"; }

@@ -171,21 +171,21 @@ constexpr bool IsValidEntityName(std::string_view name)
 /// Busrpc structure type identifier.
 /// \note Structure type identifier determines semantics of the structure.
 enum class StructTypeId {
-    General = 1,             ///< General structure.
-    Namespace_Desc = 2,      ///< Namespace descriptor.
-    Class_Desc = 3,          ///< Class descriptor.
-    Method_Desc = 4,         ///< Method descriptor.
-    Service_Desc = 5,        ///< Service descriptor.
-    Call_Message = 6,        ///< Network message representing method call.
-    Result_Message = 7,      ///< Network message representing method result.
-    Object_Id = 8,           ///< Object identifier.
-    Static_Marker = 9,       ///< Static method marker.
-    Method_Params = 10,      ///< Method parameters.
-    Method_Retval = 11,      ///< Method return value.
-    Method_Exception = 12,   ///< Method exception.
-    Service_Config = 13,     ///< Service config.
-    Service_Implements = 14, ///< Methods implemented by a service expressed as structure fields.
-    Service_Invokes = 15     ///< Methods invoked by a service expressed as structure fields.
+    General = 1,              ///< General structure.
+    Exception = 12,           ///< Project-wide exception type.
+    Call_Message = 6,         ///< Network message representing method call.
+    Result_Message = 7,       ///< Network message representing method result.
+    Namespace_Desc = 2,       ///< Namespace descriptor.
+    Class_Desc = 3,           ///< Class descriptor.
+    Class_Object_Id = 8,      ///< Object identifier.
+    Method_Desc = 4,          ///< Method descriptor.
+    Method_Static_Marker = 9, ///< Static method marker.
+    Method_Params = 10,       ///< Method parameters.
+    Method_Retval = 11,       ///< Method return value.
+    Service_Desc = 5,         ///< Service descriptor.
+    Service_Config = 13,      ///< Service config.
+    Service_Implements = 14,  ///< Methods implemented by a service expressed as structure fields.
+    Service_Invokes = 15      ///< Methods invoked by a service expressed as structure fields.
 };
 
 /// Structure entity flags.
@@ -200,17 +200,17 @@ constexpr const char* GetPredefinedStructName(StructTypeId id)
 
     switch (id) {
     case General: return nullptr;
-    case Namespace_Desc: return "NamespaceDesc";
-    case Class_Desc: return "ClassDesc";
-    case Method_Desc: return "MethodDesc";
-    case Service_Desc: return "ServiceDesc";
+    case Exception: return "Exception";
     case Call_Message: return "CallMessage";
     case Result_Message: return "ResultMessage";
-    case Object_Id: return "ObjectId";
-    case Static_Marker: return "Static";
+    case Namespace_Desc: return "NamespaceDesc";
+    case Class_Desc: return "ClassDesc";
+    case Class_Object_Id: return "ObjectId";
+    case Method_Desc: return "MethodDesc";
     case Method_Params: return "Params";
     case Method_Retval: return "Retval";
-    case Method_Exception: return "Exception";
+    case Method_Static_Marker: return "Static";
+    case Service_Desc: return "ServiceDesc";
     case Service_Config: return "Config";
     case Service_Implements: return "Implements";
     case Service_Invokes: return "Invokes";
@@ -247,7 +247,7 @@ constexpr StructTypeId GetStructTypeId(std::string_view structName,
         break;
     case 'E':
         if (structName == "Exception") {
-            result = Method_Exception;
+            result = Exception;
         }
         break;
     case 'I':
@@ -269,7 +269,7 @@ constexpr StructTypeId GetStructTypeId(std::string_view structName,
         break;
     case 'O':
         if (structName == "ObjectId") {
-            result = Object_Id;
+            result = Class_Object_Id;
         }
         break;
     case 'P':
@@ -288,7 +288,7 @@ constexpr StructTypeId GetStructTypeId(std::string_view structName,
         if (structName == "ServiceDesc") {
             result = Service_Desc;
         } else if (structName == "Static") {
-            result = Static_Marker;
+            result = Method_Static_Marker;
         }
         break;
     default: break;
@@ -303,20 +303,21 @@ constexpr StructTypeId GetStructTypeId(std::string_view structName,
     }
 
     switch (result) {
-    case Namespace_Desc: return *parentType == EntityTypeId::Namespace ? Namespace_Desc : General;
-    case Class_Desc: return *parentType == EntityTypeId::Class ? Class_Desc : General;
-    case Method_Desc: return *parentType == EntityTypeId::Method ? Method_Desc : General;
-    case Service_Desc: return *parentType == EntityTypeId::Service ? Service_Desc : General;
+    case Exception: return *parentType == EntityTypeId::Project ? Exception : General;
     case Call_Message: return *parentType == EntityTypeId::Project ? Call_Message : General;
     case Result_Message: return *parentType == EntityTypeId::Project ? Result_Message : General;
-    case Object_Id: return *parentType == EntityTypeId::Struct && *parentStructType == Class_Desc ? Object_Id : General;
-    case Static_Marker:
-        return *parentType == EntityTypeId::Struct && *parentStructType == Method_Desc ? Static_Marker : General;
+    case Namespace_Desc: return *parentType == EntityTypeId::Namespace ? Namespace_Desc : General;
+    case Class_Desc: return *parentType == EntityTypeId::Class ? Class_Desc : General;
+    case Class_Object_Id:
+        return *parentType == EntityTypeId::Struct && *parentStructType == Class_Desc ? Class_Object_Id : General;
+    case Method_Desc: return *parentType == EntityTypeId::Method ? Method_Desc : General;
     case Method_Params:
         return *parentType == EntityTypeId::Struct && *parentStructType == Method_Desc ? Method_Params : General;
     case Method_Retval:
         return *parentType == EntityTypeId::Struct && *parentStructType == Method_Desc ? Method_Retval : General;
-    case Method_Exception: return *parentType == EntityTypeId::Project ? Method_Exception : General;
+    case Method_Static_Marker:
+        return *parentType == EntityTypeId::Struct && *parentStructType == Method_Desc ? Method_Static_Marker : General;
+    case Service_Desc: return *parentType == EntityTypeId::Service ? Service_Desc : General;
     case Service_Config:
         return *parentType == EntityTypeId::Struct && *parentStructType == Service_Desc ? Service_Config : General;
     case Service_Implements:

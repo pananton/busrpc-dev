@@ -54,21 +54,21 @@ void to_json(json& obj, const Project& project)
     }
 
     if (project.exception()) {
-        obj[GetPredefinedStructName(StructTypeId::Method_Exception)] = *project.exception();
+        obj[GetPredefinedStructName(StructTypeId::Exception)] = *project.exception();
     } else {
-        obj["exception"] = nullptr;
+        obj[GetPredefinedStructName(StructTypeId::Exception)] = nullptr;
     }
 
     if (project.callMessage()) {
-        obj["callMessage"] = *project.callMessage();
+        obj[GetPredefinedStructName(StructTypeId::Call_Message)] = *project.callMessage();
     } else {
-        obj["callMessage"] = nullptr;
+        obj[GetPredefinedStructName(StructTypeId::Call_Message)] = nullptr;
     }
 
     if (project.resultMessage()) {
-        obj["resultMessage"] = *project.resultMessage();
+        obj[GetPredefinedStructName(StructTypeId::Result_Message)] = *project.resultMessage();
     } else {
-        obj["resultMessage"] = nullptr;
+        obj[GetPredefinedStructName(StructTypeId::Result_Message)] = nullptr;
     }
 
     if (project.api()) {
@@ -113,9 +113,9 @@ void to_json(json& obj, const Class& cls)
     AddCommonEntityData(obj, cls);
 
     if (cls.objectId()) {
-        obj["objectId"] = *cls.objectId();
+        obj[GetPredefinedStructName(StructTypeId::Class_Object_Id)] = *cls.objectId();
     } else {
-        obj["objectId"] = nullptr;
+        obj[GetPredefinedStructName(StructTypeId::Class_Object_Id)] = nullptr;
     }
 
     obj["isStatic"] = cls.isStatic();
@@ -132,15 +132,15 @@ void to_json(json& obj, const Method& method)
     AddCommonEntityData(obj, method);
 
     if (method.params()) {
-        obj["params"] = *method.params();
+        obj[GetPredefinedStructName(StructTypeId::Method_Params)] = *method.params();
     } else {
-        obj["params"] = nullptr;
+        obj[GetPredefinedStructName(StructTypeId::Method_Params)] = nullptr;
     }
 
     if (method.retval()) {
-        obj["retval"] = *method.retval();
+        obj[GetPredefinedStructName(StructTypeId::Method_Retval)] = *method.retval();
     } else {
-        obj["retval"] = nullptr;
+        obj[GetPredefinedStructName(StructTypeId::Method_Retval)] = nullptr;
     }
 
     obj["isStatic"] = method.isStatic();
@@ -167,9 +167,9 @@ void to_json(json& obj, const Service& service)
     AddCommonEntityData(obj, service);
 
     if (service.config()) {
-        obj["config"] = *service.config();
+        obj[GetPredefinedStructName(StructTypeId::Service_Config)] = *service.config();
     } else {
-        obj["config"] = nullptr;
+        obj[GetPredefinedStructName(StructTypeId::Service_Config)] = nullptr;
     }
 
     obj["author"] = service.author();
@@ -219,7 +219,7 @@ void to_json(json& obj, const Struct& structure)
     obj["isEncodable"] = structure.isEncodable();
 
     for (const auto& field: structure.fields()) {
-        obj["fields"].push_back(*field);
+        obj["fields"][field->name()].push_back(*field);
     }
 
     AddNestedStructsAndEnums(obj, structure, false);
@@ -231,6 +231,7 @@ void to_json(json& obj, const Field& field)
 
     obj["number"] = field.number();
     obj["fieldType"] = field.fieldTypeName();
+    obj["isMap"] = field.fieldType() == FieldTypeId::Map;
     obj["isOptional"] = field.isOptional();
     obj["isRepeated"] = field.isRepeated();
     obj["isObservable"] = field.isObservable();

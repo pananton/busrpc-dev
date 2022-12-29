@@ -49,12 +49,12 @@ TEST_F(StructEntityTest, Struct_Entity_Is_Correctly_Initialized_When_Created_By_
     EXPECT_EQ(structure_->docs().commands(), docs_.commands());
 }
 
-TEST_F(StructEntityTest, Object_Id_Struct_Has_Default_Description)
+TEST_F(StructEntityTest, Class_Object_Id_Struct_Has_Default_Description)
 {
     Project project;
     auto cls = project.addApi()->addNamespace("namespace")->addClass("class");
     auto desc = cls->addStruct(GetPredefinedStructName(StructTypeId::Class_Desc), Class_Desc_File);
-    auto oid = desc->addStruct(GetPredefinedStructName(StructTypeId::Object_Id));
+    auto oid = desc->addStruct(GetPredefinedStructName(StructTypeId::Class_Object_Id));
 
     EXPECT_FALSE(oid->docs().description().empty());
     EXPECT_FALSE(oid->docs().brief().empty());
@@ -80,6 +80,17 @@ TEST_F(StructEntityTest, Method_Retval_Struct_Has_Default_Description)
 
     EXPECT_FALSE(retval->docs().description().empty());
     EXPECT_FALSE(retval->docs().brief().empty());
+}
+
+TEST_F(StructEntityTest, Method_Static_Marker_Has_Default_Description)
+{
+    Project project;
+    auto method = project.addApi()->addNamespace("namespace")->addClass("class")->addMethod("method");
+    auto desc = method->addStruct(GetPredefinedStructName(StructTypeId::Method_Desc), Method_Desc_File);
+    auto staticMarker = desc->addStruct(GetPredefinedStructName(StructTypeId::Method_Static_Marker));
+
+    EXPECT_FALSE(staticMarker->docs().description().empty());
+    EXPECT_FALSE(staticMarker->docs().brief().empty());
 }
 
 TEST_F(StructEntityTest, Service_Config_Struct_Has_Default_Description)

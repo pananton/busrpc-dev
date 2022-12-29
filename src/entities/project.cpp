@@ -179,7 +179,7 @@ void Project::onNestedEntityAdded(Entity* entity)
         switch (structEntity->structType()) {
         case StructTypeId::Call_Message: callMessage_ = structEntity; break;
         case StructTypeId::Result_Message: resultMessage_ = structEntity; break;
-        case StructTypeId::Method_Exception: exception_ = structEntity; break;
+        case StructTypeId::Exception: exception_ = structEntity; break;
         default: break;
         }
     } else if (entity->type() == EntityTypeId::Enum) {
@@ -214,7 +214,7 @@ void Project::checkErrc(const Enum* errc, ErrorCollector& ecol) const
 
 void Project::checkException(const Struct* exception, ErrorCollector& ecol) const
 {
-    constexpr const char* typeName = GetPredefinedStructName(StructTypeId::Method_Exception);
+    constexpr const char* typeName = GetPredefinedStructName(StructTypeId::Exception);
 
     if (!exception) {
         ecol.add(SpecErrc::Missing_Builtin, std::make_pair("builtin", typeName));
@@ -349,7 +349,7 @@ void Project::checkResultMessage(const Struct* result, ErrorCollector& ecol) con
                 ecol.add(SpecErrc::Nonconforming_Builtin,
                          std::make_pair("builtin", typeName),
                          "'" + std::string(Result_Message_Exception_Field_Name) + "' field type should be '" +
-                             GetPredefinedStructName(StructTypeId::Method_Exception) + "'");
+                             GetPredefinedStructName(StructTypeId::Exception) + "'");
             }
         }
 
@@ -439,7 +439,7 @@ void Project::checkClassDesc(const Class* cls, ErrorCollector& ecol) const
         bool hasUnexpectedStructs = false;
 
         for (const auto& structure: desc->structs()) {
-            if (structure->structType() != StructTypeId::Object_Id) {
+            if (structure->structType() != StructTypeId::Class_Object_Id) {
                 hasUnexpectedStructs = true;
                 break;
             }
@@ -458,7 +458,7 @@ void Project::checkObjectId(const Class* cls, ErrorCollector& ecol) const
     if (cls->objectId() && !cls->objectId()->isEncodable()) {
         ecol.add(SpecErrc::Not_Encodable_Type,
                  std::make_pair(GetEntityTypeIdStr(cls->type()), cls->dname()),
-                 "'" + std::string(GetPredefinedStructName(StructTypeId::Object_Id)) +
+                 "'" + std::string(GetPredefinedStructName(StructTypeId::Class_Object_Id)) +
                      "' structure should be encodable");
     }
 }
@@ -497,7 +497,7 @@ void Project::checkMethodDesc(const Method* method, ErrorCollector& ecol) const
         for (const auto& structure: desc->structs()) {
             if (structure->structType() != StructTypeId::Method_Params &&
                 structure->structType() != StructTypeId::Method_Retval &&
-                structure->structType() != StructTypeId::Static_Marker) {
+                structure->structType() != StructTypeId::Method_Static_Marker) {
                 hasUnexpectedStructs = true;
                 break;
             }

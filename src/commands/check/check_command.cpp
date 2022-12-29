@@ -9,6 +9,7 @@
 namespace busrpc {
 
 namespace {
+
 class CheckErrorCategory: public std::error_category {
 public:
     const char* name() const noexcept override { return "check"; }

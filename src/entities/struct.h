@@ -92,9 +92,7 @@ public:
 
     /// Add nested structure.
     /// \throws name_conflict_error if entity with the same name is already added
-    Struct* addStruct(const std::string& name,
-                      StructFlags flags = StructFlags::None,
-                      EntityDocs docs = {});
+    Struct* addStruct(const std::string& name, StructFlags flags = StructFlags::None, EntityDocs docs = {});
 
     /// Add nested enumeration.
     /// \throws name_conflict_error if entity with the same name is already added

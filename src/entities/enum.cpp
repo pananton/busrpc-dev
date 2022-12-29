@@ -5,10 +5,7 @@
 
 namespace busrpc {
 
-Enum::Enum(CompositeEntity* parent,
-           const std::string& name,
-           const std::string& filename,
-           EntityDocs docs):
+Enum::Enum(CompositeEntity* parent, const std::string& name, const std::string& filename, EntityDocs docs):
     CompositeEntity(parent, EntityTypeId::Enum, name, std::move(docs)),
     package_{},
     file_{},

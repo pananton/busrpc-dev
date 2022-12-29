@@ -6,13 +6,13 @@
 namespace busrpc {
 
 namespace {
+
 class VersionErrorCategory: public std::error_category {
 public:
     const char* name() const noexcept override { return "version"; }
     std::string message(int) const override { return "Unknown error"; }
     bool equivalent(int, const std::error_condition&) const noexcept override { return false; }
 };
-
 } // namespace
 
 std::error_code VersionCommand::tryExecuteImpl(std::ostream& out, std::ostream&) const

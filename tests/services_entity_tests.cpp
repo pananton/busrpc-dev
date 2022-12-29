@@ -6,10 +6,7 @@ namespace busrpc { namespace test {
 
 class ServicesEntityTest: public ::testing::Test {
 protected:
-    void SetUp() override
-    {
-        services_ = project_.addServices();
-    }
+    void SetUp() override { services_ = project_.addServices(); }
 
 protected:
     Project project_;

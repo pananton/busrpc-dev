@@ -1,5 +1,5 @@
-#include "commands/help/help_command.h"
 #include "app.h"
+#include "commands/help/help_command.h"
 #include "utils/common.h"
 
 #include <CLI/CLI.hpp>

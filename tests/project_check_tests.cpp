@@ -71,7 +71,7 @@ Enum* AddErrc(Project* project)
 
 Struct* AddException(Project* project)
 {
-    auto exception = project->addStruct(GetPredefinedStructName(StructTypeId::Method_Exception),
+    auto exception = project->addStruct(GetPredefinedStructName(StructTypeId::Exception),
                                         Busrpc_Builtin_File,
                                         StructFlags::None,
                                         EntityDocs("Method exception."));
@@ -147,7 +147,7 @@ Struct* AddClassDesc(Class* cls, bool isStatic = false)
         GetPredefinedStructName(StructTypeId::Class_Desc), Class_Desc_File, StructFlags::None, EntityDocs("My class."));
 
     if (!isStatic) {
-        auto oid = desc->addStruct(GetPredefinedStructName(StructTypeId::Object_Id), StructFlags::Hashed);
+        auto oid = desc->addStruct(GetPredefinedStructName(StructTypeId::Class_Object_Id), StructFlags::Hashed);
 
         oid->addScalarField("field1", 1, FieldTypeId::Int32, FieldFlags::None, "", "", EntityDocs("Field1."));
         oid->addScalarField("field2",
@@ -178,8 +178,9 @@ Struct* AddMethodDesc(Method* method, bool isStatic = false)
                                   EntityDocs({"My method."}, {{"pre", {"precondition"}}, {"post", {"postcondition"}}}));
 
     if (isStatic) {
-        desc->addStruct(
-            GetPredefinedStructName(StructTypeId::Static_Marker), StructFlags::None, EntityDocs("Static marker."));
+        desc->addStruct(GetPredefinedStructName(StructTypeId::Method_Static_Marker),
+                        StructFlags::None,
+                        EntityDocs("Static marker."));
     }
 
     auto params = desc->addStruct(GetPredefinedStructName(StructTypeId::Method_Params));
@@ -308,13 +309,13 @@ protected:
     Services* services_ = nullptr;
 };
 
-TEST_F(ProjectCheckTest, Specification_Error_Category_Name_Is_Not_Empty)
+TEST_F(ProjectCheckTest, Spec_Error_Category_Name_Is_Not_Empty)
 {
     EXPECT_TRUE(spec_error_category().name());
     EXPECT_NE(spec_error_category().name()[0], 0);
 }
 
-TEST_F(ProjectCheckTest, Specification_Error_Codes_Have_Non_Empty_Descriptions)
+TEST_F(ProjectCheckTest, Spec_Error_Codes_Have_Non_Empty_Descriptions)
 {
     using enum SpecErrc;
 
@@ -334,36 +335,36 @@ TEST_F(ProjectCheckTest, Specification_Error_Codes_Have_Non_Empty_Descriptions)
     EXPECT_FALSE(spec_error_category().message(static_cast<int>(Unknown_Method)).empty());
 }
 
-TEST_F(ProjectCheckTest, Unknown_Specification_Error_Code_Has_Non_Empty_Description)
+TEST_F(ProjectCheckTest, Unknown_Spec_Error_Code_Has_Non_Empty_Description)
 {
     EXPECT_FALSE(spec_error_category().message(0).empty());
 }
 
-TEST_F(ProjectCheckTest, Specification_Warning_Category_Name_Is_Not_Empty)
+TEST_F(ProjectCheckTest, Spec_Warn_Category_Name_Is_Not_Empty)
 {
     EXPECT_TRUE(spec_warn_category().name());
     EXPECT_NE(spec_warn_category().name()[0], 0);
 }
 
-TEST_F(ProjectCheckTest, Specification_Warning_Codes_Have_Non_Empty_Descriptions)
+TEST_F(ProjectCheckTest, Spec_Warn_Codes_Have_Non_Empty_Descriptions)
 {
     using enum SpecWarn;
 
     EXPECT_FALSE(spec_warn_category().message(static_cast<int>(Unexpected_Nested_Entity)).empty());
 }
 
-TEST_F(ProjectCheckTest, Unknown_Specification_Warning_Code_Has_Non_Empty_Description)
+TEST_F(ProjectCheckTest, Unknown_Spec_Warn_Code_Has_Non_Empty_Description)
 {
     EXPECT_FALSE(spec_warn_category().message(0).empty());
 }
 
-TEST_F(ProjectCheckTest, Documentation_Warning_Category_Name_Is_Not_Empty)
+TEST_F(ProjectCheckTest, Doc_Warn_Category_Name_Is_Not_Empty)
 {
     EXPECT_TRUE(doc_warn_category().name());
     EXPECT_NE(doc_warn_category().name()[0], 0);
 }
 
-TEST_F(ProjectCheckTest, Documentation_Warning_Codes_Have_Non_Empty_Descriptions)
+TEST_F(ProjectCheckTest, Doc_Warn_Codes_Have_Non_Empty_Descriptions)
 {
     using enum DocWarn;
 
@@ -371,25 +372,25 @@ TEST_F(ProjectCheckTest, Documentation_Warning_Codes_Have_Non_Empty_Descriptions
     EXPECT_FALSE(doc_warn_category().message(static_cast<int>(Unknown_Doc_Command)).empty());
 }
 
-TEST_F(ProjectCheckTest, Unknown_Documentation_Warning_Code_Has_Non_Empty_Description)
+TEST_F(ProjectCheckTest, Unknown_Doc_Warn_Code_Has_Non_Empty_Description)
 {
     EXPECT_FALSE(doc_warn_category().message(0).empty());
 }
 
-TEST_F(ProjectCheckTest, Style_Warning_Category_Name_Is_Not_Empty)
+TEST_F(ProjectCheckTest, Style_Warn_Category_Name_Is_Not_Empty)
 {
     EXPECT_TRUE(style_warn_category().name());
     EXPECT_NE(style_warn_category().name()[0], 0);
 }
 
-TEST_F(ProjectCheckTest, Style_Warning_Codes_Have_Non_Empty_Descriptions)
+TEST_F(ProjectCheckTest, Style_Warn_Codes_Have_Non_Empty_Descriptions)
 {
     using enum StyleWarn;
 
     EXPECT_FALSE(style_warn_category().message(static_cast<int>(Invalid_Name_Format)).empty());
 }
 
-TEST_F(ProjectCheckTest, Unknown_Warning_Error_Code_Has_Non_Empty_Description)
+TEST_F(ProjectCheckTest, Unknown_Style_Warn_Error_Code_Has_Non_Empty_Description)
 {
     EXPECT_FALSE(style_warn_category().message(0).empty());
 }
@@ -448,7 +449,7 @@ TEST_F(ProjectCheckTest, Missing_Builtin_Spec_Error_If_Exception_Is_Defined_In_U
     AddCallMessage(&project);
     AddResultMessage(&project);
 
-    auto exception = project.addStruct(GetPredefinedStructName(StructTypeId::Method_Exception), "1.proto");
+    auto exception = project.addStruct(GetPredefinedStructName(StructTypeId::Exception), "1.proto");
     exception->addEnumField(Exception_Code_Field_Name, 1, project.dname() + ".Errc");
     auto ecol = project.check();
 
@@ -475,8 +476,8 @@ TEST_F(ProjectCheckTest, Nonconforming_Builtin_Spec_Error_If_Exception_Code_Fiel
     AddCallMessage(&project);
     AddResultMessage(&project);
 
-    auto exception = project.addStruct(
-        GetPredefinedStructName(StructTypeId::Method_Exception), Busrpc_Builtin_File, StructFlags::None);
+    auto exception =
+        project.addStruct(GetPredefinedStructName(StructTypeId::Exception), Busrpc_Builtin_File, StructFlags::None);
     exception->addScalarField(Exception_Code_Field_Name, 1, FieldTypeId::Int32);
     auto ecol = project.check();
 
@@ -490,7 +491,7 @@ TEST_F(ProjectCheckTest, Nonconforming_Builtin_Spec_Error_If_Exception_Code_Fiel
     AddCallMessage(&project);
     AddResultMessage(&project);
 
-    auto exception = project.addStruct(GetPredefinedStructName(StructTypeId::Method_Exception), Busrpc_Builtin_File);
+    auto exception = project.addStruct(GetPredefinedStructName(StructTypeId::Exception), Busrpc_Builtin_File);
     exception->addEnumField(Exception_Code_Field_Name, 1, project.dname() + ".Errc", FieldFlags::Optional);
     auto ecol = project.check();
 
@@ -504,7 +505,7 @@ TEST_F(ProjectCheckTest, Nonconforming_Builtin_Spec_Error_If_Exception_Code_Fiel
     AddCallMessage(&project);
     AddResultMessage(&project);
 
-    auto exception = project.addStruct(GetPredefinedStructName(StructTypeId::Method_Exception), Busrpc_Builtin_File);
+    auto exception = project.addStruct(GetPredefinedStructName(StructTypeId::Exception), Busrpc_Builtin_File);
     exception->addEnumField(Exception_Code_Field_Name, 1, project.dname() + ".Errc", FieldFlags::Repeated);
     auto ecol = project.check();
 
@@ -866,7 +867,7 @@ TEST_F(ProjectCheckTest, Not_Encodable_Type_Spec_Error_If_Class_Object_Id_Is_Not
 {
     auto cls = AddNamespace(api_)->addClass("class");
     auto desc = cls->addStruct(GetPredefinedStructName(StructTypeId::Class_Desc), "1.proto");
-    auto oid = desc->addStruct(GetPredefinedStructName(StructTypeId::Object_Id));
+    auto oid = desc->addStruct(GetPredefinedStructName(StructTypeId::Class_Object_Id));
     oid->addScalarField("field1", 1, FieldTypeId::Int32, FieldFlags::Repeated);
     auto ecol = project_.check();
 

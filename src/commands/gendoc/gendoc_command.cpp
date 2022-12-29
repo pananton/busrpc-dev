@@ -5,6 +5,7 @@
 namespace busrpc {
 
 namespace {
+
 class GenDocErrorCategory: public std::error_category {
 public:
     const char* name() const noexcept override { return "gendoc"; }

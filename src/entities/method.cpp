@@ -31,9 +31,9 @@ void Method::onNestedEntityAdded(Entity* entity)
             setDocumentation(structEntity->docs());
             parseDocCommands();
             break;
-        case StructTypeId::Static_Marker: isStatic_ = true; break;
         case StructTypeId::Method_Params: params_ = structEntity; break;
         case StructTypeId::Method_Retval: retval_ = structEntity; break;
+        case StructTypeId::Method_Static_Marker: isStatic_ = true; break;
         default: break;
         }
     }

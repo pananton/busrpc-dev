@@ -96,7 +96,7 @@ TEST_F(MethodEntityTest, Adding_Static_Struct_To_Descriptor_Makes_Method_Static)
 
     ASSERT_TRUE(desc = method_->addStruct(
                     GetPredefinedStructName(StructTypeId::Method_Desc), "method.proto", StructFlags::None));
-    EXPECT_TRUE(staticMarker = desc->addStruct(GetPredefinedStructName(StructTypeId::Static_Marker)));
+    EXPECT_TRUE(staticMarker = desc->addStruct(GetPredefinedStructName(StructTypeId::Method_Static_Marker)));
     EXPECT_TRUE(method_->isStatic());
 }
 }} // namespace busrpc::test

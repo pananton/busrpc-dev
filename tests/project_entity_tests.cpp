@@ -97,7 +97,7 @@ TEST_F(ProjectEntityTest, Adding_Errc_Enum_Sets_Api_Error_Code_Type)
 TEST_F(ProjectEntityTest, Adding_Exception_Struct_Sets_Api_Exception_Type)
 {
     Struct* exception = nullptr;
-    auto name = GetPredefinedStructName(StructTypeId::Method_Exception);
+    auto name = GetPredefinedStructName(StructTypeId::Exception);
 
     EXPECT_TRUE(exception = project_->addStruct(name, "file.proto"));
     EXPECT_EQ(exception, project_->exception());

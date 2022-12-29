@@ -35,7 +35,7 @@ bool IsUppercaseWithUnderscores(std::string_view name);
 /// \note Because empty string does not have any prohibited characters, this function returns \c true for it.
 bool IsCamelCase(std::string_view name);
 
-    /// Initialize \a path to a canonical path to the existing directory.
+/// Initialize \a path to a canonical path to the existing directory.
 /// \throws std::filesystem::filesystem_error
 /// \note Value of \a path is not changed if any error occurs.
 /// \note If \a dir is empty, then canonical path to current directory is returned.

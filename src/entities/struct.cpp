@@ -50,7 +50,7 @@ Struct::Struct(CompositeEntity* parent,
 
 bool Struct::isEncodable() const noexcept
 {
-    for (const auto& field : fields_) {
+    for (const auto& field: fields_) {
         if (!IsEncodableField(field->fieldType(), field->flags(), field->oneofName())) {
             return false;
         }
@@ -131,10 +131,10 @@ void Struct::setDefaultDescription()
     std::vector<std::string> defaultDescription;
 
     switch (structType_) {
-    case Object_Id: defaultDescription.emplace_back(Default_ObjectId_Description); break;
+    case Class_Object_Id: defaultDescription.emplace_back(Default_ObjectId_Description); break;
     case Method_Params: defaultDescription.emplace_back(Default_Params_Description); break;
     case Method_Retval: defaultDescription.emplace_back(Default_Retval_Description); break;
-    case Static_Marker: defaultDescription.emplace_back(Default_Static_Description); break;
+    case Method_Static_Marker: defaultDescription.emplace_back(Default_Static_Description); break;
     case Service_Config: defaultDescription.emplace_back(Default_Config_Description); break;
     case Service_Implements: defaultDescription.emplace_back(Default_Implements_Description); break;
     case Service_Invokes: defaultDescription.emplace_back(Default_Invokes_Description); break;

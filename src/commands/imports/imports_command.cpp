@@ -13,6 +13,7 @@ namespace protobuf = google::protobuf;
 namespace busrpc {
 
 namespace {
+
 class ImportsErrorCategory: public std::error_category {
 public:
     const char* name() const noexcept override { return "imports"; }

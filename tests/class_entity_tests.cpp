@@ -77,7 +77,7 @@ TEST_F(ClassEntityTest, Adding_ObjectId_Struct_To_Descriptor_Sets_Class_Object_I
 
     ASSERT_TRUE(
         desc = cls_->addStruct(GetPredefinedStructName(StructTypeId::Class_Desc), "class.proto", StructFlags::None));
-    EXPECT_TRUE(objectId = desc->addStruct(GetPredefinedStructName(StructTypeId::Object_Id)));
+    EXPECT_TRUE(objectId = desc->addStruct(GetPredefinedStructName(StructTypeId::Class_Object_Id)));
     EXPECT_EQ(cls_->objectId(), objectId);
     EXPECT_FALSE(cls_->isStatic());
 }
