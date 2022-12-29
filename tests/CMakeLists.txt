@@ -28,12 +28,13 @@ set(sources
     namespace_entity_tests.cpp
     class_entity_tests.cpp
     method_entity_tests.cpp
-    enum_entity_tests.cpp
-    struct_entity_tests.cpp
     services_entity_tests.cpp
     service_entity_tests.cpp
+    enum_entity_tests.cpp
+    struct_entity_tests.cpp
     project_check_tests.cpp
     parser_tests.cpp
+    json_generator_tests.cpp
     command_tests.cpp
     check_command_tests.cpp
     gendoc_command_tests.cpp

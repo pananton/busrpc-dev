@@ -228,10 +228,9 @@ protected:
     /// Add nested structure.
     /// \throws name_conflict_error if entity with the same name is already added
     /// \throws entity_error if \a filename is invalid or contains directory components
-    /// \note Parameter \a filename contains name of the file for the corresponding protobuf \c message
-    /// type. If
-    ///       general composite entity represents \ref Struct entity, then this parameter is ignored and
-    ///       parent structure filename is used instead of if.
+    /// \note Parameter \a filename contains name of the file for the corresponding protobuf \c message type.
+    ///       If general composite entity represents \ref Struct entity, then this parameter is ignored and parent
+    ///       structure filename is used instead of if.
     Struct* addStruct(const std::string& name,
                       const std::string& filename,
                       StructFlags flags = StructFlags::None,
@@ -241,8 +240,7 @@ protected:
     /// \throws name_conflict_error if entity with the same name is already added
     /// \throws entity_error if \a filename is invalid or contains directory components
     /// \note Parameter \a filename contains name of the file for the corresponding protobuf \c enum type.
-    /// If
-    ///       general composite entity represents \ref Struct entity, then this parameter is ignored and
+    ///       If general composite entity represents \ref Struct entity, then this parameter is ignored and
     ///       parent structure filename is used instead of if.
     Enum* addEnum(const std::string& name, const std::string& filename, EntityDocs docs = {});
 

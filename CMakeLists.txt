@@ -114,6 +114,9 @@ set(sources
     src/entities/services.cpp
     src/entities/struct.h
     src/entities/struct.cpp
+    src/generators/generator.h
+    src/generators/json_generator.h
+    src/generators/json_generator.cpp
     src/parser/parser.h
     src/parser/parser.cpp)
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/src" FILES ${sources} src/main.cpp)
