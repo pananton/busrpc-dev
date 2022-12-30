@@ -46,8 +46,8 @@ std::string ReadFile(const std::filesystem::path& path)
 
 bool isNestedPath(const std::filesystem::path& root, const std::filesystem::path& path)
 {
-    auto normRoot = std::filesystem::canonical(root);
-    auto normPath = std::filesystem::canonical(path);
+    auto normRoot = std::filesystem::weakly_canonical(root);
+    auto normPath = std::filesystem::weakly_canonical(path);
 
     auto it = std::search(normPath.begin(), normPath.end(), normRoot.begin(), normRoot.end());
     return it == normPath.begin();
