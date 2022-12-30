@@ -48,7 +48,9 @@ struct ImportsOptions {
 template<typename TCommand>
 auto CreateInvoker(std::ostream& out, std::ostream& err)
 {
-    return [&out, &err](typename TCommand::ArgsType args) { TCommand(std::move(args)).execute(out, err); };
+    return [outPtr = &out, errPtr = &err](typename TCommand::ArgsType args) {
+        TCommand(std::move(args)).execute(outPtr, errPtr);
+    };
 }
 
 // Functions to add common options to CLI:App
@@ -191,7 +193,7 @@ void InitApp(CLI::App& app, std::ostream& out, std::ostream& err)
 {
     app.set_version_flag("-v,--version", []() {
         std::ostringstream out;
-        VersionCommand({}).execute(out, std::nullopt);
+        VersionCommand({}).execute(&out);
         return out.str();
     });
 

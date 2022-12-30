@@ -57,7 +57,7 @@ TEST(GenDocCommandTest, Help_Is_Defined_For_The_Command)
     HelpCommand helpCmd({CommandId::GenDoc});
     std::ostringstream out, err;
 
-    EXPECT_NO_THROW(helpCmd.execute(out, err));
+    EXPECT_NO_THROW(helpCmd.execute(&out, &err));
     EXPECT_TRUE(IsHelpMessage(out.str(), CommandId::GenDoc));
     EXPECT_TRUE(err.str().empty());
 }
@@ -69,7 +69,7 @@ TEST(GenDocCommandTest, Command_Succeeds_For_Valid_Project_And_Outputs_Success_M
     TmpDir outputDir("out");
     CreateMinimalProject(tmp);
 
-    EXPECT_NO_THROW(GenDocCommand({GenDocFormat::Json, "tmp", "out", BUSRPC_TESTS_PROTOBUF_ROOT}).execute(out, err));
+    EXPECT_NO_THROW(GenDocCommand({GenDocFormat::Json, "tmp", "out", BUSRPC_TESTS_PROTOBUF_ROOT}).execute(&out, &err));
     EXPECT_FALSE(out.str().empty());
     EXPECT_TRUE(err.str().empty());
     EXPECT_TRUE(std::filesystem::is_regular_file(std::string("out/") + Json_Doc_File));
@@ -81,7 +81,7 @@ TEST(GenDocCommandTest, Invalid_Project_Dir_Error_If_Project_Dir_Does_Not_Exist)
     TmpDir outputDir("out");
 
     EXPECT_COMMAND_EXCEPTION(
-        GenDocCommand({GenDocFormat::Json, "missing_project_dir", "out"}).execute(std::nullopt, err),
+        GenDocCommand({GenDocFormat::Json, "missing_project_dir", "out"}).execute(nullptr, &err),
         GenDocErrc::Invalid_Project_Dir);
     EXPECT_FALSE(err.str().empty());
     EXPECT_FALSE(std::filesystem::exists(std::string("out/") + Json_Doc_File));
@@ -95,7 +95,7 @@ TEST(GenDocCommandTest, File_Write_Failed_Error_If_Output_Dir_Does_Not_Exist)
     CreateMinimalProject(tmp);
 
     EXPECT_COMMAND_EXCEPTION(
-        GenDocCommand({GenDocFormat::Json, "tmp", "out/nonexistent_dir"}).execute(std::nullopt, err),
+        GenDocCommand({GenDocFormat::Json, "tmp", "out/nonexistent_dir"}).execute(nullptr, &err),
         GenDocErrc::File_Write_Failed);
     EXPECT_FALSE(err.str().empty());
 }
@@ -109,7 +109,7 @@ TEST(GenDocCommandTest, Protobuf_Parsing_Failed_Error_If_Some_File_Is_Not_Parsed
     tmp.writeFile("invalid.proto", "syntax =");
 
     EXPECT_COMMAND_EXCEPTION(
-        GenDocCommand({GenDocFormat::Json, "tmp", "out", BUSRPC_TESTS_PROTOBUF_ROOT}).execute(std::nullopt, err),
+        GenDocCommand({GenDocFormat::Json, "tmp", "out", BUSRPC_TESTS_PROTOBUF_ROOT}).execute(nullptr, &err),
         GenDocErrc::Protobuf_Parsing_Failed);
     EXPECT_FALSE(err.str().empty());
     EXPECT_TRUE(std::filesystem::is_regular_file(std::string("out/") + Json_Doc_File));
@@ -128,7 +128,7 @@ TEST(GenDocCommandTest, Spec_Violated_Error_If_Spec_Error_Detected)
     tmp.writeFile("file.proto", invalidType);
 
     EXPECT_COMMAND_EXCEPTION(
-        GenDocCommand({GenDocFormat::Json, "tmp", "out", BUSRPC_TESTS_PROTOBUF_ROOT}).execute(std::nullopt, err),
+        GenDocCommand({GenDocFormat::Json, "tmp", "out", BUSRPC_TESTS_PROTOBUF_ROOT}).execute(nullptr, &err),
         GenDocErrc::Spec_Violated);
     EXPECT_FALSE(err.str().empty());
     EXPECT_TRUE(std::filesystem::is_regular_file(std::string("out/") + Json_Doc_File));
@@ -146,7 +146,7 @@ TEST(GenDocCommandTest, Command_Outputs_Doc_Warnings_But_Still_Indicates_Success
                                      "message MyStruct {}";
     tmp.writeFile("file.proto", undocumentedStruct);
 
-    EXPECT_NO_THROW(GenDocCommand({GenDocFormat::Json, "tmp", "out", BUSRPC_TESTS_PROTOBUF_ROOT}).execute(out, err));
+    EXPECT_NO_THROW(GenDocCommand({GenDocFormat::Json, "tmp", "out", BUSRPC_TESTS_PROTOBUF_ROOT}).execute(&out, &err));
     EXPECT_FALSE(out.str().empty());
     EXPECT_FALSE(err.str().empty());
     EXPECT_TRUE(std::filesystem::is_regular_file(std::string("out/") + Json_Doc_File));
@@ -160,7 +160,7 @@ TEST(GenDocCommandTest, Command_Ignores_Spec_Warnings)
     CreateMinimalProject(tmp);
     tmp.createDir("unexpected_dir");
 
-    EXPECT_NO_THROW(GenDocCommand({GenDocFormat::Json, "tmp", "out", BUSRPC_TESTS_PROTOBUF_ROOT}).execute(out, err));
+    EXPECT_NO_THROW(GenDocCommand({GenDocFormat::Json, "tmp", "out", BUSRPC_TESTS_PROTOBUF_ROOT}).execute(&out, &err));
     EXPECT_FALSE(out.str().empty());
     EXPECT_TRUE(err.str().empty());
     EXPECT_TRUE(std::filesystem::is_regular_file(std::string("out/") + Json_Doc_File));
@@ -179,7 +179,7 @@ TEST(GenDocCommandTest, Command_Ignores_Style_Warnings)
                                               "message my_struct {}";
     tmp.writeFile("file.proto", structWithNonconformingName);
 
-    EXPECT_NO_THROW(GenDocCommand({GenDocFormat::Json, "tmp", "out", BUSRPC_TESTS_PROTOBUF_ROOT}).execute(out, err));
+    EXPECT_NO_THROW(GenDocCommand({GenDocFormat::Json, "tmp", "out", BUSRPC_TESTS_PROTOBUF_ROOT}).execute(&out, &err));
     EXPECT_FALSE(out.str().empty());
     EXPECT_TRUE(err.str().empty());
     EXPECT_TRUE(std::filesystem::is_regular_file(std::string("out/") + Json_Doc_File));

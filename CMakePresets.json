@@ -12,6 +12,8 @@
       "binaryDir": "${sourceDir}/build",
       "hidden": true,
       "cacheVariables": {
+        "BUSRPC_BUILD_TESTS": "ON",
+        "BUSRPC_BUILD_DOCS": "OFF",
         "BUSRPC_USE_EXTERNAL_CLI11": "OFF",
         "BUSRPC_USE_EXTERNAL_PROTOBUF": "OFF",
         "BUSRPC_USE_EXTERNAL_NLOHMANN_JSON": "OFF",
@@ -19,6 +21,7 @@
         "BUSRPC_PROTOBUF_FETCH_VERSION": "21.12",
         "BUSRPC_NLOHMANN_JSON_FETCH_VERSION": "3.11.2",
         "BUSRPC_GTEST_FETCH_VERSION": "1.12.1"
+        "BUSRPC_USE_STATIC_PROTOBUF": "ON",
       }
     },
     {
@@ -27,9 +30,6 @@
       "inherits": ["base"],
       "hidden": true,
       "cacheVariables": {
-        "BUSRPC_BUILD_TESTS": "ON",
-        "BUSRPC_BUILD_DOCS": "OFF",
-        "BUSRPC_USE_STATIC_PROTOBUF": "ON",
         "CMAKE_BUILD_TYPE": "Debug"
       }
     },
@@ -57,9 +57,6 @@
       "hidden": false,
       "inherits": ["base"],
       "cacheVariables": {
-        "BUSRPC_BUILD_TESTS": "OFF",
-        "BUSRPC_BUILD_DOCS": "OFF",
-        "BUSRPC_USE_STATIC_PROTOBUF": "OFF",
         "CMAKE_BUILD_TYPE": "Release"
       }
     }

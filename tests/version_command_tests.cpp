@@ -33,7 +33,7 @@ TEST(VersionCommandTest, Help_Is_Defined_For_The_Command)
     HelpCommand helpCmd({CommandId::Version});
     std::ostringstream out, err;
 
-    EXPECT_NO_THROW(helpCmd.execute(out, err));
+    EXPECT_NO_THROW(helpCmd.execute(&out, &err));
     EXPECT_TRUE(IsHelpMessage(out.str(), CommandId::Version));
     EXPECT_TRUE(err.str().empty());
 }
@@ -43,7 +43,7 @@ TEST(VersionCommandTest, Command_Outputs_Current_Version)
     VersionCommand cmd({});
     std::ostringstream out, err;
 
-    EXPECT_NO_THROW(cmd.execute(out, err));
+    EXPECT_NO_THROW(cmd.execute(&out, &err));
     EXPECT_NE(out.str().find(BUSRPC_VERSION), std::string::npos);
     EXPECT_TRUE(err.str().empty());
 }

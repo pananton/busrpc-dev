@@ -126,14 +126,14 @@ TEST(CommandTest, Specified_Output_And_Error_Streams_Are_Passed_To_Implementatio
     TestCommand cmd({output, error});
     std::ostringstream out, err;
 
-    EXPECT_NO_THROW(cmd.execute(out, err));
+    EXPECT_NO_THROW(cmd.execute(&out, &err));
     EXPECT_EQ(out.str(), output);
     EXPECT_EQ(err.str(), error);
 
     out.str("");
     err.str("");
 
-    EXPECT_FALSE(cmd.tryExecute(out, err));
+    EXPECT_FALSE(cmd.tryExecute(&out, &err));
     EXPECT_EQ(out.str(), output);
     EXPECT_EQ(err.str(), error);
 }
@@ -145,12 +145,12 @@ TEST(CommandTest, Same_Stream_Can_Be_Used_For_Output_And_Error)
     TestCommand cmd({output, error});
     std::ostringstream out;
 
-    EXPECT_NO_THROW(cmd.execute(out, out));
+    EXPECT_NO_THROW(cmd.execute(&out, &out));
     EXPECT_EQ(out.str(), output + error);
 
     out.str("");
 
-    EXPECT_FALSE(cmd.tryExecute(out, out));
+    EXPECT_FALSE(cmd.tryExecute(&out, &out));
     EXPECT_EQ(out.str(), output + error);
 }
 
@@ -161,14 +161,14 @@ TEST(CommandTest, Command_Is_Executed_Even_If_Output_Stream_Is_Not_Set)
     TestCommand cmd({output, error});
     std::ostringstream err;
 
-    EXPECT_NO_THROW(cmd.execute(std::nullopt, err));
+    EXPECT_NO_THROW(cmd.execute(nullptr, &err));
     EXPECT_EQ(err.str(), error);
     EXPECT_TRUE(cmd.isExecuted());
 
     cmd = TestCommand({output, error});
     err.str("");
 
-    EXPECT_FALSE(cmd.tryExecute(std::nullopt, err));
+    EXPECT_FALSE(cmd.tryExecute(nullptr, &err));
     EXPECT_EQ(err.str(), error);
     EXPECT_TRUE(cmd.isExecuted());
 }
@@ -180,14 +180,14 @@ TEST(CommandTest, Command_Is_Executed_Even_If_Error_Stream_Is_Not_Set)
     TestCommand cmd({output, error});
     std::ostringstream out;
 
-    EXPECT_NO_THROW(cmd.execute(out, std::nullopt));
+    EXPECT_NO_THROW(cmd.execute(&out, nullptr));
     EXPECT_EQ(out.str(), output);
     EXPECT_TRUE(cmd.isExecuted());
 
     cmd = TestCommand({output, error});
     out.str("");
 
-    EXPECT_FALSE(cmd.tryExecute(out, std::nullopt));
+    EXPECT_FALSE(cmd.tryExecute(&out, nullptr));
     EXPECT_EQ(out.str(), output);
     EXPECT_TRUE(cmd.isExecuted());
 }
@@ -198,12 +198,12 @@ TEST(CommandTest, Command_Is_Executed_Even_If_Output_And_Error_Streams_Are_Not_S
     std::string error = "error";
     TestCommand cmd({output, error});
 
-    EXPECT_NO_THROW(cmd.execute(std::nullopt, std::nullopt));
+    EXPECT_NO_THROW(cmd.execute());
     EXPECT_TRUE(cmd.isExecuted());
 
     cmd = TestCommand({output, error});
 
-    EXPECT_FALSE(cmd.tryExecute(std::nullopt, std::nullopt));
+    EXPECT_FALSE(cmd.tryExecute());
     EXPECT_TRUE(cmd.isExecuted());
 }
 
@@ -211,6 +211,6 @@ TEST(CommandTest, Execute_Throws_Command_Error_If_Command_Fails)
 {
     TestCommand cmd({{}, {}, ImportsErrc::File_Not_Found});
 
-    EXPECT_COMMAND_EXCEPTION(cmd.execute(std::nullopt, std::nullopt), ImportsErrc::File_Not_Found);
+    EXPECT_COMMAND_EXCEPTION(cmd.execute(), ImportsErrc::File_Not_Found);
 }
 }} // namespace busrpc::test

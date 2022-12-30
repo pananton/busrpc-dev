@@ -4,7 +4,6 @@
 #include "types.h"
 
 #include <concepts>
-#include <optional>
 #include <ostream>
 #include <system_error>
 #include <type_traits>
@@ -63,13 +62,11 @@ public:
     /// Execute command using \a out as \c stdout and \a err as \c stderr.
     /// \throws command_error if some operations of the command did not finish successfully
     /// \note If \a out or \a err is not set, corresponding output is discarded as if redirected to \c /dev/null.
-    void execute(std::optional<std::reference_wrapper<std::ostream>> out,
-                 std::optional<std::reference_wrapper<std::ostream>> err) const;
+    void execute(std::ostream* out = nullptr, std::ostream* err = nullptr) const;
 
     /// Execute command using \a out as \c stdout and \a err as \c stderr.
     /// \note If \a out or \a err is not set, corresponding output is discarded as if redirected to \c /dev/null.
-    std::error_code tryExecute(std::optional<std::reference_wrapper<std::ostream>> out,
-                               std::optional<std::reference_wrapper<std::ostream>> err) const;
+    std::error_code tryExecute(std::ostream* out = nullptr, std::ostream* err = nullptr) const;
 
 protected:
     /// Method to be implemented by concrete commands.

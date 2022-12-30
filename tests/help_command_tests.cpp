@@ -31,7 +31,7 @@ TEST(HelpCommandTest, Help_Is_Defined_For_The_Command)
     HelpCommand helpCmd({CommandId::Help});
     std::ostringstream out, err;
 
-    EXPECT_NO_THROW(helpCmd.execute(out, err));
+    EXPECT_NO_THROW(helpCmd.execute(&out, &err));
     EXPECT_TRUE(IsHelpMessage(out.str(), CommandId::Help));
     EXPECT_TRUE(err.str().empty());
 }
@@ -41,7 +41,7 @@ TEST(HelpCommandTest, Command_Outputs_Description_Of_All_Commands_If_Invoked_Wo_
     HelpCommand helpCmd({});
     std::ostringstream out, err;
 
-    EXPECT_NO_THROW(helpCmd.execute(out, err));
+    EXPECT_NO_THROW(helpCmd.execute(&out, &err));
     EXPECT_TRUE(IsHelpMessage(out.str()));
     EXPECT_TRUE(err.str().empty());
 }

@@ -55,21 +55,21 @@ TEST(ImportsCommandTest, Help_Is_Defined_For_The_Command)
     HelpCommand helpCmd({CommandId::Imports});
     std::ostringstream out, err;
 
-    EXPECT_NO_THROW(helpCmd.execute(out, err));
+    EXPECT_NO_THROW(helpCmd.execute(&out, &err));
     EXPECT_TRUE(IsHelpMessage(out.str(), CommandId::Imports));
     EXPECT_TRUE(err.str().empty());
 }
 
 TEST(ImportsCommandTest, Command_Succeeds_If_Invoked_Wo_Files_And_Valid_Project_Dir)
 {
-    EXPECT_NO_THROW(ImportsCommand({}).execute(std::nullopt, std::nullopt));
+    EXPECT_NO_THROW(ImportsCommand({}).execute());
 }
 
 TEST(ImportsCommandTest, Command_Outputs_Nothing_If_Invoked_Wo_Files)
 {
     std::ostringstream out, err;
 
-    EXPECT_NO_THROW(ImportsCommand({}).execute(out, err));
+    EXPECT_NO_THROW(ImportsCommand({}).execute(&out, &err));
     EXPECT_TRUE(out.str().empty());
     EXPECT_TRUE(err.str().empty());
 }
@@ -78,7 +78,7 @@ TEST(ImportsCommandTest, Invalid_Project_Dir_Error_If_Project_Dir_Does_Not_Exist
 {
     std::ostringstream err;
 
-    EXPECT_COMMAND_EXCEPTION(ImportsCommand({{"missing_file.proto"}, "missing_project_dir"}).execute(std::nullopt, err),
+    EXPECT_COMMAND_EXCEPTION(ImportsCommand({{"missing_file.proto"}, "missing_project_dir"}).execute(nullptr, &err),
                              ImportsErrc::Invalid_Project_Dir);
     EXPECT_FALSE(err.str().empty());
 }
@@ -87,7 +87,7 @@ TEST(ImportsCommandTest, Invalid_Project_Dir_Error_If_Invoked_Wo_Files_And_Nonex
 {
     std::ostringstream err;
 
-    EXPECT_COMMAND_EXCEPTION(ImportsCommand({{}, "missing_project_dir"}).execute(std::nullopt, err),
+    EXPECT_COMMAND_EXCEPTION(ImportsCommand({{}, "missing_project_dir"}).execute(nullptr, &err),
                              ImportsErrc::Invalid_Project_Dir);
     EXPECT_FALSE(err.str().empty());
 }
@@ -100,7 +100,7 @@ TEST(ImportsCommandTest, File_Not_Found_Error_If_Some_File_Does_Not_Exist)
                        "package test;";
     tmp.writeFile("file.proto", file);
 
-    EXPECT_COMMAND_EXCEPTION(ImportsCommand({{"file.proto", "missing_file.proto"}, "tmp"}).execute(std::nullopt, err),
+    EXPECT_COMMAND_EXCEPTION(ImportsCommand({{"file.proto", "missing_file.proto"}, "tmp"}).execute(nullptr, &err),
                              ImportsErrc::File_Not_Found);
     EXPECT_FALSE(err.str().empty());
 }
@@ -115,7 +115,7 @@ TEST(ImportsCommandTest, File_Not_Found_Error_If_Some_File_Is_Outside_The_Projec
     tmp.writeFile("external_file.proto", file);
 
     EXPECT_COMMAND_EXCEPTION(
-        ImportsCommand({{"file.proto", "external_file.proto"}, "tmp/subdir"}).execute(std::nullopt, err),
+        ImportsCommand({{"file.proto", "external_file.proto"}, "tmp/subdir"}).execute(nullptr, &err),
         ImportsErrc::File_Not_Found);
     EXPECT_FALSE(err.str().empty());
 }
@@ -134,7 +134,7 @@ TEST(ImportsCommandTest, Protobuf_Parsing_Failed_Error_If_Some_File_Is_Not_Parse
     tmp.writeFile("valid.proto", valid_file);
     tmp.writeFile("invalid.proto", invalid_file);
 
-    EXPECT_COMMAND_EXCEPTION(ImportsCommand({{"valid.proto", "invalid.proto"}, "tmp"}).execute(std::nullopt, err),
+    EXPECT_COMMAND_EXCEPTION(ImportsCommand({{"valid.proto", "invalid.proto"}, "tmp"}).execute(nullptr, &err),
                              ImportsErrc::Protobuf_Parsing_Failed);
     EXPECT_FALSE(err.str().empty());
 }
@@ -178,7 +178,7 @@ TEST(ImportsCommandTest, Command_Ouputs_Files_Only_Once_In_Desc_Order_Of_Their_N
     std::vector<std::string> output;
     ImportsCommand cmd({std::move(files), "tmp"});
 
-    EXPECT_NO_THROW(cmd.execute(out, err));
+    EXPECT_NO_THROW(cmd.execute(&out, &err));
     EXPECT_TRUE(err.str().empty());
 
     output = SplitString(out.str());
@@ -206,7 +206,7 @@ TEST(ImportsCommandTest, Command_Succeeds_If_Same_File_Specified_Multiple_Times)
     tmp.writeFile("file2.proto", file2);
 
     EXPECT_NO_THROW(
-        ImportsCommand({{"file1.proto", "file2.proto", "file1.proto", "file2.proto"}, "tmp"}).execute(out, err));
+        ImportsCommand({{"file1.proto", "file2.proto", "file1.proto", "file2.proto"}, "tmp"}).execute(&out, &err));
     EXPECT_TRUE(err.str().empty());
 
     auto output = SplitString(out.str());
@@ -231,7 +231,7 @@ TEST(ImportsCommandTest, Command_Ignores_Imported_Builtin_Protobuf_Files)
     tmp.writeFile("file1.proto", file1);
     tmp.writeFile("file2.proto", file2);
 
-    EXPECT_NO_THROW(ImportsCommand({{"file2.proto"}, "tmp", BUSRPC_TESTS_PROTOBUF_ROOT}).execute(out, err));
+    EXPECT_NO_THROW(ImportsCommand({{"file2.proto"}, "tmp", BUSRPC_TESTS_PROTOBUF_ROOT}).execute(&out, &err));
     EXPECT_TRUE(err.str().empty());
 
     auto output = SplitString(out.str());
@@ -264,7 +264,7 @@ TEST(ImportsCommandTest, Command_Does_Not_Output_Original_Files_If_Only_Deps_Fla
     tmp.writeFile("file4.proto", file4);
 
     EXPECT_NO_THROW(ImportsCommand({{"file3.proto", "file2.proto", "file4.proto", "file3.proto"}, "tmp", "", true})
-                        .execute(out, err));
+                        .execute(&out, &err));
     EXPECT_TRUE(err.str().empty());
 
     auto output = SplitString(out.str());
@@ -290,7 +290,7 @@ TEST(ImportsCommandTest, Command_Tries_To_Proceed_After_Error)
     tmp.writeFile("invalid_file.proto", invalidFile);
 
     EXPECT_COMMAND_EXCEPTION(
-        ImportsCommand({{"missing_file.proto", "invalid_file.proto", "file2.proto"}, "tmp"}).execute(out, err),
+        ImportsCommand({{"missing_file.proto", "invalid_file.proto", "file2.proto"}, "tmp"}).execute(&out, &err),
         ImportsErrc::File_Not_Found);
     EXPECT_FALSE(err.str().empty());
 

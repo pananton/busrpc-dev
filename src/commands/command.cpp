@@ -22,27 +22,25 @@ struct CommandErrorCategory: std::error_category {
 };
 } // namespace
 
-void CommandBase::execute(std::optional<std::reference_wrapper<std::ostream>> out,
-                          std::optional<std::reference_wrapper<std::ostream>> err) const
+void CommandBase::execute(std::ostream* out, std::ostream* err) const
 {
-    auto ec = tryExecute(std::move(out), std::move(err));
+    auto ec = tryExecute(out, err);
 
     if (ec) {
         throw command_error(id_, ec);
     }
 }
 
-std::error_code CommandBase::tryExecute(std::optional<std::reference_wrapper<std::ostream>> out,
-                                        std::optional<std::reference_wrapper<std::ostream>> err) const
+std::error_code CommandBase::tryExecute(std::ostream* out, std::ostream* err) const
 {
     std::ostringstream outNull, errNull;
 
     if (!out) {
-        out.emplace(outNull);
+        out = &outNull;
     }
 
     if (!err) {
-        err.emplace(errNull);
+        err = &errNull;
     }
 
     return tryExecuteImpl(*out, *err);

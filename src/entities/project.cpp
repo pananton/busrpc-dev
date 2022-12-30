@@ -162,8 +162,7 @@ void Project::check(ErrorCollector& ecol) const
 
 void Project::onNestedEntityAdded(Entity* entity)
 {
-    auto isAdded = entityDirectory_.emplace(entity->dname(), entity).second;
-    assert(isAdded);
+    entityDirectory_.emplace(entity->dname(), entity).second;
 
     if (entity->type() == EntityTypeId::Struct) {
         auto structEntity = static_cast<Struct*>(entity);

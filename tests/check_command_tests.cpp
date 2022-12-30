@@ -60,7 +60,7 @@ TEST(CheckCommandTest, Help_Is_Defined_For_The_Command)
     HelpCommand helpCmd({CommandId::Check});
     std::ostringstream out, err;
 
-    EXPECT_NO_THROW(helpCmd.execute(out, err));
+    EXPECT_NO_THROW(helpCmd.execute(&out, &err));
     EXPECT_TRUE(IsHelpMessage(out.str(), CommandId::Check));
     EXPECT_TRUE(err.str().empty());
 }
@@ -71,7 +71,7 @@ TEST(CheckCommandTest, Command_Succeeds_For_Valid_Project_And_Outputs_Success_Me
     TmpDir tmp;
     CreateMinimalProject(tmp);
 
-    EXPECT_NO_THROW(CheckCommand({"tmp", BUSRPC_TESTS_PROTOBUF_ROOT}).execute(out, err));
+    EXPECT_NO_THROW(CheckCommand({"tmp", BUSRPC_TESTS_PROTOBUF_ROOT}).execute(&out, &err));
     EXPECT_FALSE(out.str().empty());
     EXPECT_TRUE(err.str().empty());
 }
@@ -80,7 +80,7 @@ TEST(CheckCommandTest, Invalid_Project_Dir_If_Project_Dir_Does_Not_Exist)
 {
     std::ostringstream err;
 
-    EXPECT_COMMAND_EXCEPTION(CheckCommand({"missing_project_dir"}).execute(std::nullopt, err),
+    EXPECT_COMMAND_EXCEPTION(CheckCommand({"missing_project_dir"}).execute(nullptr, &err),
                              CheckErrc::Invalid_Project_Dir);
     EXPECT_FALSE(err.str().empty());
 }
@@ -90,7 +90,7 @@ TEST(CheckCommandTest, Invalid_Project_Dir_If_Project_Dir_Does_Not_Represent_Val
     std::ostringstream err;
     TmpDir tmp;
 
-    EXPECT_COMMAND_EXCEPTION(CheckCommand({"tmp", BUSRPC_TESTS_PROTOBUF_ROOT}).execute(std::nullopt, err),
+    EXPECT_COMMAND_EXCEPTION(CheckCommand({"tmp", BUSRPC_TESTS_PROTOBUF_ROOT}).execute(nullptr, &err),
                              CheckErrc::Invalid_Project_Dir);
     EXPECT_FALSE(err.str().empty());
 }
@@ -102,7 +102,7 @@ TEST(CheckCommandTest, Protobuf_Parsing_Failed_Error_If_Some_File_Is_Not_Parsed)
     CreateMinimalProject(tmp);
     tmp.writeFile("invalid.proto", "syntax =");
 
-    EXPECT_COMMAND_EXCEPTION(CheckCommand({"tmp", BUSRPC_TESTS_PROTOBUF_ROOT}).execute(std::nullopt, err),
+    EXPECT_COMMAND_EXCEPTION(CheckCommand({"tmp", BUSRPC_TESTS_PROTOBUF_ROOT}).execute(nullptr, &err),
                              CheckErrc::Protobuf_Parsing_Failed);
     EXPECT_FALSE(err.str().empty());
 }
@@ -118,7 +118,7 @@ TEST(CheckCommandTest, Spec_Violated_Error_If_Spec_Error_Detected)
                               "message MyStruct {}";
     tmp.writeFile("file.proto", invalidType);
 
-    EXPECT_COMMAND_EXCEPTION(CheckCommand({"tmp", BUSRPC_TESTS_PROTOBUF_ROOT}).execute(std::nullopt, err),
+    EXPECT_COMMAND_EXCEPTION(CheckCommand({"tmp", BUSRPC_TESTS_PROTOBUF_ROOT}).execute(nullptr, &err),
                              CheckErrc::Spec_Violated);
     EXPECT_FALSE(err.str().empty());
 }
@@ -130,7 +130,7 @@ TEST(CheckCommandTest, Command_Succeeds_If_Spec_Warn_Detected_And_Warnings_Are_N
     CreateMinimalProject(tmp);
     tmp.createDir("unexpected_dir");
 
-    EXPECT_NO_THROW(CheckCommand({"tmp", BUSRPC_TESTS_PROTOBUF_ROOT}).execute(out, err));
+    EXPECT_NO_THROW(CheckCommand({"tmp", BUSRPC_TESTS_PROTOBUF_ROOT}).execute(&out, &err));
     EXPECT_FALSE(out.str().empty());
     EXPECT_FALSE(err.str().empty());
 }
@@ -143,7 +143,7 @@ TEST(CheckCommandTest, Spec_Violated_Error_If_Spec_Warn_Detected_And_Warnings_Ar
     tmp.createDir("unexpected_dir");
 
     EXPECT_COMMAND_EXCEPTION(
-        CheckCommand({"tmp", BUSRPC_TESTS_PROTOBUF_ROOT, false, false, false, true}).execute(std::nullopt, err),
+        CheckCommand({"tmp", BUSRPC_TESTS_PROTOBUF_ROOT, false, false, false, true}).execute(nullptr, &err),
         CheckErrc::Spec_Violated);
     EXPECT_FALSE(err.str().empty());
 }
@@ -155,7 +155,7 @@ TEST(CheckCommandTest, Command_Succeeds_If_Spec_Warn_Detected_Warnings_Are_Error
     CreateMinimalProject(tmp);
     tmp.createDir("unexpected_dir");
 
-    EXPECT_NO_THROW(CheckCommand({"tmp", BUSRPC_TESTS_PROTOBUF_ROOT, true, false, false, true}).execute(out, err));
+    EXPECT_NO_THROW(CheckCommand({"tmp", BUSRPC_TESTS_PROTOBUF_ROOT, true, false, false, true}).execute(&out, &err));
     EXPECT_FALSE(out.str().empty());
     EXPECT_TRUE(err.str().empty());
 }
@@ -171,7 +171,7 @@ TEST(CheckCommandTest, Command_Succeeds_If_Doc_Warn_Detected_And_Warnings_Are_No
                                      "message MyStruct {}";
     tmp.writeFile("file.proto", undocumentedStruct);
 
-    EXPECT_NO_THROW(CheckCommand({"tmp", BUSRPC_TESTS_PROTOBUF_ROOT}).execute(out, err));
+    EXPECT_NO_THROW(CheckCommand({"tmp", BUSRPC_TESTS_PROTOBUF_ROOT}).execute(&out, &err));
     EXPECT_FALSE(out.str().empty());
     EXPECT_FALSE(err.str().empty());
 }
@@ -188,7 +188,7 @@ TEST(CheckCommandTest, Doc_Rule_Violated_Error_If_Doc_Warn_Detected_And_Warnings
     tmp.writeFile("file.proto", undocumentedStruct);
 
     EXPECT_COMMAND_EXCEPTION(
-        CheckCommand({"tmp", BUSRPC_TESTS_PROTOBUF_ROOT, false, false, false, true}).execute(std::nullopt, err),
+        CheckCommand({"tmp", BUSRPC_TESTS_PROTOBUF_ROOT, false, false, false, true}).execute(nullptr, &err),
         CheckErrc::Doc_Rule_Violated);
     EXPECT_FALSE(err.str().empty());
 }
@@ -204,7 +204,7 @@ TEST(CheckCommandTest, Command_Succeeds_If_Doc_Warn_Detected_Warnings_Are_Errors
                                      "message MyStruct {}";
     tmp.writeFile("file.proto", undocumentedStruct);
 
-    EXPECT_NO_THROW(CheckCommand({"tmp", BUSRPC_TESTS_PROTOBUF_ROOT, false, true, false, true}).execute(out, err));
+    EXPECT_NO_THROW(CheckCommand({"tmp", BUSRPC_TESTS_PROTOBUF_ROOT, false, true, false, true}).execute(&out, &err));
     EXPECT_FALSE(out.str().empty());
     EXPECT_TRUE(err.str().empty());
 }
@@ -221,7 +221,7 @@ TEST(CheckCommandTest, Command_Succeeds_If_Style_Warn_Detected_And_Warnings_Are_
                                               "message my_struct {}";
     tmp.writeFile("file.proto", structWithNonconformingName);
 
-    EXPECT_NO_THROW(CheckCommand({"tmp", BUSRPC_TESTS_PROTOBUF_ROOT}).execute(out, err));
+    EXPECT_NO_THROW(CheckCommand({"tmp", BUSRPC_TESTS_PROTOBUF_ROOT}).execute(&out, &err));
     EXPECT_FALSE(out.str().empty());
     EXPECT_FALSE(err.str().empty());
 }
@@ -239,7 +239,7 @@ TEST(CheckCommandTest, Style_Violated_Error_If_Style_Warn_Detected_And_Warnings_
     tmp.writeFile("file.proto", structWithNonconformingName);
 
     EXPECT_COMMAND_EXCEPTION(
-        CheckCommand({"tmp", BUSRPC_TESTS_PROTOBUF_ROOT, false, false, false, true}).execute(std::nullopt, err),
+        CheckCommand({"tmp", BUSRPC_TESTS_PROTOBUF_ROOT, false, false, false, true}).execute(nullptr, &err),
         CheckErrc::Style_Violated);
     EXPECT_FALSE(err.str().empty());
 }
@@ -256,7 +256,7 @@ TEST(CheckCommandTest, Command_Succeeds_If_Style_Warn_Detected_Warnings_Are_Erro
                                               "message my_struct {}";
     tmp.writeFile("file.proto", structWithNonconformingName);
 
-    EXPECT_NO_THROW(CheckCommand({"tmp", BUSRPC_TESTS_PROTOBUF_ROOT, false, false, true, true}).execute(out, err));
+    EXPECT_NO_THROW(CheckCommand({"tmp", BUSRPC_TESTS_PROTOBUF_ROOT, false, false, true, true}).execute(&out, &err));
     EXPECT_FALSE(out.str().empty());
     EXPECT_TRUE(err.str().empty());
 }
