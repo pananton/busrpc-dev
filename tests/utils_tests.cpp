@@ -1,4 +1,5 @@
 #include "utils.h"
+#include "utils/common.h"
 #include "utils/file_utils.h"
 
 #include <gtest/gtest.h>
@@ -223,7 +224,7 @@ TEST(UtilsTest, InitCanonicalPathToExistingDirectory_Initializes_Canonical_Path_
     tmp.writeFile("subdir/file2.txt");
 
     ASSERT_TRUE(InitCanonicalPathToExistingDirectory(
-        path, std::filesystem::current_path().string() + "/tmp/./subdir/xxx/../../../tmp"));
+        path, JoinStrings(std::filesystem::current_path().string(), "/tmp/./subdir/xxx/../../../tmp")));
     EXPECT_TRUE(path.is_absolute());
     EXPECT_TRUE(std::filesystem::is_regular_file(path / "file1.txt"));
 
@@ -326,7 +327,7 @@ TEST(UtilsTest, InitRelativePathToExistingFile_Returns_Relative_Path_Without_Lea
     path.clear();
 
     ASSERT_TRUE(InitRelativePathToExistingFile(
-        path, std::filesystem::current_path().string() + "/tmp/./subdir/xxx/yyy/../../file2.txt"));
+        path, JoinStrings(std::filesystem::current_path().string(), "/tmp/./subdir/xxx/yyy/../../file2.txt")));
     EXPECT_TRUE(path.is_relative());
     EXPECT_EQ(path, "tmp/subdir/file2.txt");
 }

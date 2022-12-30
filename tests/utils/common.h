@@ -41,4 +41,12 @@
 namespace busrpc { namespace test {
 
 bool IsHelpMessage(const std::string& msg, std::optional<CommandId> commandId = std::nullopt);
+
+template<typename... TArgs>
+std::string JoinStrings(TArgs&&... args)
+{
+    std::string result;
+    (result.append(std::forward<TArgs>(args)), ...);
+    return result;
+}
 }} // namespace busrpc::test

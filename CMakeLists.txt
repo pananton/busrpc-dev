@@ -30,13 +30,15 @@ if(NOT BUSRPC_USE_EXTERNAL_NLOHMANN_JSON AND NOT DEFINED BUSRPC_NLOHMANN_JSON_FE
         CACHE STRING "Version of nlohmann-json library to be fetched" FORCE)
 endif()
 
-if(MSVC)
-    set(BUSRPC_WARNINGS "/W4 /EHsc /w14242 /w14254 /w14263 /w14265 /w14287 /w14289 /w14296 /w14311 /w14545 /w14546 /w14547 /w14549 /w14555 /w14640 /w14826 /w14928 /WX"
-        CACHE STRING "Busrpc development tool warnings" FORCE)
-else()
-    set(BUSRPC_WARNINGS "-Wall -Wextra -Wpedantic -Wshadow -Wconversion -Wsign-conversion -Wcast-align -Wcast-qual -Wnull-dereference -Woverloaded-virtual -Wformat=2 -Werror"
-        CACHE STRING "Busrpc development tool warnings" FORCE)
-endif()
+#if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    if(MSVC)
+        set(BUSRPC_WARNINGS "/W4 /EHsc /w14242 /w14254 /w14263 /w14265 /w14287 /w14289 /w14296 /w14311 /w14545 /w14546 /w14547 /w14549 /w14555 /w14640 /w14826 /w14928 /WX"
+            CACHE STRING "Busrpc development tool warnings" FORCE)
+    else()
+        set(BUSRPC_WARNINGS "-Wall -Wextra -Wpedantic -Wshadow -Wconversion -Wsign-conversion -Wcast-align -Wcast-qual -Wnull-dereference -Woverloaded-virtual -Wformat=2 -Werror"
+            CACHE STRING "Busrpc development tool warnings" FORCE)
+    endif()
+#endif()
 
 if(NOT DEFINED CMAKE_BUILD_TYPE AND NOT DEFINED CMAKE_CONFIGURATION_TYPES)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
