@@ -18,28 +18,24 @@ public:
 
     std::string message(int code) const override
     {
-        using enum GenDocErrc;
-
         switch (static_cast<GenDocErrc>(code)) {
-        case Spec_Violated: return "Busrpc specification violated";
-        case Protobuf_Parsing_Failed: return "Failed to parse protobuf file";
-        case File_Read_Failed: return "Failed to read source file";
-        case File_Write_Failed: return "Failed to write generated documentation";
-        case Invalid_Project_Dir: return "Invalid busrpc project directory";
+        case GenDocErrc::Spec_Violated: return "Busrpc specification violated";
+        case GenDocErrc::Protobuf_Parsing_Failed: return "Failed to parse protobuf file";
+        case GenDocErrc::File_Read_Failed: return "Failed to read source file";
+        case GenDocErrc::File_Write_Failed: return "Failed to write generated documentation";
+        case GenDocErrc::Invalid_Project_Dir: return "Invalid busrpc project directory";
         default: return "Unknown error";
         }
     }
 
     bool equivalent(int code, const std::error_condition& condition) const noexcept override
     {
-        using enum GenDocErrc;
-
         switch (static_cast<GenDocErrc>(code)) {
-        case Spec_Violated: return condition == CommandError::Spec_Violated;
-        case Protobuf_Parsing_Failed: return condition == CommandError::Protobuf_Parsing_Failed;
-        case File_Read_Failed: return condition == CommandError::File_Operation_Failed;
-        case File_Write_Failed: return condition == CommandError::File_Operation_Failed;
-        case Invalid_Project_Dir: return condition == CommandError::Invalid_Argument;
+        case GenDocErrc::Spec_Violated: return condition == CommandError::Spec_Violated;
+        case GenDocErrc::Protobuf_Parsing_Failed: return condition == CommandError::Protobuf_Parsing_Failed;
+        case GenDocErrc::File_Read_Failed: return condition == CommandError::File_Operation_Failed;
+        case GenDocErrc::File_Write_Failed: return condition == CommandError::File_Operation_Failed;
+        case GenDocErrc::Invalid_Project_Dir: return condition == CommandError::Invalid_Argument;
         default: return false;
         }
     }

@@ -94,14 +94,13 @@ TEST(CommandTest, Description_For_Unknown_Command_Error_Condition_Is_Not_Empty)
 
 TEST(CommandTest, Description_For_Unknown_Command_Error_Condition_Differs_From_Known_Error_Conditions_Descriptions)
 {
-    using enum CommandError;
-
-    EXPECT_NE(command_error_category().message(static_cast<int>(Spec_Violated)), command_error_category().message(0));
-    EXPECT_NE(command_error_category().message(static_cast<int>(Protobuf_Parsing_Failed)),
+    EXPECT_NE(command_error_category().message(static_cast<int>(CommandError::Spec_Violated)),
               command_error_category().message(0));
-    EXPECT_NE(command_error_category().message(static_cast<int>(File_Operation_Failed)),
+    EXPECT_NE(command_error_category().message(static_cast<int>(CommandError::Protobuf_Parsing_Failed)),
               command_error_category().message(0));
-    EXPECT_NE(command_error_category().message(static_cast<int>(Invalid_Argument)),
+    EXPECT_NE(command_error_category().message(static_cast<int>(CommandError::File_Operation_Failed)),
+              command_error_category().message(0));
+    EXPECT_NE(command_error_category().message(static_cast<int>(CommandError::Invalid_Argument)),
               command_error_category().message(0));
 }
 

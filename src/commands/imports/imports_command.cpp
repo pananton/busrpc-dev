@@ -2,11 +2,17 @@
 #include "error_collector.h"
 #include "utils.h"
 
+#ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable: 4100)
 #pragma warning(disable: 4251)
+#endif
+
 #include <google/protobuf/compiler/importer.h>
+
+#ifdef _MSC_VER
 #pragma warning(pop)
+#endif
 
 #include <filesystem>
 #include <set>
@@ -24,26 +30,22 @@ public:
 
     std::string message(int code) const override
     {
-        using enum ImportsErrc;
-
         switch (static_cast<ImportsErrc>(code)) {
-        case Protobuf_Parsing_Failed: return "Failed to parse protobuf file";
-        case File_Read_Failed: return "Failed to read file";
-        case File_Not_Found: return "File not found";
-        case Invalid_Project_Dir: return "Invalid busrpc project directory";
+        case ImportsErrc::Protobuf_Parsing_Failed: return "Failed to parse protobuf file";
+        case ImportsErrc::File_Read_Failed: return "Failed to read file";
+        case ImportsErrc::File_Not_Found: return "File not found";
+        case ImportsErrc::Invalid_Project_Dir: return "Invalid busrpc project directory";
         default: return "Unknown error";
         }
     }
 
     bool equivalent(int code, const std::error_condition& condition) const noexcept override
     {
-        using enum ImportsErrc;
-
         switch (static_cast<ImportsErrc>(code)) {
-        case Protobuf_Parsing_Failed: return condition == CommandError::Protobuf_Parsing_Failed;
-        case File_Read_Failed: return condition == CommandError::File_Operation_Failed;
-        case File_Not_Found: return condition == CommandError::Invalid_Argument;
-        case Invalid_Project_Dir: return condition == CommandError::Invalid_Argument;
+        case ImportsErrc::Protobuf_Parsing_Failed: return condition == CommandError::Protobuf_Parsing_Failed;
+        case ImportsErrc::File_Read_Failed: return condition == CommandError::File_Operation_Failed;
+        case ImportsErrc::File_Not_Found: return condition == CommandError::Invalid_Argument;
+        case ImportsErrc::Invalid_Project_Dir: return condition == CommandError::Invalid_Argument;
         default: return false;
         }
     }

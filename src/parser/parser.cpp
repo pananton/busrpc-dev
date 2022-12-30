@@ -2,13 +2,19 @@
 #include "protobuf_error_collector.h"
 #include "utils.h"
 
-#pragma warning(push)
-#pragma warning(disable: 4100)
-#pragma warning(disable: 4251)
+#ifdef _MSC_VER
+#    pragma warning(push)
+#    pragma warning(disable : 4100)
+#    pragma warning(disable : 4251)
+#endif
+
 #include <google/protobuf/compiler/importer.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
-#pragma warning(pop)
+
+#ifdef _MSC_VER
+#    pragma warning(pop)
+#endif
 
 #include <fstream>
 
@@ -24,12 +30,10 @@ public:
 
     std::string message(int code) const override
     {
-        using enum ParserErrc;
-
         switch (static_cast<ParserErrc>(code)) {
-        case Invalid_Project_Dir: return "Directory does not represent a valid busrpc project directory.";
-        case Read_Failed: return "Failed to read file";
-        case Protobuf_Error: return "Protobuf error";
+        case ParserErrc::Invalid_Project_Dir: return "Directory does not represent a valid busrpc project directory.";
+        case ParserErrc::Read_Failed: return "Failed to read file";
+        case ParserErrc::Protobuf_Error: return "Protobuf error";
         default: return "Unknown error";
         }
     }
@@ -83,26 +87,24 @@ Struct* CreateStruct(GeneralCompositeEntity* entity,
 
 std::optional<FieldTypeId> ToBusrpcType(int protobufType)
 {
-    using enum FieldTypeId;
-
     switch (protobufType) {
-    case protobuf::FieldDescriptor::TYPE_BOOL: return Bool;
-    case protobuf::FieldDescriptor::TYPE_INT32: return Int32;
-    case protobuf::FieldDescriptor::TYPE_SINT32: return Sint32;
-    case protobuf::FieldDescriptor::TYPE_SFIXED32: return Sfixed32;
-    case protobuf::FieldDescriptor::TYPE_UINT32: return Uint32;
-    case protobuf::FieldDescriptor::TYPE_FIXED32: return Fixed32;
-    case protobuf::FieldDescriptor::TYPE_INT64: return Int64;
-    case protobuf::FieldDescriptor::TYPE_SINT64: return Sint64;
-    case protobuf::FieldDescriptor::TYPE_SFIXED64: return Sfixed64;
-    case protobuf::FieldDescriptor::TYPE_UINT64: return Uint64;
-    case protobuf::FieldDescriptor::TYPE_FIXED64: return Fixed64;
-    case protobuf::FieldDescriptor::TYPE_FLOAT: return Float;
-    case protobuf::FieldDescriptor::TYPE_DOUBLE: return Double;
-    case protobuf::FieldDescriptor::TYPE_STRING: return String;
-    case protobuf::FieldDescriptor::TYPE_BYTES: return Bytes;
-    case protobuf::FieldDescriptor::TYPE_ENUM: return Enum;
-    case protobuf::FieldDescriptor::TYPE_MESSAGE: return Message;
+    case protobuf::FieldDescriptor::TYPE_BOOL: return FieldTypeId::Bool;
+    case protobuf::FieldDescriptor::TYPE_INT32: return FieldTypeId::Int32;
+    case protobuf::FieldDescriptor::TYPE_SINT32: return FieldTypeId::Sint32;
+    case protobuf::FieldDescriptor::TYPE_SFIXED32: return FieldTypeId::Sfixed32;
+    case protobuf::FieldDescriptor::TYPE_UINT32: return FieldTypeId::Uint32;
+    case protobuf::FieldDescriptor::TYPE_FIXED32: return FieldTypeId::Fixed32;
+    case protobuf::FieldDescriptor::TYPE_INT64: return FieldTypeId::Int64;
+    case protobuf::FieldDescriptor::TYPE_SINT64: return FieldTypeId::Sint64;
+    case protobuf::FieldDescriptor::TYPE_SFIXED64: return FieldTypeId::Sfixed64;
+    case protobuf::FieldDescriptor::TYPE_UINT64: return FieldTypeId::Uint64;
+    case protobuf::FieldDescriptor::TYPE_FIXED64: return FieldTypeId::Fixed64;
+    case protobuf::FieldDescriptor::TYPE_FLOAT: return FieldTypeId::Float;
+    case protobuf::FieldDescriptor::TYPE_DOUBLE: return FieldTypeId::Double;
+    case protobuf::FieldDescriptor::TYPE_STRING: return FieldTypeId::String;
+    case protobuf::FieldDescriptor::TYPE_BYTES: return FieldTypeId::Bytes;
+    case protobuf::FieldDescriptor::TYPE_ENUM: return FieldTypeId::Enum;
+    case protobuf::FieldDescriptor::TYPE_MESSAGE: return FieldTypeId::Message;
     default: return std::nullopt;
     }
 }

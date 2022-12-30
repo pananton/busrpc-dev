@@ -14,23 +14,21 @@ public:
 
     std::string message(int code) const override
     {
-        using enum SpecErrc;
-
         switch (static_cast<SpecErrc>(code)) {
-        case Invalid_Entity: return "Invalid entity";
-        case Multiple_Definitions: return "Entity is defined more than once.";
-        case Unexpected_Package: return "Entity is defined in unexpected protobuf package";
-        case Missing_Builtin: return "Busrpc built-in type could not be found";
-        case Nonconforming_Builtin: return "Busrpc built-in type does not conform with specification";
-        case No_Descriptor: return "Descriptor could not be found";
-        case Not_Static_Method: return "Method is not static";
-        case Not_Encodable_Type: return "Type is not encodable";
-        case Not_Accessible_Type: return "Type is not accessible in the current scope";
-        case Unknown_Type: return "Unknown structure field type";
-        case Unexpected_Type: return "Unexpected structure field type";
-        case Empty_Enum: return "Enumeration does not have any constants";
-        case No_Zero_Value: return "Enumeration does not contain zero value";
-        case Unknown_Method: return "Unknown method";
+        case SpecErrc::Invalid_Entity: return "Invalid entity";
+        case SpecErrc::Multiple_Definitions: return "Entity is defined more than once.";
+        case SpecErrc::Unexpected_Package: return "Entity is defined in unexpected protobuf package";
+        case SpecErrc::Missing_Builtin: return "Busrpc built-in type could not be found";
+        case SpecErrc::Nonconforming_Builtin: return "Busrpc built-in type does not conform with specification";
+        case SpecErrc::No_Descriptor: return "Descriptor could not be found";
+        case SpecErrc::Not_Static_Method: return "Method is not static";
+        case SpecErrc::Not_Encodable_Type: return "Type is not encodable";
+        case SpecErrc::Not_Accessible_Type: return "Type is not accessible in the current scope";
+        case SpecErrc::Unknown_Type: return "Unknown structure field type";
+        case SpecErrc::Unexpected_Type: return "Unexpected structure field type";
+        case SpecErrc::Empty_Enum: return "Enumeration does not have any constants";
+        case SpecErrc::No_Zero_Value: return "Enumeration does not contain zero value";
+        case SpecErrc::Unknown_Method: return "Unknown method";
         default: return "Unknown error";
         }
     }
@@ -42,10 +40,8 @@ public:
 
     std::string message(int code) const override
     {
-        using enum SpecWarn;
-
         switch (static_cast<SpecWarn>(code)) {
-        case Unexpected_Nested_Entity: return "Entity contains unexpected nested entity";
+        case SpecWarn::Unexpected_Nested_Entity: return "Entity contains unexpected nested entity";
         default: return "Unknown error";
         }
     }
@@ -57,11 +53,9 @@ public:
 
     std::string message(int code) const override
     {
-        using enum DocWarn;
-
         switch (static_cast<DocWarn>(code)) {
-        case Undocumented_Entity: return "Entity is not documented";
-        case Unknown_Doc_Command: return "Unknown documentation command";
+        case DocWarn::Undocumented_Entity: return "Entity is not documented";
+        case DocWarn::Unknown_Doc_Command: return "Unknown documentation command";
         default: return "Unknown error";
         }
     }
@@ -73,10 +67,8 @@ public:
 
     std::string message(int code) const override
     {
-        using enum StyleWarn;
-
         switch (static_cast<StyleWarn>(code)) {
-        case Invalid_Name_Format: return "Entity name format is invalid";
+        case StyleWarn::Invalid_Name_Format: return "Entity name format is invalid";
         default: return "Unknown error";
         }
     }

@@ -16,30 +16,26 @@ public:
 
     std::string message(int code) const override
     {
-        using enum CheckErrc;
-
         switch (static_cast<CheckErrc>(code)) {
-        case Style_Violated: return "Busrpc protobuf style violated";
-        case Doc_Rule_Violated: return "Busrpc documentation rule violated";
-        case Spec_Violated: return "Busrpc specification violated";
-        case Protobuf_Parsing_Failed: return "Failed to parse protobuf file";
-        case File_Read_Failed: return "Failed to read file";
-        case Invalid_Project_Dir: return "Invalid busrpc project directory";
+        case CheckErrc::Style_Violated: return "Busrpc protobuf style violated";
+        case CheckErrc::Doc_Rule_Violated: return "Busrpc documentation rule violated";
+        case CheckErrc::Spec_Violated: return "Busrpc specification violated";
+        case CheckErrc::Protobuf_Parsing_Failed: return "Failed to parse protobuf file";
+        case CheckErrc::File_Read_Failed: return "Failed to read file";
+        case CheckErrc::Invalid_Project_Dir: return "Invalid busrpc project directory";
         default: return "Unknown error";
         }
     }
 
     bool equivalent(int code, const std::error_condition& condition) const noexcept override
     {
-        using enum CheckErrc;
-
         switch (static_cast<CheckErrc>(code)) {
-        case Style_Violated: return condition == CommandError::Spec_Violated;
-        case Doc_Rule_Violated: return condition == CommandError::Spec_Violated;
-        case Spec_Violated: return condition == CommandError::Spec_Violated;
-        case Protobuf_Parsing_Failed: return condition == CommandError::Protobuf_Parsing_Failed;
-        case File_Read_Failed: return condition == CommandError::File_Operation_Failed;
-        case Invalid_Project_Dir: return condition == CommandError::Invalid_Argument;
+        case CheckErrc::Style_Violated: return condition == CommandError::Spec_Violated;
+        case CheckErrc::Doc_Rule_Violated: return condition == CommandError::Spec_Violated;
+        case CheckErrc::Spec_Violated: return condition == CommandError::Spec_Violated;
+        case CheckErrc::Protobuf_Parsing_Failed: return condition == CommandError::Protobuf_Parsing_Failed;
+        case CheckErrc::File_Read_Failed: return condition == CommandError::File_Operation_Failed;
+        case CheckErrc::Invalid_Project_Dir: return condition == CommandError::Invalid_Argument;
         default: return false;
         }
     }

@@ -2,11 +2,17 @@
 
 #include "error_collector.h"
 
-#pragma warning(push)
-#pragma warning(disable : 4100)
-#pragma warning(disable : 4251)
+#ifdef _MSC_VER
+#    pragma warning(push)
+#    pragma warning(disable : 4100)
+#    pragma warning(disable : 4251)
+#endif
+
 #include <google/protobuf/compiler/importer.h>
-#pragma warning(pop)
+
+#ifdef _MSC_VER
+#    pragma warning(pop)
+#endif
 
 /// \file protobuf_error_collector.h Protobuf compiler error collector.
 

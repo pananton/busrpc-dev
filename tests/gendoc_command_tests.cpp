@@ -31,26 +31,25 @@ TEST(GenDocCommandTest, Description_For_Unknown_Command_Error_Code_Is_Not_Empty)
 
 TEST(GenDocCommandTest, Description_For_Unknown_Command_Error_Code_Differs_From_Known_Error_Codes_Descriptions)
 {
-    using enum GenDocErrc;
-
-    EXPECT_NE(gendoc_error_category().message(static_cast<int>(Spec_Violated)), gendoc_error_category().message(0));
-    EXPECT_NE(gendoc_error_category().message(static_cast<int>(Protobuf_Parsing_Failed)),
+    EXPECT_NE(gendoc_error_category().message(static_cast<int>(GenDocErrc::Spec_Violated)),
               gendoc_error_category().message(0));
-    EXPECT_NE(gendoc_error_category().message(static_cast<int>(File_Read_Failed)), gendoc_error_category().message(0));
-    EXPECT_NE(gendoc_error_category().message(static_cast<int>(File_Write_Failed)), gendoc_error_category().message(0));
-    EXPECT_NE(gendoc_error_category().message(static_cast<int>(Invalid_Project_Dir)),
+    EXPECT_NE(gendoc_error_category().message(static_cast<int>(GenDocErrc::Protobuf_Parsing_Failed)),
+              gendoc_error_category().message(0));
+    EXPECT_NE(gendoc_error_category().message(static_cast<int>(GenDocErrc::File_Read_Failed)),
+              gendoc_error_category().message(0));
+    EXPECT_NE(gendoc_error_category().message(static_cast<int>(GenDocErrc::File_Write_Failed)),
+              gendoc_error_category().message(0));
+    EXPECT_NE(gendoc_error_category().message(static_cast<int>(GenDocErrc::Invalid_Project_Dir)),
               gendoc_error_category().message(0));
 }
 
 TEST(GenDocCommandTest, Error_Codes_Are_Mapped_To_Appropriate_Error_Conditions)
 {
-    using enum GenDocErrc;
-
-    EXPECT_EQ(std::error_code(Spec_Violated), CommandError::Spec_Violated);
-    EXPECT_EQ(std::error_code(Protobuf_Parsing_Failed), CommandError::Protobuf_Parsing_Failed);
-    EXPECT_EQ(std::error_code(File_Read_Failed), CommandError::File_Operation_Failed);
-    EXPECT_EQ(std::error_code(File_Write_Failed), CommandError::File_Operation_Failed);
-    EXPECT_EQ(std::error_code(Invalid_Project_Dir), CommandError::Invalid_Argument);
+    EXPECT_EQ(std::error_code(GenDocErrc::Spec_Violated), CommandError::Spec_Violated);
+    EXPECT_EQ(std::error_code(GenDocErrc::Protobuf_Parsing_Failed), CommandError::Protobuf_Parsing_Failed);
+    EXPECT_EQ(std::error_code(GenDocErrc::File_Read_Failed), CommandError::File_Operation_Failed);
+    EXPECT_EQ(std::error_code(GenDocErrc::File_Write_Failed), CommandError::File_Operation_Failed);
+    EXPECT_EQ(std::error_code(GenDocErrc::Invalid_Project_Dir), CommandError::Invalid_Argument);
 }
 
 TEST(GenDocCommandTest, Help_Is_Defined_For_The_Command)

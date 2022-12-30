@@ -198,24 +198,22 @@ DEFINE_BITWISE_ENUM(StructFlags);
 /// \note Return \c nullptr if structure does not have a predefined name.
 constexpr const char* GetPredefinedStructName(StructTypeId id)
 {
-    using enum StructTypeId;
-
     switch (id) {
-    case General: return nullptr;
-    case Exception: return "Exception";
-    case Call_Message: return "CallMessage";
-    case Result_Message: return "ResultMessage";
-    case Namespace_Desc: return "NamespaceDesc";
-    case Class_Desc: return "ClassDesc";
-    case Class_Object_Id: return "ObjectId";
-    case Method_Desc: return "MethodDesc";
-    case Method_Params: return "Params";
-    case Method_Retval: return "Retval";
-    case Method_Static_Marker: return "Static";
-    case Service_Desc: return "ServiceDesc";
-    case Service_Config: return "Config";
-    case Service_Implements: return "Implements";
-    case Service_Invokes: return "Invokes";
+    case StructTypeId::General: return nullptr;
+    case StructTypeId::Exception: return "Exception";
+    case StructTypeId::Call_Message: return "CallMessage";
+    case StructTypeId::Result_Message: return "ResultMessage";
+    case StructTypeId::Namespace_Desc: return "NamespaceDesc";
+    case StructTypeId::Class_Desc: return "ClassDesc";
+    case StructTypeId::Class_Object_Id: return "ObjectId";
+    case StructTypeId::Method_Desc: return "MethodDesc";
+    case StructTypeId::Method_Params: return "Params";
+    case StructTypeId::Method_Retval: return "Retval";
+    case StructTypeId::Method_Static_Marker: return "Static";
+    case StructTypeId::Service_Desc: return "ServiceDesc";
+    case StructTypeId::Service_Config: return "Config";
+    case StructTypeId::Service_Implements: return "Implements";
+    case StructTypeId::Service_Invokes: return "Invokes";
     default: return nullptr;
     }
 }
@@ -230,8 +228,7 @@ constexpr StructTypeId GetStructTypeId(std::string_view structName,
                                        std::optional<EntityTypeId> parentType = std::nullopt,
                                        std::optional<StructTypeId> parentStructType = std::nullopt)
 {
-    using enum StructTypeId;
-    StructTypeId result = General;
+    StructTypeId result = StructTypeId::General;
 
     if (structName.empty()) {
         return result;
@@ -240,93 +237,114 @@ constexpr StructTypeId GetStructTypeId(std::string_view structName,
     switch (structName[0]) {
     case 'C':
         if (structName == "CallMessage") {
-            result = Call_Message;
+            result = StructTypeId::Call_Message;
         } else if (structName == "ClassDesc") {
-            result = Class_Desc;
+            result = StructTypeId::Class_Desc;
         } else if (structName == "Config") {
-            result = Service_Config;
+            result = StructTypeId::Service_Config;
         }
         break;
     case 'E':
         if (structName == "Exception") {
-            result = Exception;
+            result = StructTypeId::Exception;
         }
         break;
     case 'I':
         if (structName == "Implements") {
-            result = Service_Implements;
+            result = StructTypeId::Service_Implements;
         } else if (structName == "Invokes") {
-            result = Service_Invokes;
+            result = StructTypeId::Service_Invokes;
         }
         break;
     case 'M':
         if (structName == "MethodDesc") {
-            result = Method_Desc;
+            result = StructTypeId::Method_Desc;
         }
         break;
     case 'N':
         if (structName == "NamespaceDesc") {
-            result = Namespace_Desc;
+            result = StructTypeId::Namespace_Desc;
         }
         break;
     case 'O':
         if (structName == "ObjectId") {
-            result = Class_Object_Id;
+            result = StructTypeId::Class_Object_Id;
         }
         break;
     case 'P':
         if (structName == "Params") {
-            result = Method_Params;
+            result = StructTypeId::Method_Params;
         }
         break;
     case 'R':
         if (structName == "ResultMessage") {
-            result = Result_Message;
+            result = StructTypeId::Result_Message;
         } else if (structName == "Retval") {
-            result = Method_Retval;
+            result = StructTypeId::Method_Retval;
         }
         break;
     case 'S':
         if (structName == "ServiceDesc") {
-            result = Service_Desc;
+            result = StructTypeId::Service_Desc;
         } else if (structName == "Static") {
-            result = Method_Static_Marker;
+            result = StructTypeId::Method_Static_Marker;
         }
         break;
     default: break;
     }
 
-    if (result == General || !parentType) {
+    if (result == StructTypeId::General || !parentType) {
         return result;
     }
 
     if (*parentType == EntityTypeId::Struct && !parentStructType) {
-        return General;
+        return StructTypeId::General;
     }
 
     switch (result) {
-    case Exception: return *parentType == EntityTypeId::Project ? Exception : General;
-    case Call_Message: return *parentType == EntityTypeId::Project ? Call_Message : General;
-    case Result_Message: return *parentType == EntityTypeId::Project ? Result_Message : General;
-    case Namespace_Desc: return *parentType == EntityTypeId::Namespace ? Namespace_Desc : General;
-    case Class_Desc: return *parentType == EntityTypeId::Class ? Class_Desc : General;
-    case Class_Object_Id:
-        return *parentType == EntityTypeId::Struct && *parentStructType == Class_Desc ? Class_Object_Id : General;
-    case Method_Desc: return *parentType == EntityTypeId::Method ? Method_Desc : General;
-    case Method_Params:
-        return *parentType == EntityTypeId::Struct && *parentStructType == Method_Desc ? Method_Params : General;
-    case Method_Retval:
-        return *parentType == EntityTypeId::Struct && *parentStructType == Method_Desc ? Method_Retval : General;
-    case Method_Static_Marker:
-        return *parentType == EntityTypeId::Struct && *parentStructType == Method_Desc ? Method_Static_Marker : General;
-    case Service_Desc: return *parentType == EntityTypeId::Service ? Service_Desc : General;
-    case Service_Config:
-        return *parentType == EntityTypeId::Struct && *parentStructType == Service_Desc ? Service_Config : General;
-    case Service_Implements:
-        return *parentType == EntityTypeId::Struct && *parentStructType == Service_Desc ? Service_Implements : General;
-    case Service_Invokes:
-        return *parentType == EntityTypeId::Struct && *parentStructType == Service_Desc ? Service_Invokes : General;
-    default: return General;
+    case StructTypeId::Exception:
+        return *parentType == EntityTypeId::Project ? StructTypeId::Exception : StructTypeId::General;
+    case StructTypeId::Call_Message:
+        return *parentType == EntityTypeId::Project ? StructTypeId::Call_Message : StructTypeId::General;
+    case StructTypeId::Result_Message:
+        return *parentType == EntityTypeId::Project ? StructTypeId::Result_Message : StructTypeId::General;
+    case StructTypeId::Namespace_Desc:
+        return *parentType == EntityTypeId::Namespace ? StructTypeId::Namespace_Desc : StructTypeId::General;
+    case StructTypeId::Class_Desc:
+        return *parentType == EntityTypeId::Class ? StructTypeId::Class_Desc : StructTypeId::General;
+    case StructTypeId::Class_Object_Id:
+        return *parentType == EntityTypeId::Struct && *parentStructType == StructTypeId::Class_Desc
+                   ? StructTypeId::Class_Object_Id
+                   : StructTypeId::General;
+    case StructTypeId::Method_Desc:
+        return *parentType == EntityTypeId::Method ? StructTypeId::Method_Desc : StructTypeId::General;
+    case StructTypeId::Method_Params:
+        return *parentType == EntityTypeId::Struct && *parentStructType == StructTypeId::Method_Desc
+                   ? StructTypeId::Method_Params
+                   : StructTypeId::General;
+    case StructTypeId::Method_Retval:
+        return *parentType == EntityTypeId::Struct && *parentStructType == StructTypeId::Method_Desc
+                   ? StructTypeId::Method_Retval
+                   : StructTypeId::General;
+    case StructTypeId::Method_Static_Marker:
+        return *parentType == EntityTypeId::Struct && *parentStructType == StructTypeId::Method_Desc
+                   ? StructTypeId::Method_Static_Marker
+                   : StructTypeId::General;
+    case StructTypeId::Service_Desc:
+        return *parentType == EntityTypeId::Service ? StructTypeId::Service_Desc : StructTypeId::General;
+    case StructTypeId::Service_Config:
+        return *parentType == EntityTypeId::Struct && *parentStructType == StructTypeId::Service_Desc
+                   ? StructTypeId::Service_Config
+                   : StructTypeId::General;
+    case StructTypeId::Service_Implements:
+        return *parentType == EntityTypeId::Struct && *parentStructType == StructTypeId::Service_Desc
+                   ? StructTypeId::Service_Implements
+                   : StructTypeId::General;
+    case StructTypeId::Service_Invokes:
+        return *parentType == EntityTypeId::Struct && *parentStructType == StructTypeId::Service_Desc
+                   ? StructTypeId::Service_Invokes
+                   : StructTypeId::General;
+    default: return StructTypeId::General;
     }
 }
 
@@ -383,24 +401,22 @@ DEFINE_BITWISE_ENUM(FieldFlags);
 ///       definition.
 constexpr bool IsScalarFieldType(FieldTypeId id)
 {
-    using enum FieldTypeId;
-
     switch (id) {
-    case Bool:
-    case Int32:
-    case Sint32:
-    case Sfixed32:
-    case Uint32:
-    case Fixed32:
-    case Int64:
-    case Sint64:
-    case Sfixed64:
-    case Uint64:
-    case Fixed64:
-    case Float:
-    case Double:
-    case String:
-    case Bytes: return true;
+    case FieldTypeId::Bool:
+    case FieldTypeId::Int32:
+    case FieldTypeId::Sint32:
+    case FieldTypeId::Sfixed32:
+    case FieldTypeId::Uint32:
+    case FieldTypeId::Fixed32:
+    case FieldTypeId::Int64:
+    case FieldTypeId::Sint64:
+    case FieldTypeId::Sfixed64:
+    case FieldTypeId::Uint64:
+    case FieldTypeId::Fixed64:
+    case FieldTypeId::Float:
+    case FieldTypeId::Double:
+    case FieldTypeId::String:
+    case FieldTypeId::Bytes: return true;
     default: return false;
     }
 }
@@ -409,27 +425,25 @@ constexpr bool IsScalarFieldType(FieldTypeId id)
 /// \note \c nullptr is returned if \a id is unknown.
 constexpr const char* GetFieldTypeIdStr(FieldTypeId id)
 {
-    using enum FieldTypeId;
-
     switch (id) {
-    case Bool: return "bool";
-    case Int32: return "int32";
-    case Sint32: return "sint32";
-    case Sfixed32: return "sfixed32";
-    case Uint32: return "uint32";
-    case Fixed32: return "fixed32";
-    case Int64: return "int64";
-    case Sint64: return "sint64";
-    case Sfixed64: return "sfixed64";
-    case Uint64: return "uint64";
-    case Fixed64: return "fixed64";
-    case Float: return "float";
-    case Double: return "double";
-    case String: return "string";
-    case Bytes: return "bytes";
-    case Map: return "map";
-    case Enum: return "enum";
-    case Message: return "message";
+    case FieldTypeId::Bool: return "bool";
+    case FieldTypeId::Int32: return "int32";
+    case FieldTypeId::Sint32: return "sint32";
+    case FieldTypeId::Sfixed32: return "sfixed32";
+    case FieldTypeId::Uint32: return "uint32";
+    case FieldTypeId::Fixed32: return "fixed32";
+    case FieldTypeId::Int64: return "int64";
+    case FieldTypeId::Sint64: return "sint64";
+    case FieldTypeId::Sfixed64: return "sfixed64";
+    case FieldTypeId::Uint64: return "uint64";
+    case FieldTypeId::Fixed64: return "fixed64";
+    case FieldTypeId::Float: return "float";
+    case FieldTypeId::Double: return "double";
+    case FieldTypeId::String: return "string";
+    case FieldTypeId::Bytes: return "bytes";
+    case FieldTypeId::Map: return "map";
+    case FieldTypeId::Enum: return "enum";
+    case FieldTypeId::Message: return "message";
     default: return nullptr;
     }
 }

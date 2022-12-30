@@ -126,18 +126,16 @@ Enum* Struct::addEnum(const std::string& name, EntityDocs docs)
 
 void Struct::setDefaultDescription()
 {
-    using enum StructTypeId;
-
     std::vector<std::string> defaultDescription;
 
     switch (structType_) {
-    case Class_Object_Id: defaultDescription.emplace_back(Default_ObjectId_Description); break;
-    case Method_Params: defaultDescription.emplace_back(Default_Params_Description); break;
-    case Method_Retval: defaultDescription.emplace_back(Default_Retval_Description); break;
-    case Method_Static_Marker: defaultDescription.emplace_back(Default_Static_Description); break;
-    case Service_Config: defaultDescription.emplace_back(Default_Config_Description); break;
-    case Service_Implements: defaultDescription.emplace_back(Default_Implements_Description); break;
-    case Service_Invokes: defaultDescription.emplace_back(Default_Invokes_Description); break;
+    case StructTypeId::Class_Object_Id: defaultDescription.emplace_back(Default_ObjectId_Description); break;
+    case StructTypeId::Method_Params: defaultDescription.emplace_back(Default_Params_Description); break;
+    case StructTypeId::Method_Retval: defaultDescription.emplace_back(Default_Retval_Description); break;
+    case StructTypeId::Method_Static_Marker: defaultDescription.emplace_back(Default_Static_Description); break;
+    case StructTypeId::Service_Config: defaultDescription.emplace_back(Default_Config_Description); break;
+    case StructTypeId::Service_Implements: defaultDescription.emplace_back(Default_Implements_Description); break;
+    case StructTypeId::Service_Invokes: defaultDescription.emplace_back(Default_Invokes_Description); break;
     default: break;
     }
 

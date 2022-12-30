@@ -14,10 +14,8 @@ TEST(ParserTest, File_Error_Category_Name_Is_Not_Empty)
 
 TEST(ParserTest, File_Error_Codes_Have_Non_Empty_Descriptions)
 {
-    using enum ParserErrc;
-
-    EXPECT_FALSE(parser_error_category().message(static_cast<int>(Read_Failed)).empty());
-    EXPECT_FALSE(parser_error_category().message(static_cast<int>(Protobuf_Error)).empty());
+    EXPECT_FALSE(parser_error_category().message(static_cast<int>(ParserErrc::Read_Failed)).empty());
+    EXPECT_FALSE(parser_error_category().message(static_cast<int>(ParserErrc::Protobuf_Error)).empty());
 }
 
 TEST(ParserTest, Unknown_File_Error_Code_Has_Non_Empty_Description)

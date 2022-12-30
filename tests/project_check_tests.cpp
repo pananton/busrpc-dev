@@ -68,9 +68,7 @@ TEST_F(ProjectCheckTest, Spec_Warn_Category_Name_Is_Not_Empty)
 
 TEST_F(ProjectCheckTest, Spec_Warn_Codes_Have_Non_Empty_Descriptions)
 {
-    using enum SpecWarn;
-
-    EXPECT_FALSE(spec_warn_category().message(static_cast<int>(Unexpected_Nested_Entity)).empty());
+    EXPECT_FALSE(spec_warn_category().message(static_cast<int>(SpecWarn::Unexpected_Nested_Entity)).empty());
 }
 
 TEST_F(ProjectCheckTest, Unknown_Spec_Warn_Code_Has_Non_Empty_Description)
@@ -86,10 +84,8 @@ TEST_F(ProjectCheckTest, Doc_Warn_Category_Name_Is_Not_Empty)
 
 TEST_F(ProjectCheckTest, Doc_Warn_Codes_Have_Non_Empty_Descriptions)
 {
-    using enum DocWarn;
-
-    EXPECT_FALSE(doc_warn_category().message(static_cast<int>(Undocumented_Entity)).empty());
-    EXPECT_FALSE(doc_warn_category().message(static_cast<int>(Unknown_Doc_Command)).empty());
+    EXPECT_FALSE(doc_warn_category().message(static_cast<int>(DocWarn::Undocumented_Entity)).empty());
+    EXPECT_FALSE(doc_warn_category().message(static_cast<int>(DocWarn::Unknown_Doc_Command)).empty());
 }
 
 TEST_F(ProjectCheckTest, Unknown_Doc_Warn_Code_Has_Non_Empty_Description)
@@ -105,9 +101,7 @@ TEST_F(ProjectCheckTest, Style_Warn_Category_Name_Is_Not_Empty)
 
 TEST_F(ProjectCheckTest, Style_Warn_Codes_Have_Non_Empty_Descriptions)
 {
-    using enum StyleWarn;
-
-    EXPECT_FALSE(style_warn_category().message(static_cast<int>(Invalid_Name_Format)).empty());
+    EXPECT_FALSE(style_warn_category().message(static_cast<int>(StyleWarn::Invalid_Name_Format)).empty());
 }
 
 TEST_F(ProjectCheckTest, Unknown_Style_Warn_Error_Code_Has_Non_Empty_Description)
