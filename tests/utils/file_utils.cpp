@@ -1,5 +1,6 @@
 #include "utils/file_utils.h"
 
+#include <algorithm>
 #include <filesystem>
 #include <fstream>
 
