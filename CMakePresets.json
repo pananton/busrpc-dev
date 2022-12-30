@@ -20,43 +20,27 @@
         "BUSRPC_CLI11_FETCH_VERSION": "2.3.1",
         "BUSRPC_PROTOBUF_FETCH_VERSION": "21.12",
         "BUSRPC_NLOHMANN_JSON_FETCH_VERSION": "3.11.2",
-        "BUSRPC_GTEST_FETCH_VERSION": "1.12.1"
-        "BUSRPC_USE_STATIC_PROTOBUF": "ON",
+        "BUSRPC_GTEST_FETCH_VERSION": "1.12.1",
+        "BUSRPC_USE_STATIC_PROTOBUF": "ON"
       }
     },
     {
       "name": "dev",
-      "description": "Base development preset",
+      "description": "Development preset",
+      "hidden": false,
       "inherits": ["base"],
-      "hidden": true,
       "cacheVariables": {
+        "BUSRPC_WARNINGS_AS_ERRORS": "ON",
         "CMAKE_BUILD_TYPE": "Debug"
       }
     },
     {
-      "name": "dev-win",
-      "description": "Windows development preset",
-      "hidden": false,
-      "inherits": ["dev"],
-      "cacheVariables": {
-        "BUSRPC_WARNINGS": "/W4 /EHsc /w14242 /w14254 /w14263 /w14265 /w14287 /w14289 /w14296 /w14311 /w14545 /w14546 /w14547 /w14549 /w14555 /w14640 /w14826 /w14928 /WX"
-      }
-    },
-    {
-      "name": "dev-linux",
-      "description": "Linux development preset",
-      "hidden": false,
-      "inherits": ["dev"],
-      "cacheVariables": {
-        "BUSRPC_WARNINGS": "-Wall -Wextra -Wpedantic -Wshadow -Wconversion -Wsign-conversion -Wcast-align -Wcast-qual -Wnull-dereference -Woverloaded-virtual -Wformat=2 -Werror"
-      }
-    },
-    {
       "name": "release",
-      "description": "Current platform release preset",
+      "description": "Release preset",
       "hidden": false,
       "inherits": ["base"],
       "cacheVariables": {
+        "BUSRPC_WARNINGS_AS_ERRORS": "OFF",
         "CMAKE_BUILD_TYPE": "Release"
       }
     }

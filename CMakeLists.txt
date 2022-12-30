@@ -14,6 +14,7 @@ option(BUSRPC_USE_EXTERNAL_CLI11 "Use external CLI11 library" OFF)
 option(BUSRPC_USE_EXTERNAL_PROTOBUF "User external protobuf library" OFF)
 option(BUSRPC_USE_EXTERNAL_NLOHMANN_JSON "User external nlohmann-json library" OFF)
 option(BUSRPC_USE_STATIC_PROTOBUF "Link protobuf library statically" ON)
+option(BUSRPC_WARNINGS_AS_ERRORS "Treat compiler warnings as errors" OFF)
 
 if(NOT BUSRPC_USE_EXTERNAL_CLI11 AND NOT DEFINED BUSRPC_CLI11_FETCH_VERSION)
     set(BUSRPC_CLI11_FETCH_VERSION "2.3.1"
@@ -30,15 +31,23 @@ if(NOT BUSRPC_USE_EXTERNAL_NLOHMANN_JSON AND NOT DEFINED BUSRPC_NLOHMANN_JSON_FE
         CACHE STRING "Version of nlohmann-json library to be fetched" FORCE)
 endif()
 
-#if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+if(NOT DEFINED BUSRPC_WARNINGS)
     if(MSVC)
-        set(BUSRPC_WARNINGS "/W4 /EHsc /w14242 /w14254 /w14263 /w14265 /w14287 /w14289 /w14296 /w14311 /w14545 /w14546 /w14547 /w14549 /w14555 /w14640 /w14826 /w14928 /WX"
+        set(BUSRPC_WARNINGS "/W4 /EHsc /w14242 /w14254 /w14263 /w14265 /w14287 /w14289 /w14296 /w14311 /w14545 /w14546 /w14547 /w14549 /w14555 /w14640 /w14826 /w14928"
             CACHE STRING "Busrpc development tool warnings" FORCE)
+
+        if(BUSRPC_WARNINGS_AS_ERRORS)
+            set(BUSRPC_WARNINGS "${BUSRPC_WARNINGS} /WX")
+        endif()
     else()
-        set(BUSRPC_WARNINGS "-Wall -Wextra -Wpedantic -Wshadow -Wconversion -Wsign-conversion -Wcast-align -Wcast-qual -Wnull-dereference -Woverloaded-virtual -Wformat=2 -Werror"
+        set(BUSRPC_WARNINGS "-Wall -Wextra -Wpedantic -Wshadow -Wconversion -Wsign-conversion -Wcast-align -Wcast-qual -Wnull-dereference -Woverloaded-virtual -Wformat=2"
             CACHE STRING "Busrpc development tool warnings" FORCE)
+
+        if(BUSRPC_WARNINGS_AS_ERRORS)
+            set(BUSRPC_WARNINGS "${BUSRPC_WARNINGS} -Werror")
+        endif()
     endif()
-#endif()
+endif()
 
 if(NOT DEFINED CMAKE_BUILD_TYPE AND NOT DEFINED CMAKE_CONFIGURATION_TYPES)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
