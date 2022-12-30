@@ -37,22 +37,20 @@ TEST_F(ProjectCheckTest, Spec_Error_Category_Name_Is_Not_Empty)
 
 TEST_F(ProjectCheckTest, Spec_Error_Codes_Have_Non_Empty_Descriptions)
 {
-    using enum SpecErrc;
-
-    EXPECT_FALSE(spec_error_category().message(static_cast<int>(Invalid_Entity)).empty());
-    EXPECT_FALSE(spec_error_category().message(static_cast<int>(Multiple_Definitions)).empty());
-    EXPECT_FALSE(spec_error_category().message(static_cast<int>(Unexpected_Package)).empty());
-    EXPECT_FALSE(spec_error_category().message(static_cast<int>(Missing_Builtin)).empty());
-    EXPECT_FALSE(spec_error_category().message(static_cast<int>(Nonconforming_Builtin)).empty());
-    EXPECT_FALSE(spec_error_category().message(static_cast<int>(No_Descriptor)).empty());
-    EXPECT_FALSE(spec_error_category().message(static_cast<int>(Not_Static_Method)).empty());
-    EXPECT_FALSE(spec_error_category().message(static_cast<int>(Not_Encodable_Type)).empty());
-    EXPECT_FALSE(spec_error_category().message(static_cast<int>(Not_Accessible_Type)).empty());
-    EXPECT_FALSE(spec_error_category().message(static_cast<int>(Unknown_Type)).empty());
-    EXPECT_FALSE(spec_error_category().message(static_cast<int>(Unexpected_Type)).empty());
-    EXPECT_FALSE(spec_error_category().message(static_cast<int>(Empty_Enum)).empty());
-    EXPECT_FALSE(spec_error_category().message(static_cast<int>(No_Zero_Value)).empty());
-    EXPECT_FALSE(spec_error_category().message(static_cast<int>(Unknown_Method)).empty());
+    EXPECT_FALSE(spec_error_category().message(static_cast<int>(SpecErrc::Invalid_Entity)).empty());
+    EXPECT_FALSE(spec_error_category().message(static_cast<int>(SpecErrc::Multiple_Definitions)).empty());
+    EXPECT_FALSE(spec_error_category().message(static_cast<int>(SpecErrc::Unexpected_Package)).empty());
+    EXPECT_FALSE(spec_error_category().message(static_cast<int>(SpecErrc::Missing_Builtin)).empty());
+    EXPECT_FALSE(spec_error_category().message(static_cast<int>(SpecErrc::Nonconforming_Builtin)).empty());
+    EXPECT_FALSE(spec_error_category().message(static_cast<int>(SpecErrc::No_Descriptor)).empty());
+    EXPECT_FALSE(spec_error_category().message(static_cast<int>(SpecErrc::Not_Static_Method)).empty());
+    EXPECT_FALSE(spec_error_category().message(static_cast<int>(SpecErrc::Not_Encodable_Type)).empty());
+    EXPECT_FALSE(spec_error_category().message(static_cast<int>(SpecErrc::Not_Accessible_Type)).empty());
+    EXPECT_FALSE(spec_error_category().message(static_cast<int>(SpecErrc::Unknown_Type)).empty());
+    EXPECT_FALSE(spec_error_category().message(static_cast<int>(SpecErrc::Unexpected_Type)).empty());
+    EXPECT_FALSE(spec_error_category().message(static_cast<int>(SpecErrc::Empty_Enum)).empty());
+    EXPECT_FALSE(spec_error_category().message(static_cast<int>(SpecErrc::No_Zero_Value)).empty());
+    EXPECT_FALSE(spec_error_category().message(static_cast<int>(SpecErrc::Unknown_Method)).empty());
 }
 
 TEST_F(ProjectCheckTest, Unknown_Spec_Error_Code_Has_Non_Empty_Description)
