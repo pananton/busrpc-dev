@@ -1,4 +1,5 @@
 #include "entities/project.h"
+#include "utils/common.h"
 
 #include <gtest/gtest.h>
 
@@ -27,7 +28,7 @@ TEST_F(MethodEntityTest, Method_Entity_Is_Correctly_Initialized_When_Created_By_
     EXPECT_EQ(method_->type(), EntityTypeId::Method);
     EXPECT_EQ(method_->name(), "method");
     EXPECT_EQ(method_->dir(), std::filesystem::path(Api_Entity_Name) / "namespace" / "class" / "method");
-    EXPECT_EQ(method_->dname(), std::string(Project_Entity_Name) + "." + Api_Entity_Name + ".namespace.class.method");
+    EXPECT_EQ(method_->dname(), JoinStrings(Project_Entity_Name, ".", Api_Entity_Name, ".namespace.class.method"));
     EXPECT_TRUE(method_->docs().description().empty());
     EXPECT_TRUE(method_->docs().brief().empty());
     EXPECT_TRUE(method_->docs().commands().empty());

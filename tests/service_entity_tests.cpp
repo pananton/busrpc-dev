@@ -1,4 +1,5 @@
 #include "entities/project.h"
+#include "utils/common.h"
 
 #include <gtest/gtest.h>
 
@@ -29,7 +30,7 @@ TEST_F(ServiceEntityTest, Service_Entity_Is_Correctly_Initialized_When_Created_B
     EXPECT_EQ(service_->type(), EntityTypeId::Service);
     EXPECT_EQ(service_->name(), "service");
     EXPECT_EQ(service_->dir(), std::filesystem::path(Implementation_Entity_Name) / "service");
-    EXPECT_EQ(service_->dname(), std::string(Project_Entity_Name) + "." + Implementation_Entity_Name + ".service");
+    EXPECT_EQ(service_->dname(), JoinStrings(Project_Entity_Name, ".", Implementation_Entity_Name, ".service"));
     EXPECT_TRUE(service_->docs().description().empty());
     EXPECT_TRUE(service_->docs().brief().empty());
     EXPECT_TRUE(service_->docs().commands().empty());
@@ -95,15 +96,14 @@ TEST_F(ServiceEntityTest, Adding_Field_To_Implements_Struct_Creates_Implemented_
 {
     Struct* desc = nullptr;
     Struct* impl = nullptr;
-    std::string methodName =
-        std::string(Project_Entity_Name) + "." + std::string(Api_Entity_Name) + ".namespace.class.method1";
+    std::string methodName = JoinStrings(Project_Entity_Name, ".", Api_Entity_Name, ".namespace.class.method1");
 
     ASSERT_TRUE(desc = service_->addStruct(GetPredefinedStructName(StructTypeId::Service_Desc), "service.proto"));
     ASSERT_TRUE(impl = desc->addStruct(GetPredefinedStructName(StructTypeId::Service_Implements)));
     EXPECT_TRUE(service_->implementedMethods().empty());
 
-    EXPECT_TRUE(
-        impl->addStructField("field1", 1, methodName + "." + GetPredefinedStructName(StructTypeId::Method_Desc)));
+    EXPECT_TRUE(impl->addStructField(
+        "field1", 1, JoinStrings(methodName, ".", GetPredefinedStructName(StructTypeId::Method_Desc))));
     ASSERT_NE(service_->implementedMethods().find(methodName), service_->implementedMethods().end());
     EXPECT_EQ(service_->implementedMethods().size(), 1);
 
@@ -122,14 +122,13 @@ TEST_F(ServiceEntityTest, Implemented_Method_Documentation_Is_Correctly_Initiali
         {{"cmd", {"cmd value"}}, {doc_cmd::Accepted_Value, {"param1 value1", "@object_id some id", "param2"}}});
     Struct* desc = nullptr;
     Struct* impl = nullptr;
-    std::string methodName =
-        std::string(Project_Entity_Name) + "." + std::string(Api_Entity_Name) + ".namespace.class.method1";
+    std::string methodName = JoinStrings(Project_Entity_Name, ".", Api_Entity_Name, ".namespace.class.method1");
 
     ASSERT_TRUE(desc = service_->addStruct(GetPredefinedStructName(StructTypeId::Service_Desc), "service.proto"));
     ASSERT_TRUE(impl = desc->addStruct(GetPredefinedStructName(StructTypeId::Service_Implements)));
     ASSERT_TRUE(impl->addStructField("field1",
                                      1,
-                                     methodName + "." + GetPredefinedStructName(StructTypeId::Method_Desc),
+                                     JoinStrings(methodName, ".", GetPredefinedStructName(StructTypeId::Method_Desc)),
                                      FieldFlags::None,
                                      "",
                                      docs));
@@ -154,15 +153,14 @@ TEST_F(ServiceEntityTest, Adding_Field_To_Implements_Struct_Does_Not_Overwrite_I
 {
     Struct* desc = nullptr;
     Struct* impl = nullptr;
-    std::string methodName =
-        std::string(Project_Entity_Name) + "." + std::string(Api_Entity_Name) + ".namespace.class.method1";
+    std::string methodName = JoinStrings(Project_Entity_Name, ".", Api_Entity_Name, ".namespace.class.method1");
 
     ASSERT_TRUE(desc = service_->addStruct(GetPredefinedStructName(StructTypeId::Service_Desc), "service.proto"));
     ASSERT_TRUE(impl = desc->addStruct(GetPredefinedStructName(StructTypeId::Service_Implements)));
 
     EXPECT_TRUE(impl->addStructField("field1",
                                      1,
-                                     methodName + "." + GetPredefinedStructName(StructTypeId::Method_Desc),
+                                     JoinStrings(methodName, ".", GetPredefinedStructName(StructTypeId::Method_Desc)),
                                      FieldFlags::None,
                                      "",
                                      EntityDocs("First.")));
@@ -171,7 +169,7 @@ TEST_F(ServiceEntityTest, Adding_Field_To_Implements_Struct_Does_Not_Overwrite_I
 
     EXPECT_TRUE(impl->addStructField("field2",
                                      2,
-                                     methodName + "." + GetPredefinedStructName(StructTypeId::Method_Desc),
+                                     JoinStrings(methodName, ".", GetPredefinedStructName(StructTypeId::Method_Desc)),
                                      FieldFlags::None,
                                      "",
                                      EntityDocs("Second.")));
@@ -184,15 +182,14 @@ TEST_F(ServiceEntityTest, Adding_Fields_To_Invokes_Struct_Creates_Invoked_Method
 {
     Struct* desc = nullptr;
     Struct* invk = nullptr;
-    std::string methodName =
-        std::string(Project_Entity_Name) + "." + std::string(Api_Entity_Name) + ".namespace.class.method1";
+    std::string methodName = JoinStrings(Project_Entity_Name, ".", Api_Entity_Name, ".namespace.class.method1");
 
     ASSERT_TRUE(desc = service_->addStruct(GetPredefinedStructName(StructTypeId::Service_Desc), "service.proto"));
     ASSERT_TRUE(invk = desc->addStruct(GetPredefinedStructName(StructTypeId::Service_Invokes)));
     EXPECT_TRUE(service_->invokedMethods().empty());
 
-    EXPECT_TRUE(
-        invk->addStructField("field1", 1, methodName + "." + GetPredefinedStructName(StructTypeId::Method_Desc)));
+    EXPECT_TRUE(invk->addStructField(
+        "field1", 1, JoinStrings(methodName, ".", GetPredefinedStructName(StructTypeId::Method_Desc))));
     ASSERT_NE(service_->invokedMethods().find(methodName), service_->invokedMethods().end());
     EXPECT_EQ(service_->invokedMethods().size(), 1);
 
@@ -209,14 +206,13 @@ TEST_F(ServiceEntityTest, Invoked_Method_Documentation_Is_Correctly_Initialized)
     EntityDocs docs({"Brief description.", "Description"}, {{"cmd", {"cmd value"}}});
     Struct* desc = nullptr;
     Struct* invk = nullptr;
-    std::string methodName =
-        std::string(Project_Entity_Name) + "." + std::string(Api_Entity_Name) + ".namespace.class.method1";
+    std::string methodName = JoinStrings(Project_Entity_Name, ".", Api_Entity_Name, ".namespace.class.method1");
 
     ASSERT_TRUE(desc = service_->addStruct(GetPredefinedStructName(StructTypeId::Service_Desc), "service.proto"));
     ASSERT_TRUE(invk = desc->addStruct(GetPredefinedStructName(StructTypeId::Service_Invokes)));
     ASSERT_TRUE(invk->addStructField("field1",
                                      1,
-                                     methodName + "." + GetPredefinedStructName(StructTypeId::Method_Desc),
+                                     JoinStrings(methodName, ".", GetPredefinedStructName(StructTypeId::Method_Desc)),
                                      FieldFlags::None,
                                      "",
                                      docs));
@@ -234,15 +230,14 @@ TEST_F(ServiceEntityTest, Adding_Field_To_Invokes_Struct_Does_Not_Overwrite_Invo
 {
     Struct* desc = nullptr;
     Struct* invk = nullptr;
-    std::string methodName =
-        std::string(Project_Entity_Name) + "." + std::string(Api_Entity_Name) + ".namespace.class.method1";
+    std::string methodName = JoinStrings(Project_Entity_Name, ".", Api_Entity_Name, ".namespace.class.method1");
 
     ASSERT_TRUE(desc = service_->addStruct(GetPredefinedStructName(StructTypeId::Service_Desc), "service.proto"));
     ASSERT_TRUE(invk = desc->addStruct(GetPredefinedStructName(StructTypeId::Service_Invokes)));
 
     EXPECT_TRUE(invk->addStructField("field1",
                                      1,
-                                     methodName + "." + GetPredefinedStructName(StructTypeId::Method_Desc),
+                                     JoinStrings(methodName, ".", GetPredefinedStructName(StructTypeId::Method_Desc)),
                                      FieldFlags::None,
                                      "",
                                      EntityDocs("First.")));
@@ -251,7 +246,7 @@ TEST_F(ServiceEntityTest, Adding_Field_To_Invokes_Struct_Does_Not_Overwrite_Invo
 
     EXPECT_TRUE(invk->addStructField("field2",
                                      2,
-                                     methodName + "." + GetPredefinedStructName(StructTypeId::Method_Desc),
+                                     JoinStrings(methodName, ".", GetPredefinedStructName(StructTypeId::Method_Desc)),
                                      FieldFlags::None,
                                      "",
                                      EntityDocs("Second.")));

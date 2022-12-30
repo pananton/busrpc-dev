@@ -1,4 +1,5 @@
 #include "entities/project.h"
+#include "utils/common.h"
 
 #include <gtest/gtest.h>
 
@@ -18,7 +19,7 @@ TEST_F(ImplementationEntityTest, Implementation_Entity_Is_Correctly_Initialized_
     EXPECT_EQ(implementation_->type(), EntityTypeId::Implementation);
     EXPECT_EQ(implementation_->name(), Implementation_Entity_Name);
     EXPECT_EQ(implementation_->dir(), std::filesystem::path(Implementation_Entity_Name));
-    EXPECT_EQ(implementation_->dname(), std::string(Project_Entity_Name) + "." + Implementation_Entity_Name);
+    EXPECT_EQ(implementation_->dname(), JoinStrings(Project_Entity_Name, ".", Implementation_Entity_Name));
     EXPECT_EQ(implementation_->parent(), &project_);
     EXPECT_EQ(static_cast<const Implementation*>(implementation_)->parent(), &project_);
     ASSERT_EQ(implementation_->docs().description().size(), 1);

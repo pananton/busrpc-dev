@@ -33,11 +33,10 @@ TEST_F(StructEntityTest, Struct_Entity_Is_Correctly_Initialized_When_Created_By_
     EXPECT_EQ(structure_->name(), "Struct");
     EXPECT_EQ(structure_->dir(), std::filesystem::path(Api_Entity_Name) / "namespace" / "class" / "method");
     EXPECT_EQ(structure_->dname(),
-              std::string(Project_Entity_Name) + "." + Api_Entity_Name + ".namespace.class.method.Struct");
+              JoinStrings(Project_Entity_Name, ".", Api_Entity_Name, ".namespace.class.method.Struct"));
     EXPECT_EQ(structure_->parent(), method_);
     EXPECT_EQ(static_cast<const Struct*>(structure_)->parent(), method_);
-    EXPECT_EQ(structure_->package(),
-              std::string(Project_Entity_Name) + "." + Api_Entity_Name + ".namespace.class.method");
+    EXPECT_EQ(structure_->package(), JoinStrings(Project_Entity_Name, ".", Api_Entity_Name, ".namespace.class.method"));
     EXPECT_EQ(structure_->structType(), StructTypeId::General);
     EXPECT_EQ(structure_->file(), structure_->dir() / "struct.proto");
     EXPECT_EQ(structure_->flags(), StructFlags::Hashed);

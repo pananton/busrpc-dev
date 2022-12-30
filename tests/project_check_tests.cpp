@@ -1,4 +1,5 @@
 #include "entities/project.h"
+#include "utils/common.h"
 #include "utils/project_utils.h"
 
 #include <gtest/gtest.h>
@@ -162,7 +163,7 @@ TEST_F(ProjectCheckTest, Missing_Builtin_Spec_Error_If_Exception_Is_Defined_In_U
     AddResultMessage(&project);
 
     auto exception = project.addStruct(GetPredefinedStructName(StructTypeId::Exception), "1.proto");
-    exception->addEnumField(Exception_Code_Field_Name, 1, project.dname() + ".Errc");
+    exception->addEnumField(Exception_Code_Field_Name, 1, JoinStrings(project.dname(), ".Errc"));
     auto ecol = project.check();
 
     EXPECT_TRUE(ecol.find(SpecErrc::Missing_Builtin));
@@ -204,7 +205,7 @@ TEST_F(ProjectCheckTest, Nonconforming_Builtin_Spec_Error_If_Exception_Code_Fiel
     AddResultMessage(&project);
 
     auto exception = project.addStruct(GetPredefinedStructName(StructTypeId::Exception), Busrpc_Builtin_File);
-    exception->addEnumField(Exception_Code_Field_Name, 1, project.dname() + ".Errc", FieldFlags::Optional);
+    exception->addEnumField(Exception_Code_Field_Name, 1, JoinStrings(project.dname(), ".Errc"), FieldFlags::Optional);
     auto ecol = project.check();
 
     EXPECT_TRUE(ecol.find(SpecErrc::Nonconforming_Builtin));
@@ -218,7 +219,7 @@ TEST_F(ProjectCheckTest, Nonconforming_Builtin_Spec_Error_If_Exception_Code_Fiel
     AddResultMessage(&project);
 
     auto exception = project.addStruct(GetPredefinedStructName(StructTypeId::Exception), Busrpc_Builtin_File);
-    exception->addEnumField(Exception_Code_Field_Name, 1, project.dname() + ".Errc", FieldFlags::Repeated);
+    exception->addEnumField(Exception_Code_Field_Name, 1, JoinStrings(project.dname(), ".Errc"), FieldFlags::Repeated);
     auto ecol = project.check();
 
     EXPECT_TRUE(ecol.find(SpecErrc::Nonconforming_Builtin));
@@ -375,7 +376,7 @@ TEST_F(ProjectCheckTest, Missing_Builtin_Spec_Error_If_Result_Message_Is_Defined
     auto result = project.addStruct(GetPredefinedStructName(StructTypeId::Result_Message), "1.proto");
     result->addScalarField(Result_Message_Retval_Field_Name, 5, FieldTypeId::Bytes, FieldFlags::None, "Result");
     result->addStructField(
-        Result_Message_Exception_Field_Name, 6, project.dname() + ".Exception", FieldFlags::None, "Result");
+        Result_Message_Exception_Field_Name, 6, JoinStrings(project.dname(), ".Exception"), FieldFlags::None, "Result");
     auto ecol = project.check();
 
     EXPECT_TRUE(ecol.find(SpecErrc::Missing_Builtin));
@@ -390,7 +391,7 @@ TEST_F(ProjectCheckTest, Nonconforming_Builtin_Spec_Error_If_Result_Message_Does
 
     auto result = project.addStruct(GetPredefinedStructName(StructTypeId::Result_Message), Busrpc_Builtin_File);
     result->addStructField(
-        Result_Message_Exception_Field_Name, 6, project.dname() + ".Exception", FieldFlags::None, "Result");
+        Result_Message_Exception_Field_Name, 6, JoinStrings(project.dname(), ".Exception"), FieldFlags::None, "Result");
     auto ecol = project.check();
 
     EXPECT_TRUE(ecol.find(SpecErrc::Nonconforming_Builtin));
@@ -420,7 +421,7 @@ TEST_F(ProjectCheckTest, Nonconforming_Builtin_Spec_Error_If_Result_Message_Retv
     auto result = project.addStruct(GetPredefinedStructName(StructTypeId::Result_Message), Busrpc_Builtin_File);
     result->addScalarField(Result_Message_Retval_Field_Name, 5, FieldTypeId::Int32, FieldFlags::None, "Result");
     result->addStructField(
-        Result_Message_Exception_Field_Name, 6, project.dname() + ".Exception", FieldFlags::None, "Result");
+        Result_Message_Exception_Field_Name, 6, JoinStrings(project.dname(), ".Exception"), FieldFlags::None, "Result");
     auto ecol = project.check();
 
     EXPECT_TRUE(ecol.find(SpecErrc::Nonconforming_Builtin));
@@ -451,7 +452,7 @@ TEST_F(ProjectCheckTest, Nonconforming_Builtin_Spec_Error_If_Result_Message_Retv
     auto result = project.addStruct(GetPredefinedStructName(StructTypeId::Result_Message), Busrpc_Builtin_File);
     result->addScalarField(Result_Message_Retval_Field_Name, 5, FieldTypeId::Bytes, FieldFlags::None);
     result->addStructField(
-        Result_Message_Exception_Field_Name, 6, project.dname() + ".Exception", FieldFlags::None, "Result");
+        Result_Message_Exception_Field_Name, 6, JoinStrings(project.dname(), ".Exception"), FieldFlags::None, "Result");
     auto ecol = project.check();
 
     EXPECT_TRUE(ecol.find(SpecErrc::Nonconforming_Builtin));
@@ -466,7 +467,8 @@ TEST_F(ProjectCheckTest, Nonconforming_Builtin_Spec_Error_If_Result_Message_Exce
 
     auto result = project.addStruct(GetPredefinedStructName(StructTypeId::Result_Message), Busrpc_Builtin_File);
     result->addScalarField(Result_Message_Retval_Field_Name, 5, FieldTypeId::Bytes, FieldFlags::None, "Result");
-    result->addStructField(Result_Message_Exception_Field_Name, 6, project.dname() + ".Exception", FieldFlags::None);
+    result->addStructField(
+        Result_Message_Exception_Field_Name, 6, JoinStrings(project.dname(), ".Exception"), FieldFlags::None);
     auto ecol = project.check();
 
     EXPECT_TRUE(ecol.find(SpecErrc::Nonconforming_Builtin));
@@ -482,8 +484,11 @@ TEST_F(ProjectCheckTest,
 
     auto result = project.addStruct(GetPredefinedStructName(StructTypeId::Result_Message), Busrpc_Builtin_File);
     result->addScalarField(Result_Message_Retval_Field_Name, 5, FieldTypeId::Bytes, FieldFlags::None, "Result");
-    result->addStructField(
-        Result_Message_Exception_Field_Name, 6, project.dname() + ".Exception", FieldFlags::None, "Result1");
+    result->addStructField(Result_Message_Exception_Field_Name,
+                           6,
+                           JoinStrings(project.dname(), ".Exception"),
+                           FieldFlags::None,
+                           "Result1");
     auto ecol = project.check();
 
     EXPECT_TRUE(ecol.find(SpecErrc::Nonconforming_Builtin));

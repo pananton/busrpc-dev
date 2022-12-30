@@ -1,4 +1,5 @@
 #include "entities/project.h"
+#include "utils/common.h"
 
 #include <gtest/gtest.h>
 
@@ -27,10 +28,10 @@ TEST_F(EnumEntityTest, Enum_Entity_Is_Correctly_Initialized_When_Created_By_Pare
     EXPECT_EQ(enum_->type(), EntityTypeId::Enum);
     EXPECT_EQ(enum_->name(), "Enum");
     EXPECT_EQ(enum_->dir(), std::filesystem::path(Api_Entity_Name));
-    EXPECT_EQ(enum_->dname(), std::string(Project_Entity_Name) + "." + Api_Entity_Name + ".Enum");
+    EXPECT_EQ(enum_->dname(), JoinStrings(Project_Entity_Name, ".", Api_Entity_Name, ".Enum"));
     EXPECT_EQ(enum_->parent(), api_);
     EXPECT_EQ(static_cast<const Enum*>(enum_)->parent(), api_);
-    EXPECT_EQ(enum_->package(), std::string(Project_Entity_Name) + "." + Api_Entity_Name);
+    EXPECT_EQ(enum_->package(), JoinStrings(Project_Entity_Name, ".", Api_Entity_Name));
     EXPECT_EQ(enum_->file(), enum_->dir() / "enum.proto");
     EXPECT_TRUE(enum_->constants().empty());
 

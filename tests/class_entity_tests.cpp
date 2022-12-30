@@ -1,4 +1,5 @@
 #include "entities/project.h"
+#include "utils/common.h"
 
 #include <gtest/gtest.h>
 
@@ -27,7 +28,7 @@ TEST_F(ClassEntityTest, Class_Entity_Is_Correctly_Initialized_When_Created_By_Na
     EXPECT_EQ(cls_->type(), EntityTypeId::Class);
     EXPECT_EQ(cls_->name(), "class");
     EXPECT_EQ(cls_->dir(), std::filesystem::path(Api_Entity_Name) / "namespace" / "class");
-    EXPECT_EQ(cls_->dname(), std::string(Project_Entity_Name) + "." + Api_Entity_Name + ".namespace.class");
+    EXPECT_EQ(cls_->dname(), JoinStrings(Project_Entity_Name, ".", Api_Entity_Name, ".namespace.class"));
     EXPECT_TRUE(cls_->docs().description().empty());
     EXPECT_TRUE(cls_->docs().brief().empty());
     EXPECT_TRUE(cls_->docs().commands().empty());

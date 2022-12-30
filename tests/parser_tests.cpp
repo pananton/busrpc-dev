@@ -1,5 +1,6 @@
 #include "parser/parser.h"
 #include "tests_configure.h"
+#include "utils/common.h"
 #include "utils/project_utils.h"
 
 #include <gtest/gtest.h>
@@ -216,7 +217,7 @@ TEST(ParserTest, Parser_Correctly_Parses_Test_Project)
     auto testEnum = [](const Enum* enumeration) {
         EXPECT_EQ(enumeration->name(), "TestEnum");
         EXPECT_EQ(enumeration->file().filename(),
-                  std::string(GetEntityTypeIdStr(enumeration->parent()->type())) + "_types.proto");
+                  JoinStrings(GetEntityTypeIdStr(enumeration->parent()->type()), "_types.proto"));
         EXPECT_EQ(enumeration->constants().size(), 2);
         ASSERT_NE(enumeration->constants().find("TEST_ENUM_0"), enumeration->constants().end());
         ASSERT_NE(enumeration->constants().find("TEST_ENUM_1"), enumeration->constants().end());
@@ -360,7 +361,7 @@ TEST(ParserTest, Parser_Correctly_Parses_Test_Project)
     auto testStruct = [&](const Struct* structure) {
         EXPECT_EQ(structure->name(), "TestStruct");
         EXPECT_EQ(structure->file().filename(),
-                  std::string(GetEntityTypeIdStr(structure->parent()->type())) + "_types.proto");
+                  JoinStrings(GetEntityTypeIdStr(structure->parent()->type()), "_types.proto"));
         EXPECT_EQ(structure->flags(), StructFlags::Hashed);
         EXPECT_EQ(structure->docs().brief(), " Test struct.");
         ASSERT_EQ(structure->docs().description().size(), 2);
@@ -475,7 +476,7 @@ TEST(ParserTest, Unexpected_Nested_Entity_Spec_Warn_If_Directory_Is_Found_In_Ser
 {
     TmpDir tmp;
     CreateTestProject(tmp);
-    tmp.createDir(Implementation_Entity_Name + std::string("service/some_dir"));
+    tmp.createDir(JoinStrings(Implementation_Entity_Name, "service/some_dir"));
     Parser parser(tmp.path(), BUSRPC_TESTS_PROTOBUF_ROOT);
 
     EXPECT_TRUE(parser.parse().second.find(SpecWarn::Unexpected_Nested_Entity));

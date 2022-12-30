@@ -104,7 +104,7 @@ TEST(CommonEntityTest, Entity_Ctor_Correctly_Initializes_Parent)
         TestCompositeEntity parent(nullptr, EntityTypeId::Project, "project");
         TestEntity entity(&parent, EntityTypeId::Api, "api");
 
-        EXPECT_EQ(entity.dname(), parent.dname() + "." + entity.name());
+        EXPECT_EQ(entity.dname(), JoinStrings(parent.dname(), ".", entity.name()));
         EXPECT_EQ(entity.dir(), "api");
         EXPECT_EQ(entity.parent(), &parent);
         EXPECT_EQ(static_cast<const Entity*>(&entity)->parent(), &parent);
@@ -125,7 +125,7 @@ TEST(CommonEntityTest, Entity_Ctor_Correctly_Initializes_Parent)
         for (auto id: ids) {
             TestEntity entity(&parent, id, "entity");
 
-            EXPECT_EQ(entity.dname(), parent.dname() + "." + entity.name());
+            EXPECT_EQ(entity.dname(), JoinStrings(parent.dname(), ".", entity.name()));
             EXPECT_EQ(entity.dir(), "api");
         }
     }

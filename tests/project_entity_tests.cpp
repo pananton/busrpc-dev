@@ -141,17 +141,17 @@ TEST_F(ProjectEntityTest, addImplementation_Initializes_Implementation_Entity)
 
 TEST_F(ProjectEntityTest, find_Returns_Correct_Entity_If_It_Exists)
 {
-    std::string apiPrefix = std::string(Project_Entity_Name) + "." + Api_Entity_Name + ".";
-    std::string svcPrefix = std::string(Project_Entity_Name) + "." + Implementation_Entity_Name + ".";
+    std::string apiPrefix = JoinStrings(Project_Entity_Name, ".", Api_Entity_Name, ".");
+    std::string svcPrefix = JoinStrings(Project_Entity_Name, ".", Implementation_Entity_Name, ".");
 
     EXPECT_EQ(project_->find(std::string(Project_Entity_Name)), project_.get());
-    EXPECT_EQ(project_->find(std::string(Project_Entity_Name) + "." + Errc_Enum_Name), project_->errc());
+    EXPECT_EQ(project_->find(JoinStrings(Project_Entity_Name, ".", Errc_Enum_Name)), project_->errc());
     EXPECT_EQ(
-        project_->find(std::string(Project_Entity_Name) + "." + GetPredefinedStructName(StructTypeId::Call_Message)),
+        project_->find(JoinStrings(Project_Entity_Name, ".", GetPredefinedStructName(StructTypeId::Call_Message))),
         project_->callMessage());
 
-    EXPECT_EQ(project_->find(std::string(Project_Entity_Name) + "." + Api_Entity_Name), api_);
-    EXPECT_EQ(project_->find(std::string(Project_Entity_Name) + "." + Implementation_Entity_Name), implementation_);
+    EXPECT_EQ(project_->find(JoinStrings(Project_Entity_Name, ".", Api_Entity_Name)), api_);
+    EXPECT_EQ(project_->find(JoinStrings(Project_Entity_Name, ".", Implementation_Entity_Name)), implementation_);
 
     EXPECT_EQ(project_->find(apiPrefix + "ns1"), ns1_);
     EXPECT_EQ(project_->find(apiPrefix + "ns2"), ns2_);
@@ -180,23 +180,23 @@ TEST_F(ProjectEntityTest, find_Automatically_Adds_Busprc_Prefix_To_Dname_If_Miss
 TEST_F(ProjectEntityTest, find_Returns_Nullptr_If_Dname_Is_Not_Found)
 {
     EXPECT_FALSE(project_->find("unknown"));
-    EXPECT_FALSE(project_->find(std::string(Api_Entity_Name) + ".unknown"));
-    EXPECT_FALSE(project_->find(std::string(Api_Entity_Name) + ".ns1.unknown"));
-    EXPECT_FALSE(project_->find(std::string(Api_Entity_Name) + ".ns1.cls1.unknown"));
-    EXPECT_FALSE(project_->find(std::string(Api_Entity_Name) + ".ns1.cls1.method1.unknown"));
-    EXPECT_FALSE(project_->find(std::string(Api_Entity_Name) + ".ns1.cls1.method1.Enum1.unknown"));
-    EXPECT_FALSE(project_->find(std::string(Api_Entity_Name) + ".ns2.Struct1.unknown"));
-    EXPECT_FALSE(project_->find(std::string(Api_Entity_Name) + ".ns2.Struct1.unknown"));
-    EXPECT_FALSE(project_->find(std::string(Api_Entity_Name) + ".ns2.Struct1.NestedStruct1.unknown"));
-    EXPECT_FALSE(project_->find(std::string(Api_Entity_Name) + ".ns2.Struct1.NestedEnum1.unknown"));
+    EXPECT_FALSE(project_->find(JoinStrings(Api_Entity_Name, ".unknown")));
+    EXPECT_FALSE(project_->find(JoinStrings(Api_Entity_Name, ".ns1.unknown")));
+    EXPECT_FALSE(project_->find(JoinStrings(Api_Entity_Name, ".ns1.cls1.unknown")));
+    EXPECT_FALSE(project_->find(JoinStrings(Api_Entity_Name, ".ns1.cls1.method1.unknown")));
+    EXPECT_FALSE(project_->find(JoinStrings(Api_Entity_Name, ".ns1.cls1.method1.Enum1.unknown")));
+    EXPECT_FALSE(project_->find(JoinStrings(Api_Entity_Name, ".ns2.Struct1.unknown")));
+    EXPECT_FALSE(project_->find(JoinStrings(Api_Entity_Name, ".ns2.Struct1.unknown")));
+    EXPECT_FALSE(project_->find(JoinStrings(Api_Entity_Name, ".ns2.Struct1.NestedStruct1.unknown")));
+    EXPECT_FALSE(project_->find(JoinStrings(Api_Entity_Name, ".ns2.Struct1.NestedEnum1.unknown")));
 }
 
 TEST_F(ProjectEntityTest, Entity_Directory_Is_Updated_When_New_Entity_Is_Added)
 {
     Namespace* ns3 = nullptr;
 
-    EXPECT_FALSE(project_->find(std::string(Api_Entity_Name) + ".ns3"));
+    EXPECT_FALSE(project_->find(JoinStrings(Api_Entity_Name, ".ns3")));
     EXPECT_TRUE(ns3 = api_->addNamespace("ns3"));
-    EXPECT_EQ(project_->find(std::string(Api_Entity_Name) + ".ns3"), ns3);
+    EXPECT_EQ(project_->find(JoinStrings(Api_Entity_Name, ".ns3")), ns3);
 }
 }} // namespace busrpc::test

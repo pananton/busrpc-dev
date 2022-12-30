@@ -71,13 +71,15 @@ TEST(UtilsTest, TrimString_Correctly_Handles_String_Consisting_Of_Whitespaces_On
 
 TEST(UtilsTest, TrimString_Correctly_Handles_String_Wo_Whitespaces)
 {
-    std::string str = "abc";
+    std::string original = "abc";
+    std::string str = original;
 
-    EXPECT_EQ(str, TrimString(str));
+    EXPECT_EQ(original, TrimString(str));
 
-    str = "a";
+    original = "a";
+    str = original;
 
-    EXPECT_EQ(str, TrimString(str));
+    EXPECT_EQ(original, TrimString(str));
 }
 
 TEST(UtilsTest, TrimString_Correctly_Handles_String_With_Whitespaces)

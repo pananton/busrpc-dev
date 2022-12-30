@@ -1,4 +1,5 @@
 #include "entities/project.h"
+#include "utils/common.h"
 
 #include <gtest/gtest.h>
 
@@ -24,7 +25,7 @@ TEST_F(NamespaceEntityTest, Namespace_Entity_Is_Correctly_Initialized_When_Creat
     EXPECT_EQ(ns_->type(), EntityTypeId::Namespace);
     EXPECT_EQ(ns_->name(), "namespace");
     EXPECT_EQ(ns_->dir(), std::filesystem::path(Api_Entity_Name) / "namespace");
-    EXPECT_EQ(ns_->dname(), std::string(Project_Entity_Name) + "." + Api_Entity_Name + ".namespace");
+    EXPECT_EQ(ns_->dname(), JoinStrings(Project_Entity_Name, ".", Api_Entity_Name, ".namespace"));
     EXPECT_TRUE(ns_->docs().description().empty());
     EXPECT_TRUE(ns_->docs().brief().empty());
     EXPECT_TRUE(ns_->docs().commands().empty());
