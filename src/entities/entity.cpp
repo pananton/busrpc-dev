@@ -26,7 +26,7 @@ std::vector<std::string> TrimEmptyLines(const std::vector<std::string>& descript
         result.push_back(line);
     }
 
-    size_t removeFromEndCount = 0;
+    int removeFromEndCount = 0;
 
     for (auto it = result.rbegin(); it != result.rend(); ++it) {
         if (TrimString(*it).empty()) {
