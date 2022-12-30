@@ -121,13 +121,15 @@ bool InitCanonicalPathToExistingDirectory(std::filesystem::path& path, const std
     if (dir.empty()) {
         path = std::filesystem::current_path();
     } else {
-        std::filesystem::path tmp(dir);
+        std::error_code ec;
+        std::filesystem::path tmp = std::filesystem::canonical(dir, ec);
 
-        if (!std::filesystem::is_directory(tmp)) {
-            return false;
+        if (!ec && std::filesystem::is_directory(tmp)) {
+            path = tmp;
+            return true;
         }
 
-        path = std::filesystem::canonical(tmp);
+        return false;
     }
 
     return true;
