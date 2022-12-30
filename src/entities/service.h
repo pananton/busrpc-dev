@@ -40,6 +40,7 @@ private:
 
 /// Descendant order of imported methods distinguished names.
 struct OrderImportedMethodsByDnameAsc {
+    /// Indicates transparent comparator (allows to use \c std::string_view when searching for \ref ImportedMethod).
     using is_transparent = void;
 
     /// Return \c true if disntiguished name of \a lhs is less than distinguished name of \a rhs.

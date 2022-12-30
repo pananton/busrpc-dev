@@ -8,7 +8,7 @@
 #include <system_error>
 #include <vector>
 
-// \file error_collector.h Class for collecting multiple errors.
+/// \file error_collector.h Class for collecting multiple errors.
 
 namespace google { namespace protobuf { namespace compiler {
 class MultiFileErrorCollector;
@@ -28,7 +28,10 @@ class ErrorCollector {
 public:
     /// Information about error.
     struct ErrorInfo {
+        /// Error code.
         std::error_code code;
+
+        /// Error description.
         std::string description;
     };
 

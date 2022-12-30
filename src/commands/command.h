@@ -60,18 +60,19 @@ public:
     /// Command name.
     const char* name() const noexcept { return GetCommandName(id_); }
 
-    /// Execute command using \a out as \c stdout and \a err as stderr.
+    /// Execute command using \a out as \c stdout and \a err as \c stderr.
     /// \throws command_error if some operations of the command did not finish successfully
-    /// \note If \a out or \err is not set, corresponding output is discarded as if redirected to \c /dev/null.
+    /// \note If \a out or \a err is not set, corresponding output is discarded as if redirected to \c /dev/null.
     void execute(std::optional<std::reference_wrapper<std::ostream>> out,
                  std::optional<std::reference_wrapper<std::ostream>> err) const;
 
-    /// Execute command using \a out as \c stdout and \a err as stderr.
-    /// \note If \a out or \err is not set, corresponding output is discarded as if redirected to \c /dev/null.
+    /// Execute command using \a out as \c stdout and \a err as \c stderr.
+    /// \note If \a out or \a err is not set, corresponding output is discarded as if redirected to \c /dev/null.
     std::error_code tryExecute(std::optional<std::reference_wrapper<std::ostream>> out,
                                std::optional<std::reference_wrapper<std::ostream>> err) const;
 
 protected:
+    /// Method to be implemented by concrete commands.
     virtual std::error_code tryExecuteImpl(std::ostream& out, std::ostream& err) const = 0;
 
 private:

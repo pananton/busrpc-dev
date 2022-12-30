@@ -9,23 +9,24 @@ project(busrpc-dev
 #----------------------------------------------------------------------------------------------------------------------
 
 option(BUSRPC_BUILD_TESTS "Build busrpc development tool tests" OFF)
+option(BUSRPC_BUILD_DOCS "Build busrpc development tool documentation" OFF)
 option(BUSRPC_USE_EXTERNAL_CLI11 "Use external CLI11 library" OFF)
 option(BUSRPC_USE_EXTERNAL_PROTOBUF "User external protobuf library" OFF)
 option(BUSRPC_USE_EXTERNAL_NLOHMANN_JSON "User external nlohmann-json library" OFF)
+option(BUSRPC_USE_STATIC_PROTOBUF "Link protobuf library statically" OFF)
 
-
-if(NOT BUSRPC_USE_EXTERNAL_CLI11 AND NOT DEFINED BUSRPC_CLI11_VERSION)
-    set(BUSRPC_CLI11_VERSION "2.3.1"
+if(NOT BUSRPC_USE_EXTERNAL_CLI11 AND NOT DEFINED BUSRPC_CLI11_FETCH_VERSION)
+    set(BUSRPC_CLI11_FETCH_VERSION "2.3.1"
         CACHE STRING "Version of CLI11 library to be fetched" FORCE)
 endif()
 
-if(NOT BUSRPC_USE_EXTERNAL_PROTOBUF AND NOT DEFINED BUSRPC_PROTOBUF_VERSION)
-    set(BUSRPC_PROTOBUF_VERSION "21.12"
+if(NOT BUSRPC_USE_EXTERNAL_PROTOBUF AND NOT DEFINED BUSRPC_PROTOBUF_FETCH_VERSION)
+    set(BUSRPC_PROTOBUF_FETCH_VERSION "21.12"
         CACHE STRING "Version of Protobuf library to be fetched" FORCE)
 endif()
 
-if(NOT BUSRPC_USE_EXTERNAL_NLOHMANN_JSON AND NOT DEFINED BUSRPC_NLOHMANN_JSON_VERSION)
-    set(BUSRPC_NLOHMANN_JSON_VERSION "3.11.2"
+if(NOT BUSRPC_USE_EXTERNAL_NLOHMANN_JSON AND NOT DEFINED BUSRPC_NLOHMANN_JSON_FETCH_VERSION)
+    set(BUSRPC_NLOHMANN_JSON_FETCH_VERSION "3.11.2"
         CACHE STRING "Version of nlohmann-json library to be fetched" FORCE)
 endif()
 
@@ -40,23 +41,27 @@ endif()
 
 if(NOT BUSRPC_USE_EXTERNAL_CLI11)
     include("cmake/FetchCLI11.cmake")
-    fetch_cli11(${BUSRPC_CLI11_VERSION})
+    fetch_cli11(${BUSRPC_CLI11_FETCH_VERSION})
 else()
     find_package(CLI11 CONFIG REQUIRED)
 endif()
 
 if(NOT BUSRPC_USE_EXTERNAL_PROTOBUF)
     include("cmake/FetchProtobuf.cmake")
-    fetch_protobuf(${BUSRPC_PROTOBUF_VERSION})
+    fetch_protobuf(${BUSRPC_PROTOBUF_FETCH_VERSION})
     set(BUSRPC_TESTS_PROTOBUF_ROOT "${protobuf_SOURCE_DIR}/src")
 else()
+    if(BUSRPC_USE_STATIC_PROTOBUF)
+        set(Protobuf_USE_STATIC_LIBS ON)
+    endif()
+
     find_package(Protobuf REQUIRED)
     set(BUSRPC_TESTS_PROTOBUF_ROOT "${Protobuf_INCLUDE_DIR}")
 endif()
 
 if(NOT BUSRPC_USE_EXTERNAL_NLOHMANN_JSON)
     include("cmake/FetchNlohmannJson.cmake")
-    fetch_nlohmann_json(${BUSRPC_NLOHMANN_JSON_VERSION})
+    fetch_nlohmann_json(${BUSRPC_NLOHMANN_JSON_FETCH_VERSION})
 else()
     find_package(nlohmann_json CONFIG REQUIRED)
 endif()
@@ -152,10 +157,19 @@ endif()
 target_link_libraries(busrpc PRIVATE busrpc-obj)
 
 #----------------------------------------------------------------------------------------------------------------------
-# other targets
+# tests
 #----------------------------------------------------------------------------------------------------------------------
 
 if(BUSRPC_BUILD_TESTS)
     enable_testing()
     add_subdirectory(tests)
+endif()
+
+#-----------------------------------------------------------------------------
+# docs
+#-----------------------------------------------------------------------------
+
+if(BUSRPC_BUILD_DOCS)
+    find_package(Doxygen REQUIRED)
+    doxygen_add_docs(docs src/)
 endif()

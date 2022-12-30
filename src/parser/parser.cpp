@@ -2,9 +2,13 @@
 #include "protobuf_error_collector.h"
 #include "utils.h"
 
+#pragma warning(push)
+#pragma warning(disable: 4100)
+#pragma warning(disable: 4251)
 #include <google/protobuf/compiler/importer.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
+#pragma warning(pop)
 
 #include <fstream>
 

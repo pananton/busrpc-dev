@@ -2,7 +2,11 @@
 #include "error_collector.h"
 #include "utils.h"
 
+#pragma warning(push)
+#pragma warning(disable: 4100)
+#pragma warning(disable: 4251)
 #include <google/protobuf/compiler/importer.h>
+#pragma warning(pop)
 
 #include <filesystem>
 #include <set>

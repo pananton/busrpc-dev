@@ -10,7 +10,7 @@ namespace busrpc {
 /// Documentation generator base class.
 class DocGenerator {
 public:
-    /// Generate documentation for \ref project.
+    /// Generate documentation for \a project.
     virtual void generate(const Project& project) const = 0;
 
     /// Default virtual destructor.

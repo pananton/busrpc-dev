@@ -8,7 +8,7 @@
 #include <system_error>
 
 /// \dir commands/gendoc Types and utilites for \c gendoc command implementation.
-/// \file command.h Command \c gendoc implementation.
+/// \file gendoc_command.h Command \c gendoc implementation.
 
 namespace CLI {
 class App;
@@ -105,6 +105,7 @@ public:
     explicit GenDocCommand(GenDocArgs args) noexcept: BaseType(std::move(args)) { }
 
 protected:
+    /// Execute command.
     std::error_code tryExecuteImpl(std::ostream& out, std::ostream& err) const override;
 };
 

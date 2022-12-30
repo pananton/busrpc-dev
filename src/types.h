@@ -190,6 +190,8 @@ enum class StructTypeId {
 
 /// Structure entity flags.
 enum class StructFlags { None = 0, Hashed = 1, All = 0x1 };
+
+/// Define bitwise operation for \ref StructFlags.
 DEFINE_BITWISE_ENUM(StructFlags);
 
 /// Get predefined name of a structure.
@@ -372,6 +374,8 @@ enum class FieldTypeId {
 
 /// Structure field entity flags.
 enum class FieldFlags { None = 0, Optional = 1, Repeated = 2, Observable = 4, Hashed = 8, All = 0xf };
+
+/// Define bitwise operation for \ref FieldFlags.
 DEFINE_BITWISE_ENUM(FieldFlags);
 
 /// Returns \c true if field type is a protobuf scalar type.

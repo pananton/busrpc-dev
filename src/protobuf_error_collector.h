@@ -2,15 +2,22 @@
 
 #include "error_collector.h"
 
+#pragma warning(push)
+#pragma warning(disable : 4100)
+#pragma warning(disable : 4251)
 #include <google/protobuf/compiler/importer.h>
+#pragma warning(pop)
 
-/// \file Protobuf compiler error collector.
+/// \file protobuf_error_collector.h Protobuf compiler error collector.
 
 namespace busrpc {
 
 /// Protobuf compiler error collector.
 class ProtobufErrorCollector: public google::protobuf::compiler::MultiFileErrorCollector {
 public:
+    /// Create protobuf error collector.
+    /// \note Errors found by protobuf library will be added to this collector, whihc in it's turn adds them to
+    ///       \a collector with \a protobufErrorCode error code.
     ProtobufErrorCollector(ErrorCollector& collector, std::error_code protobufErrorCode):
         collector_(collector),
         protobufErrorCode_(std::move(protobufErrorCode))

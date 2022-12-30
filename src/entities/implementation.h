@@ -6,7 +6,7 @@
 
 #include <string>
 
-/// \file services.h Project services entity.
+/// \file implementation.h Project services entity.
 
 namespace busrpc {
 

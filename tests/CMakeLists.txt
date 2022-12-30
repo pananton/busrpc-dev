@@ -2,13 +2,13 @@
 # testing framework
 #----------------------------------------------------------------------------------------------------------------------
 
-if(NOT DEFINED BUSRPC_GTEST_VERSION)
-    set(BUSRPC_GTEST_VERSION "1.12.1"
+if(NOT DEFINED BUSRPC_GTEST_FETCH_VERSION)
+    set(BUSRPC_GTEST_FETCH_VERSION "1.12.1"
         CACHE STRING "Version of GTest testing framework to be fetched" FORCE)
 endif()
 
 include("${PROJECT_SOURCE_DIR}/cmake/FetchGtest.cmake")
-fetch_gtest(${BUSRPC_GTEST_VERSION})
+fetch_gtest(${BUSRPC_GTEST_FETCH_VERSION})
 
 #----------------------------------------------------------------------------------------------------------------------
 # tests sources

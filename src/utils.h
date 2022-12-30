@@ -9,7 +9,7 @@
 
 namespace busrpc {
 
-/// Turns token compression on or off for \ref SplitString function.
+/// Turns token compression on or off for \c SplitString function.
 enum class TokenCompressMode { Off = 1, On = 2 };
 
 /// Split \a str into a vector of tokens.

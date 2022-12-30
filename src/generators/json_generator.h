@@ -38,7 +38,7 @@ void to_json(nlohmann::json& obj, const Class& cls);
 /// Convert \ref Method to json.
 void to_json(nlohmann::json& obj, const Method& method);
 
-/// Convert \ref Services to json.
+/// Convert \ref Implementation to json.
 void to_json(nlohmann::json& obj, const Implementation& implementation);
 
 /// Convert \ref Service to json.

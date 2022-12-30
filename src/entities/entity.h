@@ -133,7 +133,10 @@ concept SimpleEntityConcept = std::is_base_of_v<Entity, T> && !std::is_base_of_v
 
 /// Descendant order of entity names.
 struct OrderEntitiesByNameAsc {
+    /// Compared type.
     using ComparedType = const Entity*;
+
+    /// Indicates transparent comparator (allows to use \c std::string_view when searching for \ref ComparedType).
     using is_transparent = void;
 
     /// Return \c true if name of the entity pointed by \a lhs is less than name of the entity pointed by \a rhs.

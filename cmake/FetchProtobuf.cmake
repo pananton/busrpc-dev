@@ -8,7 +8,12 @@ function(fetch_protobuf version)
         protobuf
         URL https://github.com/protocolbuffers/protobuf/archive/refs/tags/v${version}.tar.gz)
 
-    set(BUILD_SHARED_LIBS OFF)
+    if(BUSRPC_USE_STATIC_PROTOBUF)
+        set(BUILD_SHARED_LIBS OFF)
+    else()
+        set(BUILD_SHARED_LIBS ON)
+    endif()
+
     set(protobuf_BUILD_TESTS OFF CACHE INTERNAL "")
     set(protobuf_BUILD_PROTOC_BINARIES OFF CACHE INTERNAL "")
     set(protobuf_INSTALL OFF CACHE INTERNAL "")
@@ -16,4 +21,3 @@ function(fetch_protobuf version)
     FetchContent_MakeAvailable(protobuf)
     message(STATUS "Protobuf library added")
 endfunction()
-

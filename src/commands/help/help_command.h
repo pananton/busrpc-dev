@@ -48,6 +48,7 @@ public:
     explicit HelpCommand(HelpArgs args) noexcept: BaseType(std::move(args)) { }
 
 protected:
+    /// Execute command.
     std::error_code tryExecuteImpl(std::ostream& out, std::ostream& err) const override;
 };
 
