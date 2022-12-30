@@ -1,9 +1,6 @@
 FROM gcc:latest as build
 WORKDIR /busrpc-dev
-COPY cmake/ ./cmake
-COPY src/ ./src
-COPY tests/ ./tests
-COPY CMakeLists.txt .
+COPY . .
 RUN apt-get update && \
     apt-get install -y \
       cmake \
