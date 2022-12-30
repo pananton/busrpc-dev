@@ -5,7 +5,7 @@
 namespace busrpc { namespace test {
 
 enum class TestEnum { None = 0, E1 = 1, E2 = 2, E3 = 4, All = 7 };
-DEFINE_BITWISE_ENUM(TestEnum);
+DEFINE_BITWISE_ENUM(TestEnum)
 
 TEST(BitwiseEnumTest, And_Returns_Correct_Result)
 {

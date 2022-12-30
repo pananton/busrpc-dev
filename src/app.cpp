@@ -192,9 +192,9 @@ void DefineCommand(CLI::App& app, const std::function<void(VersionArgs)>& callba
 void InitApp(CLI::App& app, std::ostream& out, std::ostream& err)
 {
     app.set_version_flag("-v,--version", []() {
-        std::ostringstream out;
-        VersionCommand({}).execute(&out);
-        return out.str();
+        std::ostringstream output;
+        VersionCommand({}).execute(&output);
+        return output.str();
     });
 
     DefineCommand(*app.add_subcommand(GetCommandName(CommandId::Check)), CreateInvoker<CheckCommand>(out, err));

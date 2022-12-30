@@ -192,7 +192,7 @@ enum class StructTypeId {
 enum class StructFlags { None = 0, Hashed = 1, All = 0x1 };
 
 /// Define bitwise operation for \ref StructFlags.
-DEFINE_BITWISE_ENUM(StructFlags);
+DEFINE_BITWISE_ENUM(StructFlags)
 
 /// Get predefined name of a structure.
 /// \note Return \c nullptr if structure does not have a predefined name.
@@ -394,7 +394,7 @@ enum class FieldTypeId {
 enum class FieldFlags { None = 0, Optional = 1, Repeated = 2, Observable = 4, Hashed = 8, All = 0xf };
 
 /// Define bitwise operation for \ref FieldFlags.
-DEFINE_BITWISE_ENUM(FieldFlags);
+DEFINE_BITWISE_ENUM(FieldFlags)
 
 /// Returns \c true if field type is a protobuf scalar type.
 /// \note See [here](https://developers.google.com/protocol-buffers/docs/proto3#scalar) for protobuf scalar type
