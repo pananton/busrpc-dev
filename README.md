@@ -23,8 +23,21 @@ cmake -DCMAKE_BUILD_TYPE=<TYPE> ..
 For more granular control over the build process the following CMake variables are provided:
 * `BUSRPC_BUILD_TESTS` (default `ON`) to enable/disable building of the project unit tests
 * `BUSRPC_BUILD_DOCS` (default `OFF`) to enable/disable documentation generation from project sources (doxygen should be installed and available on a well-known path)
-* `BUSRPC_CLI11_FETCH_VERSION`, `BUSRPC_PROTOBUF_FETCH_VERSION`, `BUSRPC_NLOHMANN_JSON_FETCH_VERSION`, `BUSRPC_GTEST_FETCH_VERSION` - for choosing which version of the dependency to fetch (should be only digits and dots, no leading 'v' should be specified)
+* `BUSRPC_CLI11_FETCH_VERSION`, `BUSRPC_PROTOBUF_FETCH_VERSION`, `BUSRPC_NLOHMANN_JSON_FETCH_VERSION`, `BUSRPC_GTEST_FETCH_VERSION` - for choosing which version of the dependency to fetch (should contain only digits and dots, no leading 'v' should be specified)
 * `BUSRPC_USE_EXTERNAL_CLI11`, `BUSRPC_USE_EXTERNAL_PROTOBUF`, `BUSRPC_USE_EXTERNAL_NLOHMANN_JSON` if you want to use externally installed dependencies instead of downloaded ones
 * `BUSRPC_WARNINGS` and `BUSRPC_WARNINGS_AS_ERRORS` to control warning level of the build
 
+Also if your CMake version if 3.21 or higher, CMake preset can be used for controlling project options. Be default, two presets are provided in the CMakePresets.json file: `dev` for configuring build for development and `release` for building release version. To build with presets, execute:
 
+```
+cmake --preset dev|release
+```
+
+# Using docker image
+
+Busrpc development tool is also available in the docker hub and can be pulled using this instruction:
+
+```
+docker pull pananton/busrpc:latest
+```
+ 
