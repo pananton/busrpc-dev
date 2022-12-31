@@ -310,6 +310,13 @@ TEST(UtilsTest, InitRelativePathToExistingFile_Returns_Relative_Path_Without_Lea
 
     path.clear();
 
+    ASSERT_TRUE(InitRelativePathToExistingFile(
+        path, (std::filesystem::absolute(tmp.path()) / "file1.txt").string(), std::filesystem::absolute(tmp.path())));
+    EXPECT_TRUE(path.is_relative());
+    EXPECT_EQ(path, "file1.txt");
+
+    path.clear();
+
     ASSERT_TRUE(InitRelativePathToExistingFile(path, "subdir/file2.txt", "tmp"));
     EXPECT_TRUE(path.is_relative());
     EXPECT_EQ(path, "subdir/file2.txt");

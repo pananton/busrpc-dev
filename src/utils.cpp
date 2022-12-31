@@ -142,8 +142,20 @@ bool InitRelativePathToExistingFile(std::filesystem::path& path,
     std::filesystem::path original(file);
     std::filesystem::path relPath;
 
+    std::error_code ec;
+
     if (!original.parent_path().empty()) {
-        relPath = std::filesystem::relative(root / original.parent_path(), root) / original.filename();
+        relPath = std::filesystem::relative(root / original.parent_path(), root, ec);
+
+        if (!ec) {
+            if (relPath.string() == ".") {
+                relPath = original.filename();
+            } else {
+                relPath /= original.filename();
+            }
+        } else {
+            return false;
+        }
     } else {
         relPath = original.filename();
     }
@@ -156,7 +168,7 @@ bool InitRelativePathToExistingFile(std::filesystem::path& path,
         return false;
     }
 
-    path = std::move(relPath);
-    return true;
+    path = relPath;
+    return !ec;
 }
 } // namespace busrpc

@@ -21,8 +21,11 @@ int main(int argc, char* argv[])
         return EXIT_SUCCESS;
     } catch (const CLI::ParseError& e) {
         return app.exit(e);
+    } catch (const busrpc::command_error&) {
+        // error should already be outputted
+        return EXIT_FAILURE;
     } catch (const std::runtime_error& e) {
-        std::cerr << e.what() << std::endl;
+        std::cerr << "exception caught: " << e.what() << "\n";
         return EXIT_FAILURE;
     } catch (...) {
         std::cerr << "exception caught" << std::endl;
