@@ -2,6 +2,28 @@
 
 Command-line development tool for a [busrpc](https://github.com/pananton/busrpc-spec) microservice developers.
 
+* [Building](#building)
+* [Docker image](#docker-image)
+* [Commands](#commands)
+  * [`check`](#check)
+  * [`gendoc`](#gendoc)
+  * [`help`](#help)
+  * [`imports`](#imports)
+  * [`version`](#version)
+* [JSON documentation schema](#json-documentation-schema)
+  * [Entity](#entity)
+  * [Enumeration constant](#enumeration-constant)
+  * [Enumeration](#enumeration)
+  * [Structure field](#structure-field)
+  * [Structure](#structure)
+  * [Method](#method)
+  * [Class](#class)
+  * [Namespace](#namespace)
+  * [API](#api)
+  * [Service](#service)
+  * [Implementation](#implementation)
+  * [Project](#project)
+
 # Building
 
 To build busrpc development tool CMake version not older than 3.14 is required.
@@ -33,7 +55,7 @@ Also if your CMake version is 3.21 or higher, CMake preset can be used for contr
 cmake --preset dev|release
 ```
 
-# Using docker image
+# Docker image
 
 Busrpc development tool is also available in the docker hub and can be run using this instruction:
 
@@ -198,7 +220,7 @@ JSON document created by [`gendoc`](#gendoc) command contains all busrpc entitie
 
 ## Entity
 
-This is common information for all entity types.
+This is common information for all entity types described in the following sections.
 
 | Field name | Type   | Description                                                                   |
 | ---------- | ------ | ----------------------------------------------------------------------------- |
