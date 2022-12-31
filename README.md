@@ -174,6 +174,7 @@ NOTES
 
 For more information about `-r` and `-p` options see section NOTES of the [`check`](#check) command.
 
+This command never outputs protobuf built-in files. For example, if one of the FILES imports *google.protobuf.any*, it still will not be included in the command output.
 
 ## `version`
 
@@ -192,3 +193,61 @@ OPTIONS
 * `-h,--help` - print help message and exit
 
 # JSON documentation schema
+
+JSON document created by [`gendoc`](#gendoc) command contains all busrpc entities (classes, methods, structures, etc.) found in the project organized in the tree structure where parent entity contains entities nested in it.
+
+General information common for all type of entities:
+
+| Field name | Type   | Description                                                                   |
+| ---------- | ------ | ----------------------------------------------------------------------------- |
+| name       | string | Entity name                                                                   |
+| dname      | string | Entity distinguished name (uniquelly identifies entity)                       |
+| dir        | string | Directory where entity is defined (specified relatively to project directory) |
+| docs       | object | Entity documentation                                                          |
+
+
+JSON object representing entity documentaion:
+
+| Field name  | Type   | Description                                                                                 |
+| ----------- | ------ | ------------------------------------------------------------------------------------------- |
+| brief       | string | Brief description                                                                           |
+| description | array  | Full description                                                                            |
+| commands    | object | Field name documentation command name, field value is array of documentation command values |
+
+
+Additional fields specific for JSON object representing enumeration constant:
+
+| Field name  | Type   | Description                       |
+| ----------- | ------ | --------------------------------- |
+| value       | number | Value of the enumeration constant |
+
+
+Additional fields specific for JSON object representing enumeration:
+
+| Field name  | Type   | Description                                                                             |
+| ----------- | ------ | --------------------------------------------------------------------------------------- |
+| package     | string | Protobuf package containing enumeration                                                 |
+| file        | string | Path to protobuf file (relative to project directory) containing enumeration definition |
+| constants   | object | Field name is enumeration constant name, field value is object representing constant    |
+
+
+Additional fields specific for JSON object representing structure field:
+
+| Field name    | Type   | Description                                     |
+| ------------- | ------ | ----------------------------------------------- |
+| number        | number | Protobuf field number                           |
+| fieldTypeName | string | Field typename                                  |
+| isOptional    | bool   | Optional field or not                           |
+| isRepeated    | bool   | Repeated field or not                           |
+| isObservable  | bool   | Observable field or not                         |
+| isHashed      | bool   | Hashed field or not                             |
+| oneofName     | string | Name of `oneof` to which field belongs          |
+| defaultValue  | string | Field default value                             |
+| isMap         | bool   | Whether field has protobuf `map` type           |
+| keyTypeName   | string | Exists only for map field, name of the key type |
+| valueTypeName | string | Exists only for map field, name of the key type |
+
+
+
+
+
