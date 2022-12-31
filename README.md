@@ -196,7 +196,9 @@ OPTIONS
 
 JSON document created by [`gendoc`](#gendoc) command contains all busrpc entities (classes, methods, structures, etc.) found in the project organized in the tree structure where parent entity contains entities nested in it.
 
-General information common for all type of entities:
+## Entity
+
+This is common information for all entity types.
 
 | Field name | Type   | Description                                                                   |
 | ---------- | ------ | ----------------------------------------------------------------------------- |
@@ -205,8 +207,7 @@ General information common for all type of entities:
 | dir        | string | Directory where entity is defined (specified relatively to project directory) |
 | docs       | object | Entity documentation                                                          |
 
-
-JSON object representing entity documentaion:
+Entity documentation object has the following view:
 
 | Field name  | Type   | Description                                                                                 |
 | ----------- | ------ | ------------------------------------------------------------------------------------------- |
@@ -214,15 +215,13 @@ JSON object representing entity documentaion:
 | description | array  | Full description                                                                            |
 | commands    | object | Field name documentation command name, field value is array of documentation command values |
 
-
-Additional fields specific for JSON object representing enumeration constant:
+## Enumeration constant
 
 | Field name  | Type   | Description                       |
 | ----------- | ------ | --------------------------------- |
 | value       | number | Value of the enumeration constant |
 
-
-Additional fields specific for JSON object representing enumeration:
+## Enumeration
 
 | Field name  | Type   | Description                                                                             |
 | ----------- | ------ | --------------------------------------------------------------------------------------- |
@@ -230,8 +229,7 @@ Additional fields specific for JSON object representing enumeration:
 | file        | string | Path to protobuf file (relative to project directory) containing enumeration definition |
 | constants   | object | Field name is enumeration constant name, field value is object representing constant    |
 
-
-Additional fields specific for JSON object representing structure field:
+## Structure field
 
 | Field name    | Type   | Description                                     |
 | ------------- | ------ | ----------------------------------------------- |
@@ -247,7 +245,104 @@ Additional fields specific for JSON object representing structure field:
 | keyTypeName   | string | Exists only for map field, name of the key type |
 | valueTypeName | string | Exists only for map field, name of the key type |
 
+## Structure
 
+| Field name  | Type   | Description                                                                            |
+| ----------- | ------ | -------------------------------------------------------------------------------------- |
+| package     | string | Protobuf package containing structure                                                  |
+| file        | string | Path to protobuf file (relative to project directory) containing structure definition  |
+| isHashed    | bool   | Hashed structure or not                                                                |
+| isEncodable | bool   | Encodable structure or not                                                             |
+| fields      | object | Field name is structure field name, field value is object representing structure field |
+| enums       | object | Field name is nested enumeration name, field value is object representing enumeration  |
+| structs     | object | Field name is nested structure name, field value is object representing structure      |
 
+## Method
 
+| Field name    | Type   | Description                                                                           |
+| ------------- | ------ | ------------------------------------------------------------------------------------- |
+| Params        | object | Structure representing method parameters                                              |
+| Retval        | object | Structure representing method return value                                            |
+| isStatic      | bool   | Static method or not                                                                  |
+| isOneway      | bool   | Oneway method or not                                                                  |
+| precondition  | string | Method precondition                                                                   |
+| postcondition | string | Method postcondition                                                                  |
+| enums         | object | Field name is nested enumeration name, field value is object representing enumeration |
+| structs       | object | Field name is nested structure name, field value is object representing structure     |
 
+## Class
+
+| Field name | Type   | Description                                                                           |
+| ---------- | ------ | ------------------------------------------------------------------------------------- |
+| ObjectId   | object | Structure representing class object identifier                                        |
+| isStatic   | bool   | Static class or not                                                                   |
+| methods    | object | Field name is method name, field value is object representing method                  |
+| enums      | object | Field name is nested enumeration name, field value is object representing enumeration |
+| structs    | object | Field name is nested structure name, field value is object representing structure     |
+
+## Namespace
+
+| Field name | Type   | Description                                                                           |
+| ---------- | ------ | ------------------------------------------------------------------------------------- |
+| classes    | object | Field name is class name, field value is object representing class                    |
+| enums      | object | Field name is nested enumeration name, field value is object representing enumeration |
+| structs    | object | Field name is nested structure name, field value is object representing structure     |
+
+## API
+
+| Field name | Type   | Description                                                                           |
+| -----------| ------ | ------------------------------------------------------------------------------------- |
+| namespaces | object | Field name is namespace name, field value is object representing namespace            |
+| enums      | object | Field name is nested enumeration name, field value is object representing enumeration |
+| structs    | object | Field name is nested structure name, field value is object representing structure     |
+
+## Service
+
+| Field name | Type   | Description                                                                           |
+| ---------- | ------ | ------------------------------------------------------------------------------------- |
+| Config     | object | Structure representing service config                                                 |
+| author     | string | Service author                                                                        |
+| email      | string | Service author contact email                                                          |
+| url        | string | URL where service sources or additional documentation can be found                    |
+| implements | object | Field name is method dname, value is implemented method object (see below)            |
+| invokes    | object | Field name is method dname, value is invoked method object (see below)                |
+| enums      | object | Field name is nested enumeration name, field value is object representing enumeration |
+| structs    | object | Field name is nested structure name, field value is object representing structure     |
+
+Implemented method object contains this fields:
+
+| Field name       | Type   | Description                                                                           |
+| ---------------- | ------ | ------------------------------------------------------------------------------------- |
+| dname            | string | Method dname                                                                          |
+| docs             | string | Documentation object describing why/how method is implemented                         |
+| acceptedObjectId | string | Accepted object identifier                                                            |
+| acceptedParams   | object | Field name is accepted parameter name, value is parameter value                       |
+
+Invoked method object contains this fields:
+
+| Field name       | Type   | Description                                                                           |
+| ---------------- | ------ | ------------------------------------------------------------------------------------- |
+| dname            | string | Method dname                                                                          |
+| docs             | string | Documentation object describing why/how method is implemented                         |
+
+## Implementation
+
+| Field name | Type   | Description                                                                           |
+| -----------| ------ | ------------------------------------------------------------------------------------- |
+| services   | object | Field name is service name, field value is object representing service                |
+| enums      | object | Field name is nested enumeration name, field value is object representing enumeration |
+| structs    | object | Field name is nested structure name, field value is object representing structure     |
+
+## Project
+
+| Field name     | Type   | Description                                                                           |
+| -------------- | ------ | ------------------------------------------------------------------------------------- |
+| Errc           | object | Enumeration representing project exception error code                                 |
+| Exception      | object | Structure representing project exception                                              |
+| CallMessage    | object | Structure representing call message                                                   |
+| ResultMessage  | object | Structure representing result message                                                 |
+| root           | string | Project directory                                                                     |
+| api            | object | Object representing API                                                               |
+| implementation | object | Object representing implementation                                                    |
+| enums          | object | Field name is nested enumeration name, field value is object representing enumeration |
+| structs        | object | Field name is nested structure name, field value is object representing structure     |
