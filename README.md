@@ -38,6 +38,152 @@ cmake --preset dev|release
 Busrpc development tool is also available in the docker hub and can be pulled using this instruction:
 
 ```
-docker pull pananton/busrpc:latest
+docker run pananton/busrpc:latest <COMMAND>
 ```
  
+# Commands
+
+To list available busrpc development tool commands run `busprc` without arguments:
+
+```
+$ ./busrpc
+Busrpc development tool
+Usage: busrpc [OPTIONS] [SUBCOMMAND]
+
+Options:
+  -h,--help                   Print this help message and exit
+  -v,--version                Display program version information and exit
+
+Subcommands:
+  check                       Check API for conformance to the busrpc specification
+  gendoc                      Generate API documentation
+  help                        Show help about the command
+  imports                     Output relative paths to the files directly or indirectly imported by the specified file(s)
+  version                     Show version information
+```
+
+## `check`
+
+SYNOPSIS
+
+```
+busrpc check [-h] [-r PROJECT_DIR] [-p PROTOBUF_ROOT]
+             [--ignore-spec] [--ignore-doc] [--ignore-style] [-w]
+```
+
+DESCRIPTION
+
+Check busrpc project for compliance with the [specification](https://github.com/pananton/busrpc-spec).
+
+OPTIONS
+
+* `-h`, `--help` - print help message and exit
+* `-r`, `--root` - busrpc project directory
+* `-p`, `--protobuf-root` - root directory for built-in protobuf *proto* files
+* `--ignore-spec` - ignore specification warnings
+* `--ignore-doc` - ignore documentation warnings
+* `--ignore-style` - ignore busrpc style warnings
+* `-w`, `--warning-as-error` - treat warnings as errors
+
+NOTES
+
+Busrpc project directory is the directory which contains *busrpc.proto* file. If project directory parameter `-r` is not specified on the command line, development tool also looks for `BUSRPC_PROJECT_DIR` environment variable and uses it's value if variable exists. As a final attemp, development tool assumes working directory to be a project directory.
+
+Every busrpc project imports at least *google/protobuf/descriptor.proto* file to define busrpc custom protobuf options (like `observable` and `hashed`), which means that development tool should be provided with information where to find this files.
+
+If protobuf root parameter `-p` is not specified on the command line, development tool also looks for `BUSRPC_PROTOBUF_ROOT` environment variable and uses it's value if variable exists. Also on *NIX systems `/usr/include` and `/usr/local/include` are searched.
+
+RESULT
+
+Returns 0 is all checks have been passed, non-zero otherwise.
+
+## `gendoc`
+
+SYNOPSIS
+
+```
+busrpc gendoc [-h] [-r PROJECT_DIR] [-p PROTOBUF_ROOT] [-d OUTPUT_DIR]
+              [--format FORMAT]
+```
+
+DESCRIPTION
+
+Check busrpc project for compliance with the [specification](https://github.com/pananton/busrpc-spec).
+
+OPTIONS
+
+* `-h`, `--help` - print help message and exit
+* `-r`, `--root` - busrpc project directory
+* `-p`, `--protobuf-root` - root directory for built-in protobuf *proto* files
+* `-d`, `--output-dir` - directory where to write generated documentation (working directory is used by default)
+* `--format` - documentation format (currently only `json` is supported, which is also the default value)
+
+NOTES
+
+For more information about `-r` and `-p` options see section NOTES of the [`check`](#check) command.
+
+Information about format of the generated JSON documentation can be found [here](#json-documentation-schema).
+
+If project has specification or other errors, then this command still tries to generate as much documentation as possible but reports error result (see below). In this case generated documentation may be inconsistent, but still syntactically represents a valid JSON.
+
+RESULT
+
+Returns 0 if documentation is generatead, non-zero otherwise.
+
+## `help`
+
+SYNOPSIS
+
+```
+busrpc help [-h] [COMMAND]
+```
+
+DESCRIPTION
+
+Prints help message about `COMMAND`. If `COMMAND` is not specified, outputs list of available commands.
+
+OPTIONS
+
+* `-h`, `--help` - print help message and exit
+
+## `imports`
+
+SYNOPSIS
+
+```
+busrpc imports [-h] [-r PROJECT_DIR] [-p PROTOBUF_ROOT] [--only-deps]
+               [FILES]...
+```
+
+DESCRIPTION
+
+Output relative paths to the files directly or indirectly imported by [FILES].
+
+OPTIONS
+
+* `-h`, `--help` - print help message and exit
+* `-r`, `--root` - busrpc project directory
+* `-p`, `--protobuf-root` - root directory for built-in protobuf *proto* files
+* `--only-deps` - only output paths to the dependencies, do not output paths to [FILES]
+
+NOTES
+
+For more information about `-r` and `-p` options see section NOTES of the [`check`](#check) command.
+
+## `version`
+
+SYNOPSIS
+
+```
+busrpc version [-h]
+```
+
+DESCRIPTION
+
+Prints busrpc development tool version information.
+
+OPTIONS
+
+* `-h,--help` - print help message and exit
+
+# Documentation JSON schema
