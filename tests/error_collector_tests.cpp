@@ -146,6 +146,16 @@ TEST(ErrorCollectorTest, Error_Codes_Are_Stored_In_Order_Of_Addition)
     EXPECT_EQ(ecol.errors()[2].code, CheckErrc::Style_Violated);
 }
 
+TEST(ErrorCollectorTest, add_Does_Not_Store_Same_Error_Code_With_Same_Description_Twice)
+{
+    ErrorCollector ecol;
+    ecol.add(ImportsErrc::File_Not_Found);
+    ecol.add(ImportsErrc::File_Not_Found, "description");
+    ecol.add(ImportsErrc::File_Not_Found, "description");
+
+    EXPECT_EQ(ecol.errors().size(), 2);
+}
+
 TEST(ErrorCollectorTest, clear_Removes_All_Error_Codes)
 {
     ErrorCollector ecol;

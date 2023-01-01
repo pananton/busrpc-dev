@@ -86,7 +86,9 @@ std::error_code GenDocCommand::tryExecuteImpl(std::ostream& out, std::ostream& e
     }
 
     if (!result) {
-        out << ("Busrpc project JSON documentation is written to '" + outputFilename + "'") << std::endl;
+        out << ("Busrpc project '" + parser.projectDir().string() + "' JSON documentation is written to '" +
+                outputFilename + "'")
+            << std::endl;
     } else {
         err << ("Failed to build documentation for busrpc project in '" + parser.projectDir().string() + "' directory")
             << std::endl;

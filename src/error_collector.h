@@ -59,6 +59,8 @@ public:
     /// Add \a ec to the stored errors and append all \a specifiers to the added error description.
     /// \tparam TSpecifiers Specifier types.
     /// \note If \a ec does not indicate an error or it's category is ignored, method does nothing.
+    /// \note If exactly the same error code with exactly the same specifiers was already added, then new one
+    ///       is ignored.
     /// \note Specifiers are used to provide custom information about the error. To be used as a specifier,
     ///       type should support <tt>ostream& operator\<\<</tt>. Additionally, this method also accepts
     ///       \c std::pair as specifier type, which is converted to string <tt>\<first>=\<second></tt> when
@@ -86,6 +88,14 @@ public:
         if (!specifiersStr.empty()) {
             description.append(": ");
             description.append(specifiersStr);
+        }
+
+        for (const auto& info: errors_) {
+            if (info.code.category() == ec.category() && info.code.value() == ec.value() &&
+                info.description == description) {
+                // do not add the same code twice
+                return;
+            }
         }
 
         errors_.emplace_back(std::move(ec), std::move(description));

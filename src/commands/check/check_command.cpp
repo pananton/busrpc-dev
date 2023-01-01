@@ -94,7 +94,7 @@ std::error_code CheckCommand::tryExecuteImpl(std::ostream& out, std::ostream& er
     }
 
     if (!result) {
-        out << ("Busrpc project in '" + parser.projectDir().string() + "' directory passed all required checks")
+        out << ("Busrpc project in '" + parser.projectDir().string() + "' directory passed all requested checks")
             << std::endl;
     } else {
         err << ("Busrpc project in '" + parser.projectDir().string() + "' directory failed some checks") << std::endl;
