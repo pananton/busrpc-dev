@@ -198,6 +198,10 @@ For more information about `-r` and `-p` options see section NOTES of the [`chec
 
 This command never outputs protobuf built-in files. For example, if one of the FILES imports *google.protobuf.any*, it still will not be included in the command output.
 
+RESULT
+
+Returns 0 if no protobuf parsing errors occurred, non-zero otherwise.
+
 ## `version`
 
 SYNOPSIS
