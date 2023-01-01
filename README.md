@@ -84,7 +84,6 @@ Subcommands:
   version                     Show version information
 ```
 
-
 ## `check`
 
 SYNOPSIS
@@ -120,7 +119,6 @@ RESULT
 
 Returns 0 if all checks have been passed, non-zero otherwise.
 
-
 ## `gendoc`
 
 SYNOPSIS
@@ -152,8 +150,7 @@ If project has specification or other errors, then this command still tries to g
 
 RESULT
 
-Returns 0 if documentation is generatead, non-zero otherwise.
-
+Returns 0 if documentation is generated and no protobuf/style errors encountered, non-zero otherwise.
 
 ## `help`
 
@@ -170,7 +167,6 @@ Prints help message about `COMMAND`. If `COMMAND` is not specified, outputs list
 OPTIONS
 
 * `-h`, `--help` - print help message and exit
-
 
 ## `imports`
 
@@ -200,7 +196,7 @@ This command never outputs protobuf built-in files. For example, if one of the F
 
 RESULT
 
-Returns 0 if no protobuf parsing errors occurred, non-zero otherwise.
+Returns 0 if list of imports is calculated and command did not encounter any protobuf parsing errors, non-zero otherwise.
 
 ## `version`
 
